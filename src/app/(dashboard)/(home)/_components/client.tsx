@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useQueryState } from 'nuqs';
-import React, { useEffect } from 'react';
-import { toast } from 'sonner';
+import { useQueryState } from "nuqs";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
 
 export const Client = () => {
-  const [fromURL, setFromURL] = useQueryState('from');
+  const [fromURL, setFromURL] = useQueryState("from");
 
   useEffect(() => {
-    if (fromURL === 'login') {
-      toast.success('You are already logged in.');
+    if (fromURL === "login") {
+      toast.success("You are already logged in.");
       setFromURL(null);
     }
   }, [fromURL]);

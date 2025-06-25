@@ -7,10 +7,10 @@ export const metadata: Metadata = { title: "Settings" };
 
 const SettingsPage = async () => {
   const session = await auth();
-  if (session) {
+  if (!session) {
     redirect("/login?redirect=login");
   }
-  return <div>llggg</div>;
+  return <div>setting</div>;
 };
 
 export default SettingsPage;
