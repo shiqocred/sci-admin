@@ -6,7 +6,8 @@
     "dev": "next dev --port=3001 --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "bun x tsx ./src/lib/db/seed/index.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
