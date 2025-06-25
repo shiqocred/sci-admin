@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Img,
   Preview,
@@ -11,14 +10,13 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { CSSProperties } from "react";
 
 interface VerifyEmailProps {
   name: string;
   linkVerify: string;
 }
 
-const baseUrl = process.env.BASE_URL ? `http://${process.env.BASE_URL}` : "";
+const baseUrl = process.env.BASE_URL ? `${process.env.BASE_URL}` : "";
 
 export const VerifyEmail = ({ name, linkVerify }: VerifyEmailProps) => (
   <Html>
@@ -70,53 +68,3 @@ VerifyEmail.PreviewProps = {
 } as VerifyEmailProps;
 
 export default VerifyEmail;
-
-// const main = {
-//   backgroundColor: "#ffffff",
-//   fontFamily:
-//     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
-// } as CSSProperties;
-
-// const container = {
-//   margin: "0 auto",
-//   padding: "20px",
-//   backgroundColor: "#dcfce7",
-// } as CSSProperties;
-
-// const wrapper = {
-//   margin: "20px",
-// } as CSSProperties;
-
-// const logo = {
-//   margin: "0 auto",
-// };
-
-// const paragraph = {
-//   fontSize: "16px",
-//   lineHeight: "26px",
-// };
-
-// const btnContainer = {
-//   textAlign: "center" as const,
-// };
-
-// const button = {
-//   backgroundColor: "#5F51E8",
-//   borderRadius: "3px",
-//   color: "#fff",
-//   fontSize: "16px",
-//   textDecoration: "none",
-//   textAlign: "center" as const,
-//   display: "block",
-//   padding: "12px",
-// };
-
-// const hr = {
-//   borderColor: "#cccccc",
-//   margin: "20px 0",
-// };
-
-// const footer = {
-//   color: "#8898aa",
-//   fontSize: "12px",
-// };
