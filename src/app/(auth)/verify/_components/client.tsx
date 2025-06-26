@@ -6,13 +6,10 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 export function Client() {
-  const router = useRouter();
-  const params = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
