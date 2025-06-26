@@ -8,10 +8,32 @@ export const signJWT = (
   return sign(payload, jwtSecret, options);
 };
 
-export function getUserFromToken(token: string): { sub: string } | null {
+export function verifyJwt(
+  token: string
+): { sub: string; verified: boolean } | null {
   try {
-    return verify(token, jwtSecret) as { sub: string };
+    return verify(token, jwtSecret) as { sub: string; verified: boolean };
   } catch {
     return null;
   }
 }
+
+export const isAuth = async (req: Request) => {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) {
+    return { status: false, userId: null };
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const payload = verifyJwt(token);
+
+  if (
+    !payload?.sub ||
+    payload?.verified === undefined ||
+    payload?.verified === null
+  ) {
+    return { status: false, userId: null };
+  }
+
+  return { status: true, userId: payload.sub };
+};

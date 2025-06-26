@@ -1,6 +1,5 @@
-// route.ts (Next.js App Router)
-import { db, users, verificationTokens } from "@/lib/db";
-import { errorRes, signJWT, successRes } from "@/lib/auth";
+import { db, users, verificationOtp } from "@/lib/db";
+import { errorRes, generateOtp, signJWT, successRes } from "@/lib/auth";
 import VerifyEmail from "@/components/email/verify";
 import { hash } from "argon2";
 
@@ -9,8 +8,9 @@ import { z } from "zod/v4";
 import { add } from "date-fns";
 
 import { Resend } from "resend";
-const a = process.env.RESEND_API_KEY;
-const resend = new Resend(a);
+import { resendSecret } from "@/config";
+
+const resend = new Resend(resendSecret);
 
 const registerSchema = z.object({
   name: z.string().min(1, "Last name is required"),
@@ -100,53 +100,46 @@ export async function POST(req: Request) {
       });
 
     const userId = createId();
-    // const user = await db
-    //   .insert(users)
-    //   .values({
-    //     id: userId,
-    //     email,
-    //     name,
-    //     password: await hash(password),
-    //     role: "BASIC",
-    //     emailVerified: null,
-    //   })
-    //   .returning({
-    //     id: users.id,
-    //     name: users.name,
-    //     email: users.email,
-    //     emailVerified: users.emailVerified,
-    //     role: users.role,
-    //   });
+    const user = await db
+      .insert(users)
+      .values({
+        id: userId,
+        email,
+        name,
+        phoneNumber: phone_number,
+        password: await hash(password),
+        role: "BASIC",
+        emailVerified: null,
+      })
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        phoneNumber: users.phoneNumber,
+        emailVerified: users.emailVerified,
+        role: users.role,
+      });
 
-    // Generate verification token
-    const token = createId();
-    // const expires = add(new Date(), { hours: 1 });
+    const otp = generateOtp();
+    const expires = add(new Date(), { minutes: 15 });
 
-    // await db.insert(verificationTokens).values({
-    //   identifier: email,
-    //   token,
-    //   expires,
-    // });
+    await db
+      .insert(verificationOtp)
+      .values({ identifier: userId, otp, expires });
 
-    // Send verification email
-    const emailSend = await resend.emails.send({
-      from: "info<hi@support.sro.my.id>",
+    await resend.emails.send({
+      from: "SCI Team<ju@support.sro.my.id>",
       to: [email],
       subject: "Verify your email",
       react: VerifyEmail({
         name,
-        linkVerify: `https://example.com/verify?token=${token}`,
+        code: otp,
       }),
     });
 
-    console.log(emailSend);
-
     const jwt = signJWT({ sub: userId, verified: false });
 
-    return successRes(
-      { token: jwt, user: result.data },
-      "Register successfully"
-    );
+    return successRes({ token: jwt, user: user[0] }, "Register successfully");
   } catch (error) {
     console.log("ERROR_REGISTER", error);
     return errorRes("Internal Error", 500);

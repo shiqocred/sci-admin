@@ -17,8 +17,9 @@ import {
   suppliers,
   testimonies,
   users,
+  verificationOtp,
   verificationTokens,
-} from './';
+} from "./";
 
 export const schema = {
   accounts,
@@ -39,24 +40,26 @@ export const schema = {
   suppliers,
   testimonies,
   users,
+  verificationOtp,
   verificationTokens,
 };
 
-export * from './accounts';
-export * from './authenticators';
-export * from './categories';
-export * from './discount-products';
-export * from './discount-roles';
-export * from './discounts';
-export * from './enums';
-export * from './order-items';
-export * from './orders';
-export * from './product-batches';
-export * from './products';
-export * from './sessions';
-export * from './shipping-histories';
-export * from './shippings';
-export * from './suppliers';
-export * from './testimonies';
-export * from './users';
-export * from './verification-tokens';
+export * from "./accounts";
+export * from "./authenticators";
+export * from "./categories";
+export * from "./discount-products";
+export * from "./discount-roles";
+export * from "./discounts";
+export * from "./enums";
+export * from "./order-items";
+export * from "./orders";
+export * from "./product-batches";
+export * from "./products";
+export * from "./sessions";
+export * from "./shipping-histories";
+export * from "./shippings";
+export * from "./suppliers";
+export * from "./testimonies";
+export * from "./users";
+export * from "./verification-otp";
+export * from "./verification-tokens";

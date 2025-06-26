@@ -1,8 +1,9 @@
+import { baseUrl } from "@/config";
 import {
   Body,
-  Button,
   Container,
   Head,
+  Hr,
   Html,
   Img,
   Preview,
@@ -13,49 +14,56 @@ import {
 
 interface VerifyEmailProps {
   name: string;
-  linkVerify: string;
+  code: string;
 }
 
-const baseUrl = process.env.BASE_URL ? `${process.env.BASE_URL}` : "";
-
-export const VerifyEmail = ({ name, linkVerify }: VerifyEmailProps) => (
+export const VerifyEmail = ({ name, code }: VerifyEmailProps) => (
   <Html>
     <Head />
     <Tailwind>
-      <Body className="mx-auto my-auto bg-gray-200 font-sans max-w-full">
+      <Body className="mx-auto my-auto font-sans bg-gray-200">
         <Preview>
           Please validate your email address by clicking the button below. Once
           verified, you will be able to log in successfully.
         </Preview>
-        <Container className="max-w-3xl w-full h-10" />
-        <Container className="bg-white p-10 max-w-3xl w-full mx-auto rounded-md">
-          <Img
-            src={`${baseUrl}/images/logo-sci.png`}
-            width="79"
-            height="30"
-            alt="SCI"
-          />
-          <Text className="text-3xl font-bold">Complete your account</Text>
-          <Text className="text-sm">
-            Hi {name}! Thank you for creating a SCI account. Please validate
-            your email address by clicking the button below. Once verified, you
-            will be able to log in successfully.
-          </Text>
-          <Section className="text-center">
-            <Button
-              className="bg-green-500 text-white rounded-sm text-sm text-center block py-2 px-5 max-w-fit"
-              style={{ textDecoration: "none" }}
-              href={linkVerify}
-            >
-              Verify Email
-            </Button>
+        <Container className="max-w-xl mx-auto">
+          <Section className="max-w-xl w-full h-10" />
+          <Section className="bg-white px-10 py-7 max-w-xl w-full mx-auto rounded-md">
+            <Img
+              src={`${baseUrl}/images/logo-sci.png`}
+              width="132"
+              height="50"
+              alt="SCI"
+              className="mx-auto mb-8"
+            />
+            <Section>
+              <Text className="text-sm text-center mb-1 mt-0">
+                Hi {name}! Thaks for signing up!
+              </Text>
+              <Text className="text-sm leading-relaxed text-center my-0">
+                Here&apos;s your one-time password (OTP) to verify your account:
+              </Text>
+              <Text className="text-green-600 text-center text-4xl font-semibold tracking-wide my-4">
+                {code}
+              </Text>
+              <Text className="text-center my-0">
+                This code will expire in 15 minutes
+              </Text>
+              <Text className="text-center my-0">
+                Keep it to yourself, don&apos;t share it with anyone
+              </Text>
+            </Section>
+            <Hr className="my-3" />
+            <Section>
+              <Text className="text-sm mt-0 mb-1 text-center">
+                This email was sent by SCI.
+              </Text>
+              <Text className="text-gray-500 text-xs my-0 text-center">
+                470 Noor Ave STE B #1148, South San Francisco, CA 94080
+              </Text>
+            </Section>
           </Section>
-        </Container>
-        <Container className="max-w-3xl w-full px-10 py-8">
-          <Text className="text-sm my-1">This email was sent by SCI.</Text>
-          <Text className="text-gray-500 text-xs my-1">
-            470 Noor Ave STE B #1148, South San Francisco, CA 94080
-          </Text>
+          <Section className="max-w-xl w-full h-10" />
         </Container>
       </Body>
     </Tailwind>
@@ -64,7 +72,7 @@ export const VerifyEmail = ({ name, linkVerify }: VerifyEmailProps) => (
 
 VerifyEmail.PreviewProps = {
   name: "Alan",
-  linkVerify: "https://sci-toko.sro.my.id/verify",
+  code: "877777",
 } as VerifyEmailProps;
 
 export default VerifyEmail;
