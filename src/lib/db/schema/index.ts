@@ -1,6 +1,8 @@
 import {
   accounts,
   authenticators,
+  cartItems,
+  carts,
   categories,
   discountProducts,
   discountRoles,
@@ -8,7 +10,11 @@ import {
   orderItems,
   orders,
   orderStatusEnum,
-  productBatches,
+  productImages,
+  productVariantCombinationItems,
+  productVariantCombinations,
+  productVariantItems,
+  productVariants,
   products,
   roleUserEnum,
   sessions,
@@ -24,6 +30,8 @@ import {
 export const schema = {
   accounts,
   authenticators,
+  cartItems,
+  carts,
   categories,
   discountProducts,
   discountRoles,
@@ -31,7 +39,11 @@ export const schema = {
   orderItems,
   orders,
   orderStatusEnum,
-  productBatches,
+  productImages,
+  productVariantCombinationItems,
+  productVariantCombinations,
+  productVariantItems,
+  productVariants,
   products,
   roleUserEnum,
   sessions,
@@ -46,6 +58,8 @@ export const schema = {
 
 export * from "./accounts";
 export * from "./authenticators";
+export * from "./cart-items";
+export * from "./carts";
 export * from "./categories";
 export * from "./discount-products";
 export * from "./discount-roles";
@@ -53,7 +67,11 @@ export * from "./discounts";
 export * from "./enums";
 export * from "./order-items";
 export * from "./orders";
-export * from "./product-batches";
+export * from "./product-images";
+export * from "./product-variant-combination-items";
+export * from "./product-variant-combinations";
+export * from "./product-variant-items";
+export * from "./product-variants";
 export * from "./products";
 export * from "./sessions";
 export * from "./shipping-histories";

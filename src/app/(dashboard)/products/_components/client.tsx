@@ -34,22 +34,49 @@ import { DataTable } from "@/components/data-table";
 export const Client = () => {
   return (
     <div className="w-full flex flex-col gap-6">
-      <div className="w-full flex items-center gap-4">
+      <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Products</h1>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-md overflow-hidden border">
+            <Button
+              className="size-8 flex-none rounded-none"
+              variant={"ghost"}
+              size={"icon"}
+            >
+              <Share className="size-3.5" />
+            </Button>
+            <Separator
+              orientation="vertical"
+              className="data-[orientation=vertical]:h-8"
+            />
+            <Button
+              className="size-8 flex-none rounded-none"
+              variant={"ghost"}
+              size={"icon"}
+            >
+              <Download className="size-3.5" />
+            </Button>
+          </div>
+          <Button
+            className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
+            asChild
+          >
+            <Link href={"/products/new"}>
+              <Plus className="size-3" />
+              Add Product
+            </Link>
+          </Button>
+        </div>
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Input
-              className="h-8 focus-visible:ring-0 shadow-none w-52"
-              placeholder="Search product..."
-            />
             <Popover>
               <div className="flex items-center border border-dashed rounded-md h-8">
                 <PopoverTrigger asChild>
                   <Button
                     variant={"ghost"}
-                    className="tex-xs font-medium h-full py-0 px-3"
+                    className="text-xs font-normal h-full py-0 px-3"
                   >
                     <PlusCircle className="size-3" />
                     Status
@@ -83,7 +110,7 @@ export const Client = () => {
                 <PopoverTrigger asChild>
                   <Button
                     variant={"ghost"}
-                    className="tex-xs font-medium h-full py-0 px-3"
+                    className="text-xs font-medium h-full py-0 px-3"
                   >
                     <PlusCircle className="size-3" />
                     Category
@@ -117,7 +144,7 @@ export const Client = () => {
                 <div className="flex items-center border border-dashed rounded-md h-8 hover:bg-gray-100 transition">
                   <Button
                     variant={"ghost"}
-                    className="tex-xs font-medium h-full py-0 px-3 hover:bg-transparent"
+                    className="text-xs font-medium h-full py-0 px-3 hover:bg-transparent"
                   >
                     <PlusCircle className="size-3" />
                     Supplier
@@ -160,7 +187,7 @@ export const Client = () => {
               </PopoverContent>
             </Popover>
             <Button
-              className="tex-xs font-normal h-8 py-0 px-3"
+              className="text-xs font-normal h-8 py-0 px-3"
               variant={"ghost"}
             >
               Reset
@@ -168,41 +195,16 @@ export const Client = () => {
             </Button>
           </div>
           <div className="flex items-center gap-2">
+            <Input
+              className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
+              placeholder="Search product..."
+            />
             <Button
               className="size-8 flex-none"
               variant={"outline"}
               size={"icon"}
             >
               <ArrowDownUp className="size-3.5" />
-            </Button>
-            <div className="flex rounded-md overflow-hidden border">
-              <Button
-                className="size-8 flex-none rounded-none"
-                variant={"ghost"}
-                size={"icon"}
-              >
-                <Share className="size-3.5" />
-              </Button>
-              <Separator
-                orientation="vertical"
-                className="data-[orientation=vertical]:h-8"
-              />
-              <Button
-                className="size-8 flex-none rounded-none"
-                variant={"ghost"}
-                size={"icon"}
-              >
-                <Download className="size-3.5" />
-              </Button>
-            </div>
-            <Button
-              className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
-              asChild
-            >
-              <Link href={"/products/new"}>
-                <Plus className="size-3" />
-                Add Product
-              </Link>
             </Button>
           </div>
         </div>

@@ -17,6 +17,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown } from "lucide-react";
@@ -79,66 +87,117 @@ export const Client = () => {
           </div>
         </div>
         <div className="col-span-1 w-full relative">
-          <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3 sticky top-3">
-            <div className="flex flex-col gap-1.5 w-full">
-              <Label>Category</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
-                    variant={"outline"}
+          <div className="flex flex-col gap-3 sticky top-3">
+            <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5 w-full">
+                <Label>Status</Label>
+                <Select defaultValue="active">
+                  <SelectTrigger className="bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 w-full">
+                    <SelectValue placeholder="Select status..." />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
+                    align="end"
                   >
-                    <span className="font-normal text-gray-500">
-                      Choose a category
-                    </span>
-                    <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                  align="end"
-                >
-                  <Command>
-                    <CommandInput />
-                    <CommandList>
-                      <CommandEmpty />
-                      <CommandGroup>
-                        <CommandItem>Categori 1</CommandItem>
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    <SelectGroup>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5 w-full">
-              <Label>Supplier</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
-                    variant={"outline"}
+            <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5 w-full">
+                <Label>Category</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
+                      variant={"outline"}
+                    >
+                      <span className="font-normal text-gray-500">
+                        Choose a category
+                      </span>
+                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
+                    align="end"
                   >
-                    <span className="font-normal text-gray-500">
-                      Choose a supplier
-                    </span>
-                    <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                  align="end"
-                >
-                  <Command>
-                    <CommandInput />
-                    <CommandList>
-                      <CommandEmpty />
-                      <CommandGroup>
-                        <CommandItem>Categori 1</CommandItem>
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    <Command>
+                      <CommandInput />
+                      <CommandList>
+                        <CommandEmpty />
+                        <CommandGroup>
+                          <CommandItem>Categori 1</CommandItem>
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex flex-col gap-1.5 w-full">
+                <Label>Supplier</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
+                      variant={"outline"}
+                    >
+                      <span className="font-normal text-gray-500">
+                        Choose a supplier
+                      </span>
+                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
+                    align="end"
+                  >
+                    <Command>
+                      <CommandInput />
+                      <CommandList>
+                        <CommandEmpty />
+                        <CommandGroup>
+                          <CommandItem>Categori 1</CommandItem>
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex flex-col gap-1.5 w-full">
+                <Label>Pets</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
+                      variant={"outline"}
+                    >
+                      <span className="font-normal text-gray-500">
+                        Choose a Pets
+                      </span>
+                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
+                    align="end"
+                  >
+                    <Command>
+                      <CommandInput />
+                      <CommandList>
+                        <CommandEmpty />
+                        <CommandGroup>
+                          <CommandItem>Categori 1</CommandItem>
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
         </div>

@@ -6,4 +6,5 @@ export const iosClientId = process.env.IOS_GOOGLE_CLIENT_ID!;
 
 export const resendSecret = process.env.RESEND_API_KEY!;
 
-export const baseUrl = process.env.BASE_URL!;
+export const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+export const apiUrl = `${baseUrl}/api`;

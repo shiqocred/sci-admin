@@ -40,6 +40,7 @@ export function Client() {
     } catch (err) {
       setStatus("error");
       setMessage("Something went wrong.");
+      console.log(err);
     }
   };
 
@@ -68,6 +69,7 @@ export function Client() {
     } catch (err) {
       setStatus("error");
       setMessage("Something went wrong.");
+      console.log(err);
     }
   };
 

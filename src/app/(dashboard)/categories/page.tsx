@@ -1,8 +1,11 @@
-import { Metadata } from "next";
-import { ContainerPage } from "@/components/container-page";
 import React from "react";
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
+
 import { auth } from "@/lib/auth";
+
+import { Client } from "./_components/client";
+import { ContainerPage } from "@/components/container-page";
 
 export const metadata: Metadata = { title: "Categories" };
 
@@ -16,7 +19,7 @@ const CategoriesPage = async () => {
     <ContainerPage
       breadcrumbs={[{ label: "Home", url: "/" }, { label: "Categories" }]}
     >
-      Categories Page
+      <Client />
     </ContainerPage>
   );
 };

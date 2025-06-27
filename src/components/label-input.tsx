@@ -16,19 +16,23 @@ import {
 } from "./ui/command";
 import { cn } from "@/lib/utils";
 import { phoneNumberCode } from "@/lib/dial-phone";
+import { Skeleton } from "./ui/skeleton";
 
 export const LabelInput = ({
   classContainer,
   label,
   isPassword = false,
   isPhone = false,
+  isLoading = false,
   className,
+  disabled,
   id,
   ...props
 }: ComponentProps<"input"> & {
   label: string;
   isPassword?: boolean;
   isPhone?: boolean;
+  isLoading?: boolean;
   classContainer?: string;
 }) => {
   return (
@@ -38,7 +42,9 @@ export const LabelInput = ({
         isPassword={isPassword}
         id={id}
         isPhone={isPhone}
+        isLoading={isLoading}
         className={className}
+        disabled={disabled}
         {...props}
       />
     </div>
@@ -49,8 +55,14 @@ const CustomInput = ({
   isPassword,
   isPhone,
   className,
+  disabled,
+  isLoading,
   ...props
-}: ComponentProps<"input"> & { isPassword?: boolean; isPhone?: boolean }) => {
+}: ComponentProps<"input"> & {
+  isPassword?: boolean;
+  isPhone?: boolean;
+  isLoading?: boolean;
+}) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [dialCode, setDialCode] = useState("+62");
   const [isPhoneOpen, setIsPhoneOpen] = useState(false);
@@ -71,13 +83,18 @@ const CustomInput = ({
     return undefined;
   }, [isPhoneOpen]);
 
+  if (isLoading) {
+    return <Skeleton className={cn("h-9 w-full min-w-0", className)} />;
+  }
+
   if (isPassword) {
     return (
       <div className="relative w-full flex items-center">
         <Input
-          className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none"
+          className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
           type={isVisible ? "text" : "password"}
           {...props}
+          disabled={disabled}
         />
 
         <Button
@@ -96,8 +113,9 @@ const CustomInput = ({
     return (
       <div className="w-full relative flex items-center rounded-md overflow-hidden">
         <Input
-          className="focus-visible:ring-0 pl-20 border-gray-300 focus-visible:border-gray-500 shadow-none"
+          className="focus-visible:ring-0 pl-20 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
           {...props}
+          disabled={disabled}
         />
 
         <div className="absolute left-2 flex items-center justify-center w-16">
@@ -152,10 +170,11 @@ const CustomInput = ({
   return (
     <Input
       className={cn(
-        "focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none",
+        "focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs",
         className
       )}
       {...props}
+      disabled={disabled}
     />
   );
 };
