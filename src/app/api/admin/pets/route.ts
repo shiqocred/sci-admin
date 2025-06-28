@@ -5,7 +5,7 @@ import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
 
-export const petSchema = z.object({
+const petSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
   slug: z.string(),
 });

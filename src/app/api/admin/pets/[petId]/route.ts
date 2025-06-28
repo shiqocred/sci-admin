@@ -2,7 +2,11 @@ import { auth, errorRes, successRes } from "@/lib/auth";
 import { pets, db, products } from "@/lib/db";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
-import { petSchema } from "../route";
+import { z } from "zod/v4";
+const petSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 character" }),
+  slug: z.string(),
+});
 
 export async function GET(
   req: NextRequest,

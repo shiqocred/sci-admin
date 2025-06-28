@@ -11,7 +11,7 @@ import { z } from "zod/v4";
 import sharp from "sharp";
 import { r2bucket, r2Public } from "@/config";
 
-export const supplierSchema = z.object({
+const supplierSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
   slug: z.string(),
 });

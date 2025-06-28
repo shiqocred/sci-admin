@@ -5,10 +5,15 @@ import { r2 } from "@/lib/providers";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
-import { supplierSchema } from "../route";
 import { createId } from "@paralleldrive/cuid2";
 import slugify from "slugify";
 import sharp from "sharp";
+import { z } from "zod/v4";
+
+const supplierSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 character" }),
+  slug: z.string(),
+});
 
 export async function GET(
   req: NextRequest,
