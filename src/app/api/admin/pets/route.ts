@@ -1,20 +1,20 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { categories, db, products } from "@/lib/db";
+import { pets, db, products } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
 
-export const categorySchema = z.object({
+export const petSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
   slug: z.string(),
 });
 
 const sortField = (s: string) => {
-  if (s === "name") return categories.name;
-  if (s === "slug") return categories.slug;
+  if (s === "name") return pets.name;
+  if (s === "slug") return pets.slug;
   if (s === "products") return count(products.id);
-  return categories.createdAt;
+  return pets.createdAt;
 };
 
 export async function GET(req: NextRequest) {
@@ -27,30 +27,30 @@ export async function GET(req: NextRequest) {
     const order = req.nextUrl.searchParams.get("order") ?? "desc";
 
     const { where, offset, limit, pagination } = await getTotalAndPagination(
-      categories,
+      pets,
       q,
-      [categories.name, categories.slug],
+      [pets.name, pets.slug],
       req
     );
 
-    const categoriesRes = await db
+    const petsRes = await db
       .select({
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
+        id: pets.id,
+        name: pets.name,
+        slug: pets.slug,
         totalProducts: count(products.id).as("totalProducts"),
       })
-      .from(categories)
-      .leftJoin(products, eq(products.categoryId, categories.id))
+      .from(pets)
+      .leftJoin(products, eq(products.petId, pets.id))
       .where(where)
-      .groupBy(categories.id)
+      .groupBy(pets.id)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)
       .offset(offset);
 
-    return successRes({ data: categoriesRes, pagination }, "Category list");
+    return successRes({ data: petsRes, pagination }, "Pet list");
   } catch (error) {
-    console.log("ERROR_GET_CATEGORIES", error);
+    console.log("ERROR_GET_PETS", error);
     return errorRes("Internal Error", 500);
   }
 }
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     if (!isAuth) return errorRes("Unauthorized", 401);
 
     const body = await req.json();
-    const result = categorySchema.safeParse(body);
+    const result = petSchema.safeParse(body);
     if (!result.success) {
       const errors: Record<string, string> = {};
 
@@ -75,17 +75,17 @@ export async function POST(req: Request) {
 
     const { name, slug } = result.data;
 
-    const [category] = await db
-      .insert(categories)
+    const [pet] = await db
+      .insert(pets)
       .values({
         name,
         slug,
       })
-      .returning({ name: categories.name, slug: categories.slug });
+      .returning({ name: pets.name, slug: pets.slug });
 
-    return successRes(category, "Category successfully created");
+    return successRes(pet, "Pet successfully created");
   } catch (error) {
-    console.log("ERROR_CREATE_CATEGORY:", error);
+    console.log("ERROR_CREATE_PET:", error);
     return errorRes("Internal Error", 500);
   }
 }

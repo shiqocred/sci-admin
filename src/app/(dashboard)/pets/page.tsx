@@ -5,22 +5,22 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
 
-export const metadata: Metadata = { title: "Suppliers" };
+export const metadata: Metadata = { title: "Pets" };
 
-const SuppliersPage = async () => {
+const PetsPage = async () => {
   const session = await auth();
   if (!session) {
-    const path = "/suppliers";
+    const path = "/pets";
     redirect(`/login?redirect=${encodeURIComponent(path)}`);
   }
 
   return (
     <ContainerPage
-      breadcrumbs={[{ label: "Home", url: "/" }, { label: "Suppliers" }]}
+      breadcrumbs={[{ label: "Home", url: "/" }, { label: "Pets" }]}
     >
       <Client />
     </ContainerPage>
   );
 };
 
-export default SuppliersPage;
+export default PetsPage;

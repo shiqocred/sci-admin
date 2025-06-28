@@ -1,7 +1,8 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { categories, db, products } from "@/lib/db";
-import { count, eq } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import { categorySchema } from "../route";
 
 export async function GET(
   req: NextRequest,
@@ -24,11 +25,57 @@ export async function GET(
       where: (c, { eq }) => eq(c.id, categoryId),
     });
 
-    if (!categoryRes) return errorRes("Category not found", 404);
-
     return successRes(categoryRes, "Category detail");
   } catch (error) {
     console.log("ERROR_SHOW_CATEGORY:", error);
+    return errorRes("Internal Error", 500);
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ categoryId: string }> }
+) {
+  try {
+    const isAuth = await auth();
+    if (!isAuth) return errorRes("Unauthorized", 401);
+
+    const { categoryId } = await params;
+
+    if (!categoryId) return errorRes("Category id is required", 400);
+
+    const body = await req.json();
+    const result = categorySchema.safeParse(body);
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+
+      result.error.issues.forEach((err) => {
+        const path = err.path.join(".");
+        errors[path] = err.message;
+      });
+
+      return errorRes("Validation failed", 400, errors);
+    }
+
+    const { name, slug } = result.data;
+
+    const [category] = await db
+      .update(categories)
+      .set({
+        name,
+        slug,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(categories.id, categoryId))
+      .returning({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+      });
+
+    return successRes(category, "Category successfully updated");
+  } catch (error) {
+    console.log("ERROR_UPDATE_CATEGORY:", error);
     return errorRes("Internal Error", 500);
   }
 }

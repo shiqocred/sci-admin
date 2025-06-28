@@ -11,11 +11,7 @@ import {
 import { generateRandomNumber } from "@/lib/utils";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import slugify from "slugify";
-import {
-  useCreateCategory,
-  useGetShowCategory,
-  useUpdateCategory,
-} from "../../_api";
+import { useCreatePet, useGetShowPet, useUpdatePet } from "../../_api";
 
 const initialValue = {
   name: "",
@@ -25,25 +21,24 @@ const initialValue = {
 export const CreateEditDialog = ({
   open,
   onOpenChange,
-  categoryId,
+  petId,
 }: {
   open: boolean;
   onOpenChange: () => void;
-  categoryId: string;
+  petId: string;
 }) => {
   const [input, setInput] = useState(initialValue);
   const [randomCode, setRandomCode] = useState(generateRandomNumber());
   const [isGenerating, setIsGenerating] = useState(false); // trigger dari luar
 
-  const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-  const { mutate: updateeCategory, isPending: isUpdateing } =
-    useUpdateCategory();
-  const { data, isPending, isSuccess } = useGetShowCategory({
-    categoryId,
+  const { mutate: createPet, isPending: isCreating } = useCreatePet();
+  const { mutate: updatePet, isPending: isupdating } = useUpdatePet();
+  const { data, isPending, isSuccess } = useGetShowPet({
+    petId,
     open,
   });
 
-  const loading = isCreating || isUpdateing || (isPending && !!categoryId);
+  const loading = isCreating || isupdating || (isPending && !!petId);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.target;
@@ -52,9 +47,9 @@ export const CreateEditDialog = ({
 
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
-    if (categoryId) {
-      return updateeCategory(
-        { body: input, params: { id: categoryId } },
+    if (petId) {
+      return updatePet(
+        { body: input, params: { id: petId } },
         {
           onSuccess: () => {
             setIsGenerating(true);
@@ -63,7 +58,7 @@ export const CreateEditDialog = ({
         }
       );
     }
-    return createCategory(
+    return createPet(
       { body: input },
       {
         onSuccess: () => {
@@ -83,13 +78,13 @@ export const CreateEditDialog = ({
 
   useEffect(() => {
     if (data && isSuccess) {
-      const category = data.data;
+      const pet = data.data;
       setInput({
-        name: category.name,
-        slug: category.slug,
+        name: pet.name,
+        slug: pet.slug,
       });
       // get unique code in last slug
-      const getUnique = category.slug.match(/-(\d+)$/);
+      const getUnique = pet.slug.match(/-(\d+)$/);
       const unique = getUnique ? getUnique[1] : "";
       setRandomCode(unique);
     }
@@ -114,11 +109,11 @@ export const CreateEditDialog = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{categoryId ? "Edit" : "Create"} Category</DialogTitle>
+          <DialogTitle>{petId ? "Edit" : "Create"} Pet</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         <form onSubmit={handleCreate} className="gap-6 flex flex-col">
-          {categoryId && isPending ? (
+          {petId && isPending ? (
             <div className="flex flex-col gap-3">
               <LabelInput label="Name" isLoading />
               <LabelInput label="Slug" isLoading />
@@ -152,7 +147,7 @@ export const CreateEditDialog = ({
               Cancel
             </Button>
             <Button disabled={loading} type="submit">
-              {categoryId ? "Update" : "Create"}
+              {petId ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </form>

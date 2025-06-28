@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { categories } from "./categories";
 import { suppliers } from "./suppliers";
+import { pets } from "./pets";
 
 export const products = pgTable(
   "products",
@@ -24,6 +25,7 @@ export const products = pgTable(
     packaging: text("packaging"),
     registrationNumber: text("registration_number"),
     status: boolean("status").default(false),
+    petId: text("pet_id").references(() => pets.id),
     categoryId: text("category_id").references(() => categories.id),
     supplierId: text("supplier_id").references(() => suppliers.id, {
       onDelete: "set null",

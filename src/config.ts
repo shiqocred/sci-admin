@@ -8,3 +8,10 @@ export const resendSecret = process.env.RESEND_API_KEY!;
 
 export const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 export const apiUrl = `${baseUrl}/api`;
+
+// config env r2
+export const r2Public = process.env.CLOUDFLARE_PUBLIC_DOMAIN!;
+export const r2AccountId = process.env.CLOUDFLARE_ACCOUNT_ID!;
+export const r2AccessId = process.env.CLOUDFLARE_ACCESS_KEY_ID!;
+export const r2AccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY!;
+export const r2bucket = process.env.CLOUDFLARE_BUCKET_NAME!;

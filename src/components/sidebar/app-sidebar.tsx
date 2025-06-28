@@ -5,6 +5,7 @@ import {
   BadgePercent,
   ChartNoAxesGantt,
   Gauge,
+  PawPrint,
   RocketIcon,
   Settings2,
   ShoppingBag,
@@ -58,6 +59,11 @@ const data = {
       title: "Categories",
       url: "/categories",
       icon: Tags,
+    },
+    {
+      title: "Pets",
+      url: "/pets",
+      icon: PawPrint,
     },
     {
       title: "Suppliers",

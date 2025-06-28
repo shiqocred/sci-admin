@@ -48,7 +48,7 @@ const Pagination = ({
         <p>entries</p>
       </div>
       <div className="flex items-center gap-3"></div>
-      <div className="flex gap-5 items-center text-sm">
+      <div className="flex gap-5 items-center text-xs">
         <div className="flex items-center gap-1">
           <span>Page {pagination.current.toLocaleString()}</span>
           <span>of {pagination.last.toLocaleString()}</span>

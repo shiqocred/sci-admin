@@ -12,38 +12,40 @@ import { generateRandomNumber } from "@/lib/utils";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import slugify from "slugify";
 import {
-  useCreateCategory,
-  useGetShowCategory,
-  useUpdateCategory,
+  useCreateSupplier,
+  useGetShowSupplier,
+  useUpdateSupplier,
 } from "../../_api";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const initialValue = {
   name: "",
   slug: "",
+  image: null as File | null,
+  imageOld: "" as string | null,
 };
 
 export const CreateEditDialog = ({
   open,
   onOpenChange,
-  categoryId,
+  supplierId,
 }: {
   open: boolean;
   onOpenChange: () => void;
-  categoryId: string;
+  supplierId: string;
 }) => {
   const [input, setInput] = useState(initialValue);
   const [randomCode, setRandomCode] = useState(generateRandomNumber());
   const [isGenerating, setIsGenerating] = useState(false); // trigger dari luar
 
-  const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-  const { mutate: updateeCategory, isPending: isUpdateing } =
-    useUpdateCategory();
-  const { data, isPending, isSuccess } = useGetShowCategory({
-    categoryId,
+  const { mutate: createSupplier, isPending: isCreating } = useCreateSupplier();
+  const { mutate: UpdateSupplier, isPending: isupdating } = useUpdateSupplier();
+  const { data, isPending, isSuccess } = useGetShowSupplier({
+    supplierId,
     open,
   });
 
-  const loading = isCreating || isUpdateing || (isPending && !!categoryId);
+  const loading = isCreating || isupdating || (isPending && !!supplierId);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.target;
@@ -52,9 +54,16 @@ export const CreateEditDialog = ({
 
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
-    if (categoryId) {
-      return updateeCategory(
-        { body: input, params: { id: categoryId } },
+    const body = new FormData();
+    body.append("name", input.name);
+    body.append("slug", input.slug);
+    if (input.image) {
+      body.append("image", input.image);
+    }
+
+    if (supplierId) {
+      return UpdateSupplier(
+        { body, params: { id: supplierId } },
         {
           onSuccess: () => {
             setIsGenerating(true);
@@ -63,8 +72,9 @@ export const CreateEditDialog = ({
         }
       );
     }
-    return createCategory(
-      { body: input },
+
+    return createSupplier(
+      { body },
       {
         onSuccess: () => {
           setIsGenerating(true);
@@ -83,13 +93,15 @@ export const CreateEditDialog = ({
 
   useEffect(() => {
     if (data && isSuccess) {
-      const category = data.data;
+      const supplier = data.data;
       setInput({
-        name: category.name,
-        slug: category.slug,
+        name: supplier.name,
+        slug: supplier.slug,
+        image: null,
+        imageOld: supplier.image,
       });
       // get unique code in last slug
-      const getUnique = category.slug.match(/-(\d+)$/);
+      const getUnique = supplier.slug.match(/-(\d+)$/);
       const unique = getUnique ? getUnique[1] : "";
       setRandomCode(unique);
     }
@@ -114,17 +126,24 @@ export const CreateEditDialog = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{categoryId ? "Edit" : "Create"} Category</DialogTitle>
+          <DialogTitle>{supplierId ? "Edit" : "Create"} Supplier</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         <form onSubmit={handleCreate} className="gap-6 flex flex-col">
-          {categoryId && isPending ? (
+          {supplierId && isPending ? (
             <div className="flex flex-col gap-3">
               <LabelInput label="Name" isLoading />
               <LabelInput label="Slug" isLoading />
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              <FileUpload
+                onChange={(e) => setInput((prev) => ({ ...prev, image: e }))}
+                imageOld={input.imageOld}
+                setImageOld={(e: any) =>
+                  setInput((prev) => ({ ...prev, imageOld: e }))
+                }
+              />
               <LabelInput
                 label="Name"
                 id="name"
@@ -152,7 +171,7 @@ export const CreateEditDialog = ({
               Cancel
             </Button>
             <Button disabled={loading} type="submit">
-              {categoryId ? "Update" : "Create"}
+              {supplierId ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </form>

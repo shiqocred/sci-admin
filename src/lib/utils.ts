@@ -13,3 +13,6 @@ export function generateRandomNumber(length = 5): string {
   }
   return result;
 }
+
+export const sizesImage =
+  "(max-width: 768px) 33vw, (max-width: 1200px) 50vw, 100vw";
