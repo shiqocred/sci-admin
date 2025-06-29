@@ -32,13 +32,13 @@ export const CreateEditDialog = ({
   const [isGenerating, setIsGenerating] = useState(false); // trigger dari luar
 
   const { mutate: createPet, isPending: isCreating } = useCreatePet();
-  const { mutate: updatePet, isPending: isupdating } = useUpdatePet();
+  const { mutate: updateePet, isPending: isUpdateing } = useUpdatePet();
   const { data, isPending, isSuccess } = useGetShowPet({
     petId,
     open,
   });
 
-  const loading = isCreating || isupdating || (isPending && !!petId);
+  const loading = isCreating || isUpdateing || (isPending && !!petId);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.target;
@@ -48,7 +48,7 @@ export const CreateEditDialog = ({
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     if (petId) {
-      return updatePet(
+      return updateePet(
         { body: input, params: { id: petId } },
         {
           onSuccess: () => {
@@ -78,13 +78,13 @@ export const CreateEditDialog = ({
 
   useEffect(() => {
     if (data && isSuccess) {
-      const pet = data.data;
+      const Pet = data.data;
       setInput({
-        name: pet.name,
-        slug: pet.slug,
+        name: Pet.name,
+        slug: Pet.slug,
       });
       // get unique code in last slug
-      const getUnique = pet.slug.match(/-(\d+)$/);
+      const getUnique = Pet.slug.match(/-(\d+)$/);
       const unique = getUnique ? getUnique[1] : "";
       setRandomCode(unique);
     }

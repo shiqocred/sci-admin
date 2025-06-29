@@ -52,7 +52,7 @@ export const column = ({
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const supplier = row.original;
+      const pet = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -68,15 +68,13 @@ export const column = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-xs"
-              onSelect={() =>
-                setQuery({ dialog: "edit", supplierId: supplier.id })
-              }
+              onSelect={() => setQuery({ dialog: "edit", petId: pet.id })}
             >
               <Edit className="size-3.5" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => handleDelete(supplier.id)}
+              onSelect={() => handleDelete(pet.id)}
               className="text-xs text-red-400 focus:text-red-500 group"
             >
               <Trash2 className="size-3.5 text-red-400 group-focus:text-red-500" />
