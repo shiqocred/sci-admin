@@ -42,3 +42,5 @@ export const productVariants = pgTable(
     uniqueIndex("product_variant_barcode_idx").on(table.barcode),
   ]
 );
+
+export type InsertProductVariant = typeof productVariants.$inferInsert;
