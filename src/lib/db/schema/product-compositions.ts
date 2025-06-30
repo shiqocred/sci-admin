@@ -1,11 +1,20 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
+import { products } from "./products";
 
-export const carts = pgTable("carts", {
+export const productCompositions = pgTable("product_compositions", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  userId: text("user_id").notNull(), // unique cart per user
+
+  productId: text("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+
+  name: text("name").notNull(),
+
+  value: text("value").notNull(),
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

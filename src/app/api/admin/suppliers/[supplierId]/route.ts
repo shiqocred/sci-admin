@@ -1,8 +1,7 @@
-import { r2bucket, r2Public } from "@/config";
+import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { suppliers, db, products } from "@/lib/db";
-import { r2 } from "@/lib/providers";
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { createId } from "@paralleldrive/cuid2";
@@ -95,27 +94,13 @@ export async function PUT(
     if (!existSupplier) return errorRes("Supplier not found.", 404);
 
     if (image) {
-      if (existSupplier.image) {
-        await r2.send(
-          new DeleteObjectCommand({
-            Bucket: r2bucket,
-            Key: existSupplier.image,
-          })
-        );
-      }
+      if (existSupplier.image) await deleteR2(existSupplier.image);
 
       const buffer = Buffer.from(await image.arrayBuffer());
       const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
       const key = `images/${createId()}-${slugify(name, { lower: true })}.webp`;
 
-      const r2Up = await r2.send(
-        new PutObjectCommand({
-          Bucket: r2bucket,
-          Key: key,
-          Body: webpBuffer,
-          ContentType: "image/webp",
-        })
-      );
+      const r2Up = await uploadToR2({ buffer: webpBuffer, key });
 
       if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
 
@@ -196,14 +181,7 @@ export async function DELETE(
 
     await db.delete(suppliers).where(eq(suppliers.id, supplierId));
 
-    if (supplier.image) {
-      await r2.send(
-        new DeleteObjectCommand({
-          Bucket: r2bucket,
-          Key: supplier.image,
-        })
-      );
-    }
+    if (supplier.image) await deleteR2(supplier.image);
 
     return successRes(null, "Supplier successfully deleted");
   } catch (error) {

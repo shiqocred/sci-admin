@@ -1,15 +1,14 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { suppliers, db, products } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
-import { r2 } from "@/lib/providers";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { uploadToR2 } from "@/lib/providers";
 import { createId } from "@paralleldrive/cuid2";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import slugify from "slugify";
 import { z } from "zod/v4";
 import sharp from "sharp";
-import { r2bucket, r2Public } from "@/config";
+import { r2Public } from "@/config";
 
 const supplierSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
@@ -100,14 +99,7 @@ export async function POST(req: Request) {
       const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
       const key = `images/${createId()}-${slugify(name, { lower: true })}.webp`;
 
-      const r2Up = await r2.send(
-        new PutObjectCommand({
-          Bucket: r2bucket,
-          Key: key,
-          Body: webpBuffer,
-          ContentType: "image/webp",
-        })
-      );
+      const r2Up = await uploadToR2({ buffer: webpBuffer, key });
 
       if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
 

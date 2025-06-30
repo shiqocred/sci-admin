@@ -18,6 +18,7 @@ export const useUpdateSupplier = () => {
       toast.success("Supplier successfully updated");
       invalidateQuery(queryClient, [
         ["suppliers-list"],
+        ["suppliers-select"],
         ["supplier-show", { ...data.id }],
       ]);
       console.log(data.id);

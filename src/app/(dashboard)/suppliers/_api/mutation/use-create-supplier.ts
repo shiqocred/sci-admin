@@ -12,7 +12,7 @@ export const useCreateSupplier = () => {
     method: "post",
     onSuccess: () => {
       toast.success("Supplier successfully created");
-      invalidateQuery(queryClient, [["suppliers-list"]]);
+      invalidateQuery(queryClient, [["suppliers-list"], ["suppliers-select"]]);
     },
     onError: {
       message: "Supplier failed to create",

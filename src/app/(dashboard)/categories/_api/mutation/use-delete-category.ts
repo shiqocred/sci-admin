@@ -14,7 +14,10 @@ export const useDeleteCategory = () => {
     method: "delete",
     onSuccess: () => {
       toast.success("Category successfully deleted");
-      invalidateQuery(queryClient, [["categories-list"]]);
+      invalidateQuery(queryClient, [
+        ["categories-list"],
+        ["categories-select"],
+      ]);
     },
     onError: {
       message: "Category failed to delete",

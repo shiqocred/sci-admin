@@ -14,7 +14,7 @@ export const useDeleteSupplier = () => {
     method: "delete",
     onSuccess: () => {
       toast.success("Supplier successfully deleted");
-      invalidateQuery(queryClient, [["suppliers-list"]]);
+      invalidateQuery(queryClient, [["suppliers-list"], ["suppliers-select"]]);
     },
     onError: {
       message: "Supplier failed to delete",

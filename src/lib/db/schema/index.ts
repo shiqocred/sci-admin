@@ -11,10 +11,8 @@ import {
   orders,
   orderStatusEnum,
   pets,
+  productCompositions,
   productImages,
-  productVariantCombinationItems,
-  productVariantCombinations,
-  productVariantItems,
   productVariants,
   products,
   roleUserEnum,
@@ -41,10 +39,8 @@ export const schema = {
   orders,
   orderStatusEnum,
   pets,
+  productCompositions,
   productImages,
-  productVariantCombinationItems,
-  productVariantCombinations,
-  productVariantItems,
   productVariants,
   products,
   roleUserEnum,
@@ -70,10 +66,8 @@ export * from "./enums";
 export * from "./order-items";
 export * from "./orders";
 export * from "./pets";
+export * from "./product-compositions";
 export * from "./product-images";
-export * from "./product-variant-combination-items";
-export * from "./product-variant-combinations";
-export * from "./product-variant-items";
 export * from "./product-variants";
 export * from "./products";
 export * from "./sessions";

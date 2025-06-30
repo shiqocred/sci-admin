@@ -21,6 +21,7 @@ export const useUpdatePet = () => {
       toast.success("Pet successfully updated");
       invalidateQuery(queryClient, [
         ["pets-list"],
+        ["pets-select"],
         ["pet-show", { ...data.id }],
       ]);
       console.log(data.id);

@@ -15,7 +15,10 @@ export const useCreateCategory = () => {
     method: "post",
     onSuccess: () => {
       toast.success("Category successfully created");
-      invalidateQuery(queryClient, [["categories-list"]]);
+      invalidateQuery(queryClient, [
+        ["categories-list"],
+        ["categories-select"],
+      ]);
     },
     onError: {
       message: "Category failed to create",

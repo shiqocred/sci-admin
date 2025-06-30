@@ -21,6 +21,7 @@ export const useUpdateCategory = () => {
       toast.success("Category successfully updated");
       invalidateQuery(queryClient, [
         ["categories-list"],
+        ["categories-select"],
         ["category-show", { ...data.id }],
       ]);
       console.log(data.id);

@@ -15,7 +15,7 @@ export const useCreatePet = () => {
     method: "post",
     onSuccess: () => {
       toast.success("Pet successfully created");
-      invalidateQuery(queryClient, [["pets-list"]]);
+      invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
     },
     onError: {
       message: "Pet failed to create",

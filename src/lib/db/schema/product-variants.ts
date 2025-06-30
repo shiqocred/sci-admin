@@ -1,5 +1,13 @@
+import {
+  pgTable,
+  text,
+  numeric,
+  integer,
+  boolean,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
-import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { products } from "./products";
 
 export const productVariants = pgTable(
@@ -8,12 +16,29 @@ export const productVariants = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    productId: text("product_id").references(() => products.id, {
-      onDelete: "cascade",
-    }),
+
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+
     name: text("name").notNull(),
+
+    sku: text("sku").notNull(),
+    barcode: text("barcode"),
+
+    price: numeric("price", { precision: 10, scale: 0 }).notNull(),
+    compareAtPrice: numeric("compare_at_price", { precision: 10, scale: 0 }),
+
+    stock: integer("stock").notNull().default(0),
+    weight: numeric("weight", { precision: 8, scale: 0 }),
+
+    isDefault: boolean("is_default").default(false), // optional if you want to mark a default variant
+
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
-  (table) => [index("product_variants_product_idx").on(table.productId)]
+  (table) => [
+    uniqueIndex("product_variant_sku_idx").on(table.sku),
+    uniqueIndex("product_variant_barcode_idx").on(table.barcode),
+  ]
 );

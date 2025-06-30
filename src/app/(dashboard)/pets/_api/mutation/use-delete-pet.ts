@@ -14,7 +14,7 @@ export const useDeletePet = () => {
     method: "delete",
     onSuccess: () => {
       toast.success("Pet successfully deleted");
-      invalidateQuery(queryClient, [["pets-list"]]);
+      invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
     },
     onError: {
       message: "Pet failed to delete",

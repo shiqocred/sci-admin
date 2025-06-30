@@ -1,162 +1,82 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import {
-  db,
-  products,
-  productVariants,
-  productVariantItems,
-  productVariantCombinations,
-  productVariantCombinationItems,
-} from "@/lib/db";
+import { NextRequest } from "next/server";
+import { db } from "@/lib/db";
+import { products, productImages, productVariants } from "@/lib/db/schema";
 import { createId } from "@paralleldrive/cuid2";
+import { convertToWebP } from "@/lib/convert-image";
+import { uploadToR2 } from "@/lib/providers";
+import slugify from "slugify";
+import { errorRes, successRes } from "@/lib/auth";
 
-const VariantSchema = z.object({
-  name: z.string(),
-  items: z.array(z.string()),
-});
+export const dynamic = "force-dynamic";
 
-const CombinationSchema = z.object({
-  sku: z.string(),
-  quantity: z.number(),
-  salePrice: z.string(),
-  compareAtPrice: z.string().optional(),
-  weight: z.string(),
-  image: z.string().optional(),
-  items: z.record(z.string(), z.string()), // record<variantName, variantItemValue>
-});
-
-const CreateProductSchema = z.object({
-  name: z.string(),
-  slug: z.string(),
-  description: z.string().optional(),
-  categoryId: z.string(),
-  supplierId: z.string(),
-  petId: z.string(),
-  variants: z.array(VariantSchema).optional(),
-  combinations: z.array(CombinationSchema).optional(),
-  default: z
-    .object({
-      sku: z.string(),
-      quantity: z.number(),
-      salePrice: z.string(),
-      compareAtPrice: z.string().optional(),
-      weight: z.string(),
-      image: z.string().optional(),
-    })
-    .optional(),
-});
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsed = CreateProductSchema.parse(body);
+    const formData = await req.formData();
+
+    const name = formData.get("name") as string;
+    const slug = formData.get("slug") as string;
+    const description = formData.get("description") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const supplierId = formData.get("supplierId") as string;
+    const petId = formData.get("petId") as string;
+    const status = formData.get("status") === "true";
+
+    // Single variant (jika tanpa variasi)
+    const sku = formData.get("sku") as string;
+    const barcode = formData.get("barcode") as string;
+    const price = formData.get("price") as string;
+    const compareAtPrice = formData.get("compareAtPrice") as string;
+    const stock = Number(formData.get("stock"));
+    const weight = formData.get("weight") as string;
+
+    const images = formData.getAll("images") as File[];
 
     const productId = createId();
 
-    // 1️⃣ Insert products
+    // Insert produk
     await db.insert(products).values({
       id: productId,
-      name: parsed.name,
-      slug: parsed.slug,
-      status: false,
-      dosageUsage: "",
-      indication: "",
-      packaging: "",
-      registrationNumber: "",
-      petId: parsed.petId,
-      storageInstruction: "",
-      description: parsed.description,
-      categoryId: parsed.categoryId,
-      supplierId: parsed.supplierId,
+      name,
+      slug,
+      description,
+      categoryId,
+      supplierId,
+      petId,
+      status,
     });
 
-    // 2️⃣ Kalau tanpa varian, buat kombinasi default
-    if (!parsed.variants || parsed.variants.length === 0) {
-      if (!parsed.default)
-        throw new Error("Missing default data for non-variant product");
+    // Insert default variant
+    await db.insert(productVariants).values({
+      id: createId(),
+      productId,
+      name,
+      sku,
+      barcode,
+      price,
+      compareAtPrice,
+      stock,
+      weight,
+      isDefault: true,
+    });
 
-      await db.insert(productVariantCombinations).values({
+    // Upload & insert gambar
+    for (const file of images) {
+      const buffer = await convertToWebP(file);
+      const key = `images/${createId()}-${slugify(name, { lower: true })}.webp`;
+      const r2Up = await uploadToR2({ buffer, key });
+
+      if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
+
+      await db.insert(productImages).values({
         id: createId(),
         productId,
-        sku: parsed.default.sku,
-        quantity: parsed.default.quantity,
-        salePrice: parsed.default.salePrice,
-        compareAtPrice: parsed.default.compareAtPrice,
-        weight: parsed.default.weight,
-        image: parsed.default.image,
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Product created (no variants)",
+        url: key,
       });
     }
 
-    // 3️⃣ Insert productVariants dan productVariantItems
-    const variantIdMap = new Map<string, string>();
-    const itemIdMap = new Map<string, string>(); // key: variantName + itemValue
-
-    for (const variant of parsed.variants) {
-      const variantId = createId();
-      variantIdMap.set(variant.name, variantId);
-
-      await db.insert(productVariants).values({
-        id: variantId,
-        productId,
-        name: variant.name,
-      });
-
-      for (const item of variant.items) {
-        const itemId = createId();
-        itemIdMap.set(`${variant.name}:${item}`, itemId);
-
-        await db.insert(productVariantItems).values({
-          id: itemId,
-          productVariantId: variantId,
-          name: item,
-        });
-      }
-    }
-
-    // 4️⃣ Insert kombinasi akhir
-    for (const combo of parsed.combinations ?? []) {
-      const combinationId = createId();
-
-      await db.insert(productVariantCombinations).values({
-        id: combinationId,
-        productId,
-        sku: combo.sku,
-        quantity: combo.quantity,
-        salePrice: combo.salePrice,
-        compareAtPrice: combo.compareAtPrice,
-        weight: combo.weight,
-        image: combo.image,
-      });
-
-      // ⛓ Insert relasi kombinasi → variantItems
-      for (const [variantName, itemValue] of Object.entries(combo.items)) {
-        const variantItemId = itemIdMap.get(`${variantName}:${itemValue}`);
-        if (!variantItemId) {
-          throw new Error(`Invalid variantItem: ${variantName} / ${itemValue}`);
-        }
-
-        await db.insert(productVariantCombinationItems).values({
-          id: createId(),
-          combinationId,
-          variantItemId,
-        });
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Product with variants created",
-    });
-  } catch (err: any) {
-    console.error("Product creation error:", err);
-    return NextResponse.json(
-      { error: err.message ?? "Invalid request" },
-      { status: 400 }
-    );
+    return successRes(null, "Product Successfully created");
+  } catch (error) {
+    console.log("ERROR_CREATE_PRODUCT:", error);
+    return errorRes("Internal Error", 500);
   }
 }
