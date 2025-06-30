@@ -26,6 +26,7 @@ export const LabelInput = ({
   isLoading = false,
   className,
   disabled,
+  classLabel,
   id,
   ...props
 }: ComponentProps<"input"> & {
@@ -34,10 +35,13 @@ export const LabelInput = ({
   isPhone?: boolean;
   isLoading?: boolean;
   classContainer?: string;
+  classLabel?: string;
 }) => {
   return (
     <div className={cn("flex flex-col w-full gap-1.5", classContainer)}>
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={classLabel}>
+        {label}
+      </Label>
       <CustomInput
         isPassword={isPassword}
         id={id}
