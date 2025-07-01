@@ -5,15 +5,20 @@ import {
   productImages,
   productVariants,
   productCompositions,
-  InsertProductVariant,
-  InsertProductComposition,
+  productToPets,
+  categories,
+  suppliers,
+  pets,
 } from "@/lib/db/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { convertToWebP } from "@/lib/convert-image";
 import { uploadToR2 } from "@/lib/providers";
 import slugify from "slugify";
-import { errorRes, successRes } from "@/lib/auth";
+import { auth, errorRes, successRes } from "@/lib/auth";
 import { z } from "zod";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { getTotalAndPagination } from "@/lib/db/pagination";
+import { r2Public } from "@/config";
 
 const productSchema = z.object({
   title: z.string().min(1),
@@ -26,7 +31,7 @@ const productSchema = z.object({
   isActive: z.coerce.boolean(),
   categoryId: z.string().optional(),
   supplierId: z.string().optional(),
-  petId: z.string().optional(),
+  petIds: z.array(z.string()).optional(),
   compositions: z
     .array(
       z.object({
@@ -43,8 +48,10 @@ const productSchema = z.object({
       sku: z.string(),
       barcode: z.string().optional(),
       quantity: z.string(),
-      salePrice: z.string(),
-      compareAtPrice: z.string().optional(),
+      normalPrice: z.string(),
+      basicPrice: z.string(),
+      petShopPrice: z.string(),
+      doctorPrice: z.string(),
       weight: z.string(),
     })
     .optional(),
@@ -56,8 +63,10 @@ const productSchema = z.object({
         sku: z.string(),
         barcode: z.string().optional(),
         quantity: z.string(),
-        salePrice: z.string(),
-        compareAtPrice: z.string().optional(),
+        normalPrice: z.string(),
+        basicPrice: z.string(),
+        petShopPrice: z.string(),
+        doctorPrice: z.string(),
         weight: z.string(),
         isOpen: z.boolean().optional(),
       })
@@ -65,11 +74,148 @@ const productSchema = z.object({
     .optional(),
 });
 
+const sortField = (s: string) => {
+  if (s === "name") return products.name;
+  if (s === "stock")
+    return sql`(
+      SELECT COALESCE(SUM(${productVariants.stock}), 0)
+      FROM ${productVariants}
+      WHERE ${productVariants.productId} = ${products.id}
+    )`;
+  if (s === "status") return products.status;
+  if (s === "categoryName") return categories.name;
+  if (s === "supplierName") return suppliers.name;
+  if (s === "petCount") return sql`COUNT(DISTINCT ${pets.id})`;
+  return products.createdAt; // default
+};
+
+export async function GET(req: NextRequest) {
+  try {
+    const isAuth = await auth();
+    if (!isAuth) return errorRes("Unauthorized", 401);
+
+    const q = req.nextUrl.searchParams.get("q") ?? "";
+    const sort = req.nextUrl.searchParams.get("sort") ?? "created";
+    const order = req.nextUrl.searchParams.get("order") ?? "desc";
+
+    const categoryIds = req.nextUrl.searchParams
+      .getAll("categoryId")
+      .filter(Boolean);
+    const supplierIds = req.nextUrl.searchParams
+      .getAll("supplierId")
+      .filter(Boolean);
+    const petIds = req.nextUrl.searchParams.getAll("petId").filter(Boolean);
+    const status = req.nextUrl.searchParams.get("status");
+
+    const filters = [];
+    if (categoryIds.length)
+      filters.push(inArray(products.categoryId, categoryIds));
+    if (supplierIds.length)
+      filters.push(inArray(products.supplierId, supplierIds));
+    if (status === "true") filters.push(eq(products.status, true));
+    else if (status === "false") filters.push(eq(products.status, false));
+
+    const baseWhere = filters.length ? and(...filters) : undefined;
+    const petFilter = petIds.length
+      ? inArray(productToPets.petId, petIds)
+      : undefined;
+
+    const finalWhere = petFilter
+      ? baseWhere
+        ? and(baseWhere, petFilter)
+        : petFilter
+      : baseWhere;
+
+    const { offset, limit, pagination } = await getTotalAndPagination(
+      products,
+      q,
+      [products.name, products.slug],
+      req,
+      baseWhere // ⛔ tanpa pet filter agar tidak error
+    );
+
+    const results = await db
+      .select({
+        id: products.id,
+        name: products.name,
+        slug: products.slug,
+        status: products.status,
+        image: sql`
+          (SELECT ${productImages.url} 
+           FROM ${productImages} 
+           WHERE ${productImages.productId} = ${products.id} 
+           ORDER BY ${productImages.createdAt} ASC 
+           LIMIT 1)`.as("image"),
+        categoryName: categories.name,
+        supplierName: suppliers.name,
+        stock: sql`
+          (SELECT COALESCE(SUM(${productVariants.stock}), 0) 
+           FROM ${productVariants} 
+           WHERE ${productVariants.productId} = ${products.id})`.as("stock"),
+        variantCount: sql`
+          (SELECT COUNT(*) 
+           FROM ${productVariants} 
+           WHERE ${productVariants.productId} = ${products.id})`.as(
+          "variantCount"
+        ),
+        petCount: sql`COUNT(DISTINCT ${pets.id})`.as("petCount"),
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(suppliers, eq(products.supplierId, suppliers.id))
+      .leftJoin(productToPets, eq(products.id, productToPets.productId))
+      .leftJoin(pets, eq(productToPets.petId, pets.id))
+      .where(finalWhere)
+      .groupBy(products.id, categories.name, suppliers.name)
+      .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
+      .limit(limit)
+      .offset(offset);
+
+    const formatted = results.map((item) => ({
+      ...item,
+      image: item.image ? `${r2Public}/${item.image}` : null,
+    }));
+
+    const supplierOptions = await db
+      .selectDistinct({ id: suppliers.id, name: suppliers.name })
+      .from(products)
+      .innerJoin(suppliers, eq(products.supplierId, suppliers.id));
+
+    const categoryOptions = await db
+      .selectDistinct({ id: categories.id, name: categories.name })
+      .from(products)
+      .innerJoin(categories, eq(products.categoryId, categories.id));
+
+    const petOptions = await db
+      .selectDistinct({ id: pets.id, name: pets.name })
+      .from(productToPets)
+      .innerJoin(pets, eq(productToPets.petId, pets.id));
+
+    return successRes(
+      {
+        data: formatted,
+        selectOptions: {
+          suppliers: supplierOptions,
+          categories: categoryOptions,
+          pets: petOptions,
+        },
+        pagination,
+      },
+      "Product list"
+    );
+  } catch (error) {
+    console.error("ERROR_GET_PRODUCTS", error);
+    return errorRes("Internal Server Error", 500);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
   try {
-    // 1. Parse + validate
+    const isAuth = await auth();
+    if (!isAuth) return errorRes("Unauthorized", 401);
+
     const payload = {
       title: formData.get("title"),
       description: formData.get("description"),
@@ -81,7 +227,7 @@ export async function POST(req: NextRequest) {
       isActive: formData.get("isActive") === "true",
       categoryId: formData.get("categoryId"),
       supplierId: formData.get("supplierId"),
-      petId: formData.get("petId"),
+      petIds: JSON.parse((formData.get("petId") as string) || "[]"),
       compositions: JSON.parse(
         (formData.get("compositions") as string) || "[]"
       ),
@@ -91,8 +237,6 @@ export async function POST(req: NextRequest) {
       variants: JSON.parse((formData.get("variants") as string) || "[]"),
     };
 
-    console.log(payload);
-
     const parsed = productSchema.safeParse(payload);
     if (!parsed.success) {
       const errors: Record<string, string> = {};
@@ -100,7 +244,6 @@ export async function POST(req: NextRequest) {
         const path = err.path.join(".");
         errors[path] = err.message;
       });
-
       return errorRes("Validation failed", 400, errors);
     }
 
@@ -115,26 +258,22 @@ export async function POST(req: NextRequest) {
       isActive,
       categoryId,
       supplierId,
-      petId,
+      petIds,
       compositions,
       defaultVariant,
       variants,
     } = parsed.data;
 
-    console.log("s", parsed.data);
+    const images = formData.getAll("image") as File[];
+    const uploadedKeys: string[] = [];
 
-    // 2. Upload image to R2
-    const image = formData.get("image") as File | null;
-    let imageKey: string | undefined;
-
-    if (image) {
+    for (const image of images) {
       const buffer = await convertToWebP(image);
-      const key = `images/${createId()}-${slugify(title, { lower: true })}.webp`;
+      const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
       await uploadToR2({ buffer, key });
-      imageKey = key;
+      uploadedKeys.push(key);
     }
 
-    // 3. Insert product
     const productId = createId();
     const slug = slugify(title, { lower: true });
 
@@ -151,59 +290,70 @@ export async function POST(req: NextRequest) {
       status: isActive,
       categoryId,
       supplierId,
-      petId,
     });
 
-    // 4. Insert image (only key)
-    if (imageKey) {
-      await db.insert(productImages).values({
-        id: createId(),
-        productId,
-        url: imageKey, // <== ONLY THE KEY, NOT FULL URL
-      });
+    if (uploadedKeys.length) {
+      await db.insert(productImages).values(
+        uploadedKeys.map((url) => ({
+          id: createId(),
+          productId,
+          url,
+        }))
+      );
     }
 
-    // 5. Insert compositions
+    if (petIds?.length) {
+      await db.insert(productToPets).values(
+        petIds.map((petId) => ({
+          productId,
+          petId,
+        }))
+      );
+    }
+
     if (compositions?.length) {
-      const compositionData: InsertProductComposition[] = compositions.map(
-        (c) => ({
+      await db.insert(productCompositions).values(
+        compositions.map((c) => ({
           id: createId(),
           productId,
           name: c.name,
           value: c.value,
-        })
+        }))
       );
-      await db.insert(productCompositions).values(compositionData);
     }
 
-    // 6. Insert variants
-    if (variants && variants.length > 0) {
-      const variantData: InsertProductVariant[] = variants.map((v) => ({
-        id: createId(),
-        productId,
-        name: v.name,
-        sku: v.sku,
-        barcode: v.barcode,
-        price: v.salePrice,
-        compareAtPrice: v.compareAtPrice ?? "0",
-        stock: parseInt(v.quantity),
-        weight: v.weight,
-      }));
-      await db.insert(productVariants).values(variantData);
+    if (variants?.length) {
+      await db.insert(productVariants).values(
+        variants.map((v) => ({
+          id: createId(),
+          productId,
+          name: v.name,
+          sku: v.sku,
+          barcode: v.barcode,
+          normalPrice: v.normalPrice,
+          basicPrice: v.basicPrice,
+          petShopPrice: v.petShopPrice,
+          doctorPrice: v.doctorPrice,
+          stock: parseInt(v.quantity),
+          weight: v.weight,
+          isDefault: false,
+        }))
+      );
     } else if (defaultVariant) {
-      const defaultData: InsertProductVariant = {
+      await db.insert(productVariants).values({
         id: createId(),
         productId,
         name: defaultVariant.name,
         sku: defaultVariant.sku,
         barcode: defaultVariant.barcode,
-        price: defaultVariant.salePrice,
-        compareAtPrice: defaultVariant.compareAtPrice ?? "0",
+        normalPrice: defaultVariant.normalPrice,
+        basicPrice: defaultVariant.basicPrice,
+        petShopPrice: defaultVariant.petShopPrice,
+        doctorPrice: defaultVariant.doctorPrice,
         stock: parseInt(defaultVariant.quantity),
         weight: defaultVariant.weight,
         isDefault: true,
-      };
-      await db.insert(productVariants).values(defaultData);
+      });
     }
 
     return successRes({ id: productId }, "Product created", 201);

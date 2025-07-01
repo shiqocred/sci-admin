@@ -138,10 +138,13 @@ export const CreateEditDialog = ({
           ) : (
             <div className="flex flex-col gap-3">
               <FileUpload
-                onChange={(e) => setInput((prev) => ({ ...prev, image: e }))}
+                multiple={false}
                 imageOld={input.imageOld}
                 setImageOld={(e: any) =>
                   setInput((prev) => ({ ...prev, imageOld: e }))
+                }
+                onChange={(e) =>
+                  setInput((prev) => ({ ...prev, image: e as File }))
                 }
               />
               <LabelInput

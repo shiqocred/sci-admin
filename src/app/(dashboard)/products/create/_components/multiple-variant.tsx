@@ -19,8 +19,10 @@ export const MultipleVariant = ({
     sku: "",
     barcode: "",
     quantity: "0",
-    salePrice: "0",
-    compareAtPrice: "0",
+    normalPrice: "0",
+    basicPrice: "0",
+    petShopPrice: "0",
+    doctorPrice: "0",
     weight: "0",
     isOpen: true,
   });

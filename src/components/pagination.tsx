@@ -15,6 +15,7 @@ const Pagination = ({
   setPagination,
   pagination,
   setLimit,
+  disabled,
 }: {
   pagination: {
     limit: number;
@@ -26,6 +27,7 @@ const Pagination = ({
   };
   setPagination: any;
   setLimit: any;
+  disabled?: boolean;
 }) => {
   return (
     <div className="flex items-center justify-between text-xs">
@@ -35,7 +37,10 @@ const Pagination = ({
           value={pagination.limit.toString()}
           onValueChange={(v) => setLimit(v)}
         >
-          <SelectTrigger className="w-fit h-8 border-0 bg-transparent shadow-none p-0 text-xs font-medium focus:ring-0 focus-visible:ring-0">
+          <SelectTrigger
+            disabled={disabled}
+            className="w-fit h-8 border-0 bg-transparent shadow-none p-0 text-xs font-medium focus:ring-0 focus-visible:ring-0"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -60,7 +65,7 @@ const Pagination = ({
             onClick={() => {
               setPagination((prev: number) => prev - 1);
             }}
-            disabled={pagination.current === 1}
+            disabled={pagination.current === 1 || disabled}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -70,7 +75,7 @@ const Pagination = ({
             onClick={() => {
               setPagination((prev: number) => prev + 1);
             }}
-            disabled={pagination.current === pagination.last}
+            disabled={pagination.current === pagination.last || disabled}
           >
             <ChevronRight className="w-5 h-5" />
           </Button>

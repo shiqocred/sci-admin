@@ -57,22 +57,40 @@ export const SingleVariant = ({
         <h5 className="font-bold underline underline-offset-4 text-sm">
           Pricing
         </h5>
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <LabelInput
-            label="Price"
+            label="Normal price"
             type="number"
             placeholder="e.g. 10000"
-            value={defaultVariants.salePrice}
-            id="salePrice"
+            value={defaultVariants.normalPrice}
+            id="normalPrice"
             onChange={handleChange}
             disabled={disabled}
           />
           <LabelInput
-            label="Compare-at price"
+            label="Basic price"
             type="number"
             placeholder="e.g. 10000"
-            value={defaultVariants.compareAtPrice}
-            id="compareAtPrice"
+            value={defaultVariants.basicPrice}
+            id="basicPrice"
+            onChange={handleChange}
+            disabled={disabled}
+          />
+          <LabelInput
+            label="Pet shop price"
+            type="number"
+            placeholder="e.g. 10000"
+            value={defaultVariants.petShopPrice}
+            id="petShopPrice"
+            onChange={handleChange}
+            disabled={disabled}
+          />
+          <LabelInput
+            label="Doctor price"
+            type="number"
+            placeholder="e.g. 10000"
+            value={defaultVariants.doctorPrice}
+            id="doctorPrice"
             onChange={handleChange}
             disabled={disabled}
           />

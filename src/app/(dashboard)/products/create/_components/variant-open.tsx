@@ -95,28 +95,48 @@ export const VariantOpen = ({
           <h5 className="font-bold underline underline-offset-4 text-sm">
             Pricing
           </h5>
-          <div className="flex items-center gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <LabelInput
-              label="Price"
+              label="Normal price"
               type="number"
               placeholder="e.g. 10000"
-              value={variant.salePrice}
+              value={variant.normalPrice}
+              id="normalPrice"
               onChange={(e) =>
-                handleChangeVariant(variant.id, "salePrice", e.target.value)
+                handleChangeVariant(variant.id, "normalPrice", e.target.value)
               }
               disabled={disabled}
             />
             <LabelInput
-              label="Compare-at price"
+              label="Basic price"
               type="number"
               placeholder="e.g. 10000"
-              value={variant.compareAtPrice}
+              value={variant.basicPrice}
+              id="basicPrice"
               onChange={(e) =>
-                handleChangeVariant(
-                  variant.id,
-                  "compareAtPrice",
-                  e.target.value
-                )
+                handleChangeVariant(variant.id, "basicPrice", e.target.value)
+              }
+              disabled={disabled}
+            />
+            <LabelInput
+              label="Pet shop price"
+              type="number"
+              placeholder="e.g. 10000"
+              value={variant.petShopPrice}
+              id="petShopPrice"
+              onChange={(e) =>
+                handleChangeVariant(variant.id, "petShopPrice", e.target.value)
+              }
+              disabled={disabled}
+            />
+            <LabelInput
+              label="Doctor price"
+              type="number"
+              placeholder="e.g. 10000"
+              value={variant.doctorPrice}
+              id="doctorPrice"
+              onChange={(e) =>
+                handleChangeVariant(variant.id, "doctorPrice", e.target.value)
               }
               disabled={disabled}
             />

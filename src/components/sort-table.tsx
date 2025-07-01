@@ -17,16 +17,18 @@ export const SortTable = ({
   sort,
   setSort,
   data,
+  disabled,
 }: {
   order: string;
   sort: string;
   setSort: any;
   data: { name: string; value: string }[];
+  disabled?: boolean;
 }) => {
   return (
     <Popover>
       <TooltipText value="Sort">
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild disabled={disabled}>
           <Button
             className="size-8 flex-none"
             variant={"outline"}
@@ -84,7 +86,7 @@ export const SortTable = ({
                 className="h-7 text-xs"
               >
                 <ArrowUp className="size-3.5" />
-                Order first
+                Order asc
               </CommandItem>
               <CommandItem
                 onSelect={(e) => setSort({ order: e })}
@@ -92,7 +94,7 @@ export const SortTable = ({
                 className="h-7 text-xs"
               >
                 <ArrowDown className="size-3.5" />
-                Order first
+                Order desc
               </CommandItem>
             </CommandGroup>
           </CommandList>

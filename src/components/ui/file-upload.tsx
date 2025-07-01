@@ -1,40 +1,41 @@
 import { cn, sizesImage } from "@/lib/utils";
 import React, { useRef, useState } from "react";
-import { motion } from "motion/react";
 import { useDropzone } from "react-dropzone";
-import { Trash2, UploadCloud } from "lucide-react";
+import { Trash2, UploadCloud, Plus } from "lucide-react";
 import Image from "next/image";
 import { Button } from "./button";
 
 export const FileUpload = ({
   onChange,
-  imageOld,
+  imageOld = [],
   setImageOld,
+  multiple = true,
 }: {
-  onChange?: (files: File) => void;
-  imageOld?: string | null;
-  setImageOld?: any;
+  onChange?: (files: File[] | File) => void;
+  imageOld?: string[] | string | null;
+  setImageOld?: (images: string[] | string | null) => void;
+  multiple?: boolean;
 }) => {
-  const [files, setFiles] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const PREVIEW_LIMIT = 7;
+
   const handleFileChange = (newFiles: File[]) => {
-    if (newFiles.length > 0) {
-      setFiles(newFiles[0]);
-      if (onChange) {
-        onChange(newFiles[0]);
-      }
+    const updatedFiles = multiple ? [...files, ...newFiles] : [newFiles[0]];
+    setFiles(updatedFiles);
+    if (onChange) {
+      onChange(multiple ? updatedFiles : newFiles[0]);
     }
   };
 
   const handleClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const { getRootProps, isDragActive } = useDropzone({
-    multiple: false,
+    multiple,
     noClick: true,
     onDrop: handleFileChange,
     onDropRejected: (error) => {
@@ -42,119 +43,138 @@ export const FileUpload = ({
     },
   });
 
+  const removeFile = (index: number) => {
+    const updated = [...files];
+    updated.splice(index, 1);
+    setFiles(updated);
+    if (onChange) onChange(multiple ? updated : updated[0]);
+  };
+
+  const removeOldImage = (index: number) => {
+    if (!Array.isArray(imageOld)) return setImageOld?.(null);
+    const updated = [...imageOld];
+    updated.splice(index, 1);
+    setImageOld?.(updated.length > 0 ? updated : null);
+  };
+
+  const allImages = [
+    ...(Array.isArray(imageOld) ? imageOld : imageOld ? [imageOld] : []),
+    ...files.map((f) => URL.createObjectURL(f)),
+  ];
+
+  const imageOldLength = Array.isArray(imageOld)
+    ? imageOld.length
+    : imageOld
+      ? 1
+      : 0;
+
+  const visibleImages = showAll ? allImages : allImages.slice(0, PREVIEW_LIMIT);
+  const extraCount = allImages.length - PREVIEW_LIMIT;
+
   return (
-    <div className="w-full flex gap-3" {...getRootProps()}>
-      <motion.div
-        onClick={handleClick}
-        whileHover="animate"
-        className={cn(
-          "group/file block rounded-lg cursor-pointer w-full relative",
-          (files || imageOld) && "w-32"
-        )}
-      >
-        <input
-          ref={fileInputRef}
-          id="file-upload-handle"
-          type="file"
-          onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
-          className="hidden"
-        />
-        {/* <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
-          <GridPattern />
-        </div> */}
-        <div className="relative w-full h-32 border rounded-md mt-0 overflow-hidden">
-          {!files && imageOld && (
-            <div className={cn("relative z-40 size-full group")}>
-              <div className="absolute left-0 top-0 size-full hidden transition-all items-center flex-col justify-center z-10 bg-white/50 backdrop-blur-md text-sm font-medium gap-2 group-hover:flex">
-                <UploadCloud className="size-5" />
-                Change Image
-              </div>
-              <Image
-                src={imageOld}
-                alt="Image"
-                fill
-                sizes={sizesImage}
-                className="object-cover"
-              />
-            </div>
-          )}
-          {((files && imageOld) || (files && !imageOld)) && (
-            <motion.div className={cn("relative z-40 size-full group")}>
-              <div className="absolute left-0 top-0 size-full hidden transition-all items-center flex-col justify-center z-10 bg-white/50 backdrop-blur-md text-sm font-medium gap-2 group-hover:flex">
-                <UploadCloud className="size-5" />
-                Change Image
-              </div>
-              <Image
-                src={URL.createObjectURL(files)}
-                alt="Image"
-                fill
-                sizes={sizesImage}
-                className="object-cover"
-              />
-            </motion.div>
-          )}
-          {!files && !imageOld && (
-            <div className="w-full h-full flex flex-col items-center justify-center hover:bg-gray-100">
-              {isDragActive ? (
-                <div className="flex items-center gap-3 text-sm">
-                  <UploadCloud className="size-4" />
-                  Drop it
+    <div className="w-full flex flex-col gap-3">
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+        className="hidden"
+        multiple={multiple}
+      />
+
+      {allImages.length > 0 && (
+        <div className="grid grid-cols-6 auto-rows-[1fr] gap-2">
+          {visibleImages.map((src, index) => {
+            const isOld = index < imageOldLength;
+            return (
+              <div
+                key={`${src}-${index}`}
+                className={cn(
+                  "relative group size-full aspect-square rounded-md overflow-hidden border",
+                  index === 0 && "col-span-2 row-span-2"
+                )}
+              >
+                <Image
+                  src={src}
+                  alt={`image-${index}`}
+                  fill
+                  sizes={sizesImage}
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-sm">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:text-red-400"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isOld) {
+                        removeOldImage(index);
+                      } else {
+                        removeFile(index - imageOldLength);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
-              ) : (
-                <>
-                  <p className="relative z-20 font-sans font-bold text-neutral-700 text-sm">
-                    Upload Image
-                  </p>
-                  <p className="relative z-20 font-sans font-normal text-neutral-500 text-xs mt-1">
-                    Drag or drop your files here or click to upload
-                  </p>
-                </>
-              )}
-            </div>
+              </div>
+            );
+          })}
+
+          {!showAll && extraCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="relative size-full aspect-square rounded-md border flex items-center justify-center bg-neutral-200/60 hover:bg-neutral-300"
+            >
+              <span className="text-lg font-semibold text-neutral-800">
+                +{extraCount}
+              </span>
+            </button>
+          )}
+
+          {multiple && (
+            <button
+              type="button"
+              onClick={handleClick}
+              className="size-full aspect-square border-dashed border rounded-md flex items-center justify-center hover:bg-gray-100 group"
+            >
+              <div className="text-center">
+                <Plus className="w-6 h-6 mx-auto text-neutral-500 group-hover:text-neutral-700" />
+                <p className="text-xs text-neutral-500 group-hover:text-neutral-700">
+                  Add Photo
+                </p>
+              </div>
+            </button>
           )}
         </div>
-      </motion.div>
-      {(files || imageOld) && (
-        <Button
-          variant={"outline"}
-          type="button"
-          className="border-red-400 text-red-400 hover:bg-red-50 hover:text-red-500"
-          onClick={() => {
-            if (files) {
-              setFiles(null);
-            } else {
-              setImageOld("");
-            }
-          }}
+      )}
+
+      {/* Drag & Drop Area saat kosong */}
+      {!allImages.length && (
+        <div
+          {...getRootProps()}
+          className="w-full h-32 border border-dashed rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 text-center bg-transparent gap-0"
+          onClick={handleClick}
         >
-          <Trash2 />
-          Remove Image
-        </Button>
+          {isDragActive ? (
+            <div className="flex items-center gap-2 text-sm text-neutral-600">
+              <UploadCloud className="w-4 h-4" />
+              Drop files here
+            </div>
+          ) : (
+            <>
+              <UploadCloud className="w-5 h-5 text-neutral-500 mb-1" />
+              <p className="text-sm font-medium text-neutral-700">
+                Upload Image
+              </p>
+              <p className="text-xs text-neutral-500 mt-1">
+                Drag & drop or click to upload
+              </p>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
 };
-
-export function GridPattern() {
-  const columns = 41;
-  const rows = 11;
-  return (
-    <div className="flex bg-gray-100 dark:bg-neutral-900 shrink-0 flex-wrap justify-center items-center gap-x-px gap-y-px  scale-105">
-      {Array.from({ length: rows }).map((_, row) =>
-        Array.from({ length: columns }).map((_, col) => {
-          const index = row * columns + col;
-          return (
-            <div
-              key={`${col}-${row}`}
-              className={`w-10 h-10 flex shrink-0 rounded-[2px] ${
-                index % 2 === 0
-                  ? "bg-gray-50 dark:bg-neutral-950"
-                  : "bg-gray-50 dark:bg-neutral-950 shadow-[0px_0px_1px_3px_rgba(255,255,255,1)_inset] dark:shadow-[0px_0px_1px_3px_rgba(0,0,0,1)_inset]"
-              }`}
-            />
-          );
-        })
-      )}
-    </div>
-  );
-}

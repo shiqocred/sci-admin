@@ -14,6 +14,7 @@ import {
   productCompositions,
   productImages,
   productVariants,
+  productToPets,
   products,
   roleUserEnum,
   sessions,
@@ -42,6 +43,7 @@ export const schema = {
   productCompositions,
   productImages,
   productVariants,
+  productToPets,
   products,
   roleUserEnum,
   sessions,
@@ -69,6 +71,7 @@ export * from "./pets";
 export * from "./product-compositions";
 export * from "./product-images";
 export * from "./product-variants";
+export * from "./product-to-pets";
 export * from "./products";
 export * from "./sessions";
 export * from "./shipping-histories";

@@ -1,11 +1,16 @@
 import { apiUrl } from "@/config";
 import { QueryClient } from "@tanstack/react-query";
 
+// utils.ts
 export function buildUrl(endpoint: string, searchParams?: Record<string, any>) {
   const url = new URL(apiUrl + endpoint);
   if (searchParams) {
     Object.entries(searchParams).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (Array.isArray(value)) {
+        value.forEach((v) => {
+          if (v !== undefined) url.searchParams.append(key, String(v));
+        });
+      } else if (value !== undefined) {
         url.searchParams.append(key, String(value));
       }
     });

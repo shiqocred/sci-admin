@@ -25,7 +25,7 @@ export const uploadToR2 = async ({
 }) => {
   const upload = await r2.send(
     new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET!,
+      Bucket: r2bucket,
       Key: key,
       Body: buffer,
       ContentType: contentType,

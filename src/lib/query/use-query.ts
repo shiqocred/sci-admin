@@ -14,7 +14,10 @@ interface UseApiQueryProps<T> extends UseApiQueryOptions<T> {
   key: QueryKey;
   endpoint: string;
   params?: QueryParams;
-  searchParams?: QuerySearchParams;
+  searchParams?: Record<
+    string,
+    string | number | boolean | (string | number | boolean)[] | undefined
+  >;
 }
 
 export function useApiQuery<T = any>({

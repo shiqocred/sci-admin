@@ -1,5 +1,6 @@
 import { LabelInput } from "@/components/label-input";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Label } from "@/components/ui/label";
 import React from "react";
 
@@ -7,10 +8,12 @@ export const ProductCore = ({
   input,
   handleOnChange,
   disabled,
+  setImagesProduct,
 }: {
   input: any;
   handleOnChange: any;
   disabled: boolean;
+  setImagesProduct: React.Dispatch<React.SetStateAction<File[] | null>>;
 }) => {
   return (
     <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
@@ -24,13 +27,13 @@ export const ProductCore = ({
       />
       <div className="flex flex-col gap-1.5 w-full">
         <Label>Images</Label>
-        <Button
-          className="w-full h-28 bg-transparent border-gray-300 border-dashed hover:bg-gray-100 hover:border-gray-400 shadow-none"
-          variant={"outline"}
-          disabled={disabled}
-        >
-          Upload Gambar
-        </Button>
+        <FileUpload
+          onChange={(e) => setImagesProduct(e as File[])}
+          // imageOld={input.imageOld}
+          // setImageOld={(e: any) =>
+          //   setInput((prev) => ({ ...prev, imageOld: e }))
+          // }
+        />
       </div>
     </div>
   );

@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
         totalProducts: count(products.id).as("totalProducts"),
       })
       .from(suppliers)
-      .leftJoin(products, eq(products.categoryId, suppliers.id))
+      .leftJoin(products, eq(products.supplierId, suppliers.id))
       .where(where)
       .groupBy(suppliers.id)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
     if (image) {
       const buffer = Buffer.from(await image.arrayBuffer());
       const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
-      const key = `images/${createId()}-${slugify(name, { lower: true })}.webp`;
+      const key = `images/suppliers/${createId()}-${slugify(name, { lower: true })}.webp`;
 
       const r2Up = await uploadToR2({ buffer: webpBuffer, key });
 

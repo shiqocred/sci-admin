@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Save } from "lucide-react";
+import { Check, ChevronDown, CirclePlus, Save, X } from "lucide-react";
 import React, { MouseEvent, useMemo, useState } from "react";
 import {
   useCreateProduct,
@@ -43,9 +43,9 @@ export const Client = () => {
   const [isSupplierOpen, setIsSupplierOpen] = useState(false);
   const [isPetOpen, setIsPetOpen] = useState(false);
   const [isVariant, setIsVariant] = useState<boolean | "indeterminate">(false);
+  const [imagesProduct, setImagesProduct] = useState<File[] | null>(null);
   const [input, setInput] = useState({
     title: "",
-    image: null as File | null,
     description: "",
     indication: "",
     dosageUsage: "",
@@ -55,8 +55,8 @@ export const Client = () => {
     isActive: false,
     categoryId: "",
     supplierId: "",
-    petId: "",
   });
+  const [petIds, setPetIds] = useState<string[]>([]);
   const [compositions, setCompositions] = useState<
     { id: string; name: string; value: string }[]
   >([]);
@@ -66,8 +66,10 @@ export const Client = () => {
     sku: "",
     barcode: "",
     quantity: "0",
-    salePrice: "0",
-    compareAtPrice: "0",
+    normalPrice: "0",
+    basicPrice: "0",
+    petShopPrice: "0",
+    doctorPrice: "0",
     weight: "0",
   });
   const [variants, setVariants] = useState<
@@ -77,8 +79,10 @@ export const Client = () => {
       sku: string;
       barcode: string;
       quantity: string;
-      salePrice: string;
-      compareAtPrice: string;
+      normalPrice: string;
+      basicPrice: string;
+      petShopPrice: string;
+      doctorPrice: string;
       weight: string;
       isOpen: boolean;
     }[]
@@ -114,7 +118,8 @@ export const Client = () => {
     const body = new FormData();
 
     body.set("title", input.title);
-    if (input.image) body.set("image", input.image);
+    imagesProduct?.forEach((img) => body.append("image", img)); // <-- gunakan append!
+
     body.set("description", input.description);
     body.set("indication", input.indication);
     body.set("dosageUsage", input.dosageUsage);
@@ -124,10 +129,11 @@ export const Client = () => {
     body.set("isActive", input.isActive.toString());
     body.set("categoryId", input.categoryId);
     body.set("supplierId", input.supplierId);
-    body.set("petId", input.petId);
+
+    // Pet many-to-many
+    body.set("petId", JSON.stringify(petIds)); // <-- kirim sebagai array string
 
     body.set("compositions", JSON.stringify(compositions));
-
     body.set("variants", JSON.stringify(variants));
     body.set("defaultVariant", JSON.stringify(defaultVariants));
 
@@ -145,6 +151,7 @@ export const Client = () => {
             input={input}
             handleOnChange={handleOnChange}
             disabled={isCreating}
+            setImagesProduct={setImagesProduct}
           />
           <ProductDescription
             input={input}
@@ -305,71 +312,93 @@ export const Client = () => {
               </div>
               <div className="flex flex-col gap-1.5 w-full">
                 <Label>Pet</Label>
-                <Popover open={isPetOpen} onOpenChange={setIsPetOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
-                      variant={"outline"}
-                      disabled={isCreating || loadingSelect}
+                <div
+                  className={cn(
+                    "flex flex-col gap-3",
+                    petIds.length > 0 && "border rounded-md p-3 "
+                  )}
+                >
+                  <div className="flex flex-wrap gap-3">
+                    {petIds.map((i) => (
+                      <div
+                        className="text-xs px-3 py-0.5 bg-gray-300 w-fit rounded relative flex items-center group"
+                        key={i}
+                      >
+                        {petsList.find((v) => v.id === i)?.name}
+                        <div className="group-hover:flex hidden items-center w-full absolute right-0">
+                          <div className="w-full bg-gradient-to-r from-gray-300/50 to-gray-300 h-5" />
+                          <button
+                            className="px-2 flex-none bg-gray-300 h-full"
+                            onClick={() =>
+                              setPetIds((v) => v.filter((z) => z !== i))
+                            }
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Popover open={isPetOpen} onOpenChange={setIsPetOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        className="w-full bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 text-xs group"
+                        variant={"outline"}
+                        disabled={isCreating || loadingSelect}
+                      >
+                        <CirclePlus className="size-3.5" />
+                        Add Pets
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="min-w-[var(--radix-popover-trigger-width)] p-0"
+                      align="end"
                     >
-                      {input.petId ? (
-                        <span className="font-normal w-full truncate text-left">
-                          {petsList.find((pet) => pet.id === input.petId)?.name}
-                        </span>
-                      ) : (
-                        <span className="font-normal text-gray-500 text-xs">
-                          Choose a pet
-                        </span>
-                      )}
-                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                    align="end"
-                  >
-                    <Command>
-                      <CommandInput />
-                      <CommandList>
-                        <CommandEmpty />
-                        <CommandGroup>
-                          {petsList.map((pet) => (
-                            <CommandItem
-                              onSelect={(e) => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  petId: e,
-                                }));
-                                setIsPetOpen(false);
-                              }}
-                              value={pet.id}
-                              key={pet.id}
-                            >
-                              {pet.name}
-                              <Check
-                                className={cn(
-                                  "hidden ml-auto",
-                                  pet.id === input.petId && "flex"
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                      <Command>
+                        <CommandInput />
+                        <CommandList>
+                          <CommandEmpty />
+                          <CommandGroup>
+                            {petsList.map((pet) => (
+                              <CommandItem
+                                onSelect={(id) => {
+                                  setPetIds(
+                                    (prev) =>
+                                      prev.includes(id)
+                                        ? prev.filter((pid) => pid !== id) // jika sudah ada, hapus
+                                        : [...prev, id] // jika belum ada, tambahkan
+                                  );
+                                }}
+                                value={pet.id}
+                                key={pet.id}
+                              >
+                                {pet.name}
+                                <Check
+                                  className={cn(
+                                    "hidden ml-auto",
+                                    petIds.includes(pet.id) && "flex"
+                                    // pet.id === input.petId && "flex"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
             <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
               <div className="flex flex-col gap-1.5 w-full">
                 <Label>Status</Label>
                 <Select
-                  value={input.isActive ? "active" : "draft"}
+                  value={input.isActive ? "publish" : "draft"}
                   onValueChange={(e) =>
                     setInput((prev) => ({
                       ...prev,
-                      isActive: e === "active",
+                      isActive: e === "publish",
                     }))
                   }
                 >
@@ -381,7 +410,7 @@ export const Client = () => {
                     align="end"
                   >
                     <SelectGroup>
-                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="publish">Publish</SelectItem>
                       <SelectItem value="draft">Draft</SelectItem>
                     </SelectGroup>
                   </SelectContent>

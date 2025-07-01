@@ -1,5 +1,5 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { pets, db, products } from "@/lib/db";
+import { pets, db, products, productToPets } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
@@ -41,7 +41,8 @@ export async function GET(req: NextRequest) {
         totalProducts: count(products.id).as("totalProducts"),
       })
       .from(pets)
-      .leftJoin(products, eq(products.petId, pets.id))
+      .leftJoin(productToPets, eq(productToPets.petId, pets.id))
+      .leftJoin(products, eq(products.id, productToPets.productId))
       .where(where)
       .groupBy(pets.id)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
