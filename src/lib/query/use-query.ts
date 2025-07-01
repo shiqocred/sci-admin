@@ -3,7 +3,7 @@ import { getCookie } from "cookies-next/client";
 import { useQuery, UseQueryOptions, QueryKey } from "@tanstack/react-query";
 
 import { buildUrl } from "./utils";
-import { QueryParams, QuerySearchParams } from "./types";
+import { QueryParams } from "./types";
 
 type UseApiQueryOptions<T> = Omit<
   UseQueryOptions<T, AxiosError, T, QueryKey>,

@@ -1,5 +1,5 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { pets, db, products } from "@/lib/db";
+import { pets, db, products, productToPets } from "@/lib/db";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
@@ -98,8 +98,8 @@ export async function DELETE(
 
     const productMount = await db
       .select({ count: count() })
-      .from(products)
-      .where(eq(products.petId, petId));
+      .from(productToPets)
+      .where(eq(productToPets.petId, petId));
 
     const totalProductMount = productMount[0].count;
 
