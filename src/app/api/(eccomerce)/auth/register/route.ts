@@ -1,4 +1,4 @@
-import { db, users, verificationOtp } from "@/lib/db";
+import { db, userRoleDetails, users, verificationOtp } from "@/lib/db";
 import { errorRes, generateOtp, signJWT, successRes } from "@/lib/auth";
 import VerifyEmail from "@/components/email/verify";
 import { hash } from "argon2";
@@ -6,11 +6,7 @@ import { hash } from "argon2";
 import { createId } from "@paralleldrive/cuid2";
 import { z } from "zod/v4";
 import { add } from "date-fns";
-
-import { Resend } from "resend";
-import { resendSecret } from "@/config";
-
-const resend = new Resend(resendSecret);
+import { resend } from "@/lib/providers";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Last name is required"),
@@ -120,12 +116,18 @@ export async function POST(req: Request) {
         role: users.role,
       });
 
+    await db.insert(userRoleDetails).values({
+      userId,
+      role: "BASIC",
+      isVerified: true,
+    });
+
     const otp = generateOtp();
     const expires = add(new Date(), { minutes: 15 });
 
     await db
       .insert(verificationOtp)
-      .values({ identifier: userId, otp, expires });
+      .values({ identifier: email, otp, type: "EMAIL_VERIFICATION", expires });
 
     await resend.emails.send({
       from: "SCI Team<ju@support.sro.my.id>",
@@ -137,7 +139,7 @@ export async function POST(req: Request) {
       }),
     });
 
-    const jwt = signJWT({ sub: userId, verified: false });
+    const jwt = signJWT({ email }, { expiresIn: "15m" });
 
     return successRes({ token: jwt, user: user[0] }, "Register successfully");
   } catch (error) {

@@ -14,3 +14,8 @@ export const roleUserEnum = pgEnum("userRole", [
   "DOCTOR",
   "ADMIN",
 ]);
+
+export const typeOtpEnum = pgEnum("typeOtp", [
+  "EMAIL_VERIFICATION",
+  "PASSWORD_RESET",
+]);

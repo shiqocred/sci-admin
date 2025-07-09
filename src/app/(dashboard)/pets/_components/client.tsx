@@ -103,7 +103,7 @@ export const Client = () => {
             <div className="relative flex items-center group">
               <Input
                 className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search product..."
+                placeholder="Search pet..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

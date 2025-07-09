@@ -1,8 +1,14 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { pets, db, products, productToPets } from "@/lib/db";
+import { pets, db, productToPets } from "@/lib/db";
+import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
+import sharp from "sharp";
+import { createId } from "@paralleldrive/cuid2";
+import slugify from "slugify";
+import { r2Public } from "@/config";
+
 const petSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
   slug: z.string(),
@@ -25,11 +31,19 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        image: true,
       },
       where: (c, { eq }) => eq(c.id, petId),
     });
 
-    return successRes(petRes, "Pet detail");
+    if (!petRes) return errorRes("Supplier not found", 404);
+
+    const supplierWithImageUrl = {
+      ...petRes,
+      image: petRes.image ? `${r2Public}/${petRes.image}` : null,
+    };
+
+    return successRes(supplierWithImageUrl, "Pet detail");
   } catch (error) {
     console.log("ERROR_SHOW_PET:", error);
     return errorRes("Internal Error", 500);
@@ -46,10 +60,15 @@ export async function PUT(
 
     const { petId } = await params;
 
-    if (!petId) return errorRes("Pet id is required", 400);
+    if (!petId) return errorRes("pet id is required", 400);
 
-    const body = await req.json();
-    const result = petSchema.safeParse(body);
+    const body = await req.formData();
+    const nameBody = body.get("name") as string;
+    const slugBody = body.get("slug") as string;
+    const image = body.get("image") as File | null;
+
+    const result = petSchema.safeParse({ name: nameBody, slug: slugBody });
+
     if (!result.success) {
       const errors: Record<string, string> = {};
 
@@ -63,11 +82,51 @@ export async function PUT(
 
     const { name, slug } = result.data;
 
+    const existPet = await db.query.pets.findFirst({
+      columns: {
+        image: true,
+      },
+      where: (c, { eq }) => eq(c.id, petId),
+    });
+
+    if (!existPet) return errorRes("Pet not found.", 404);
+
+    if (image) {
+      if (existPet.image) await deleteR2(existPet.image);
+
+      const buffer = Buffer.from(await image.arrayBuffer());
+      const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
+      const key = `images/pets/${createId()}-${slugify(name, { lower: true })}.webp`;
+
+      const r2Up = await uploadToR2({ buffer: webpBuffer, key });
+
+      if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
+
+      const [pet] = await db
+        .update(pets)
+        .set({ name, slug, image: key, updatedAt: sql`NOW()` })
+        .where(eq(pets.id, petId))
+        .returning({
+          id: pets.id,
+          name: pets.name,
+          slug: pets.slug,
+          image: pets.image,
+        });
+
+      const petWithImageUrl = {
+        ...pet,
+        image: pet.image ? `${r2Public}/${pet.image}` : null,
+      };
+
+      return successRes(petWithImageUrl, "pet successfully created");
+    }
+
     const [pet] = await db
       .update(pets)
       .set({
         name,
         slug,
+        image: existPet.image,
         updatedAt: sql`NOW()`,
       })
       .where(eq(pets.id, petId))
@@ -75,9 +134,15 @@ export async function PUT(
         id: pets.id,
         name: pets.name,
         slug: pets.slug,
+        image: pets.image,
       });
 
-    return successRes(pet, "Pet successfully updated");
+    const petWithImageUrl = {
+      ...pet,
+      image: pet.image ? `${r2Public}/${pet.image}` : null,
+    };
+
+    return successRes(petWithImageUrl, "pet successfully updated");
   } catch (error) {
     console.log("ERROR_UPDATE_PET:", error);
     return errorRes("Internal Error", 500);
@@ -106,9 +171,19 @@ export async function DELETE(
     if (totalProductMount > 0)
       return errorRes("Pet is in use and cannot be deleted.", 400);
 
-    const petRes = await db.delete(pets).where(eq(pets.id, petId));
+    const petRes = await db.query.pets.findFirst({
+      where: eq(pets.id, petId),
+      columns: {
+        id: true,
+        image: true,
+      },
+    });
 
     if (!petRes) return errorRes("Pet not found", 404);
+
+    await db.delete(pets).where(eq(pets.id, petId));
+
+    if (petRes.image) await deleteR2(petRes.image);
 
     return successRes(null, "Pet successfully deleted");
   } catch (error) {

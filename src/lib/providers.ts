@@ -1,9 +1,16 @@
-import { r2AccessId, r2AccessKey, r2AccountId, r2bucket } from "@/config";
+import {
+  r2AccessId,
+  r2AccessKey,
+  r2AccountId,
+  r2bucket,
+  resendSecret,
+} from "@/config";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { Resend } from "resend";
 
 export const r2 = new S3Client({
   region: "auto",
@@ -42,3 +49,5 @@ export const deleteR2 = async (key: string) => {
     })
   );
 };
+
+export const resend = new Resend(resendSecret);

@@ -1,8 +1,13 @@
+import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { pets, db, products, productToPets } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
+import { uploadToR2 } from "@/lib/providers";
+import { createId } from "@paralleldrive/cuid2";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import sharp from "sharp";
+import slugify from "slugify";
 import { z } from "zod/v4";
 
 const petSchema = z.object({
@@ -38,6 +43,7 @@ export async function GET(req: NextRequest) {
         id: pets.id,
         name: pets.name,
         slug: pets.slug,
+        image: pets.image,
         totalProducts: count(products.id).as("totalProducts"),
       })
       .from(pets)
@@ -49,7 +55,12 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    return successRes({ data: petsRes, pagination }, "Pet list");
+    const petsResFormated = petsRes.map((item) => ({
+      ...item,
+      image: item.image ? `${r2Public}/${item.image}` : null,
+    }));
+
+    return successRes({ data: petsResFormated, pagination }, "Pet list");
   } catch (error) {
     console.log("ERROR_GET_PETS", error);
     return errorRes("Internal Error", 500);
@@ -61,8 +72,13 @@ export async function POST(req: Request) {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const body = await req.json();
-    const result = petSchema.safeParse(body);
+    const body = await req.formData();
+    const nameBody = body.get("name") as string;
+    const slugBody = body.get("slug") as string;
+    const image = body.get("image") as File | null;
+
+    const result = petSchema.safeParse({ name: nameBody, slug: slugBody });
+
     if (!result.success) {
       const errors: Record<string, string> = {};
 
@@ -75,6 +91,37 @@ export async function POST(req: Request) {
     }
 
     const { name, slug } = result.data;
+
+    if (image) {
+      const buffer = Buffer.from(await image.arrayBuffer());
+      const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
+      const key = `images/pets/${createId()}-${slugify(name, { lower: true })}.webp`;
+
+      const r2Up = await uploadToR2({ buffer: webpBuffer, key });
+
+      if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
+
+      const [pet] = await db
+        .insert(pets)
+        .values({
+          name,
+          slug,
+          image: key,
+        })
+        .returning({
+          id: pets.id,
+          name: pets.name,
+          slug: pets.slug,
+          image: pets.image,
+        });
+
+      const petWithImageUrl = {
+        ...pet,
+        image: pet.image ? `${r2Public}/${pet.image}` : null,
+      };
+
+      return successRes(petWithImageUrl, "Pet successfully created");
+    }
 
     const [pet] = await db
       .insert(pets)

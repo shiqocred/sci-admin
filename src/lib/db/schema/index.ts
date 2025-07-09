@@ -22,6 +22,7 @@ import {
   shippings,
   suppliers,
   testimonies,
+  userRoleDetails,
   users,
   verificationOtp,
   verificationTokens,
@@ -51,6 +52,7 @@ export const schema = {
   shippings,
   suppliers,
   testimonies,
+  userRoleDetails,
   users,
   verificationOtp,
   verificationTokens,
@@ -78,6 +80,7 @@ export * from "./shipping-histories";
 export * from "./shippings";
 export * from "./suppliers";
 export * from "./testimonies";
+export * from "./user-role-details";
 export * from "./users";
 export * from "./verification-otp";
 export * from "./verification-tokens";

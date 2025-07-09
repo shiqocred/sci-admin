@@ -16,7 +16,16 @@ import { uploadToR2 } from "@/lib/providers";
 import slugify from "slugify";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { z } from "zod";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  inArray,
+  sql,
+} from "drizzle-orm";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { r2Public } from "@/config";
 
@@ -131,7 +140,7 @@ export async function GET(req: NextRequest) {
       q,
       [products.name, products.slug],
       req,
-      baseWhere // ⛔ tanpa pet filter agar tidak error
+      baseWhere
     );
 
     const results = await db
@@ -152,19 +161,15 @@ export async function GET(req: NextRequest) {
           (SELECT COALESCE(SUM(${productVariants.stock}), 0) 
            FROM ${productVariants} 
            WHERE ${productVariants.productId} = ${products.id})`.as("stock"),
-        variantCount: sql`
-          (SELECT COUNT(*) 
-           FROM ${productVariants} 
-           WHERE ${productVariants.productId} = ${products.id})`.as(
-          "variantCount"
-        ),
-        petCount: sql`COUNT(DISTINCT ${pets.id})`.as("petCount"),
+        variantCount: count(productVariants.id).as("variantCount"),
+        petCount: countDistinct(pets.id).as("petCount"),
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .leftJoin(suppliers, eq(products.supplierId, suppliers.id))
       .leftJoin(productToPets, eq(products.id, productToPets.productId))
       .leftJoin(pets, eq(productToPets.petId, pets.id))
+      .leftJoin(productVariants, eq(productVariants.productId, products.id))
       .where(finalWhere)
       .groupBy(products.id, categories.name, suppliers.name)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
@@ -173,7 +178,7 @@ export async function GET(req: NextRequest) {
 
     const formatted = results.map((item) => ({
       ...item,
-      image: item.image ? `${r2Public}/${item.image}` : null,
+      image: item.image ? `${r2Public}/${item.image as string}` : null,
     }));
 
     const supplierOptions = await db

@@ -49,18 +49,26 @@ export const { handlers, auth } = NextAuth({
           );
 
           if (!user || user.role !== "ADMIN") {
-            throw new Error("Invalid credentials.");
+            throw Object.assign(new Error("Invalid credentials"), {
+              name: "CredentialsSignin",
+              code: "invalid_credentials", // akan muncul di URL ?error=invalid_credentials
+            });
           }
 
           return user;
         } catch (error) {
           console.log("CREDENTIALS", error);
+          throw Object.assign(new Error("Internal server error"), {
+            name: "CredentialsSignin", // tetap pakai name ini agar tidak error=Configuration
+            code: "internal_error", // custom code
+          });
         }
-
-        return null;
       },
     }),
   ],
+  pages: {
+    error: "/login",
+  },
   session: {
     strategy: "jwt",
   },
@@ -75,18 +83,6 @@ export const { handlers, auth } = NextAuth({
     session({ session, token }) {
       session.user.id = token.id as string;
       return session;
-    },
-  },
-  debug: true,
-  logger: {
-    error(code, ...message) {
-      console.error(code, message);
-    },
-    warn(code, ...message) {
-      console.warn(code, message);
-    },
-    debug(code, ...message) {
-      console.debug(code, message);
     },
   },
 });

@@ -1,102 +1,63 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { parseAsString, useQueryStates } from "nuqs";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
-
+import { useGetCustomers } from "../_api/query/use-get-customers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Pagination from "@/components/pagination";
-import { SortTable } from "@/components/sort-table";
-import { DataTable } from "@/components/data-table";
-import { Separator } from "@/components/ui/separator";
+import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
-import { CreateEditDialog } from "./dialog/create-edit-dialog";
-
+import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { DataTable } from "@/components/data-table";
+import Pagination from "@/components/pagination";
 import { column } from "./columns";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
-import { useConfirm } from "@/hooks/use-confirm";
-
-import { useDeleteCategory, useGetCategories } from "../_api";
+import { parseAsString, useQueryStates } from "nuqs";
 
 const filterField = [
   { name: "Name", value: "name" },
-  { name: "Slug", value: "slug" },
-  { name: "Products", value: "products" },
+  { name: "Email", value: "email" },
+  { name: "Orders", value: "orders" },
+  { name: "Amount Spent", value: "spent" },
 ];
 
 export const Client = () => {
-  const [{ dialog, categoryId, sort, order }, setQuery] = useQueryStates(
-    {
-      dialog: parseAsString.withDefault(""),
-      categoryId: parseAsString.withDefault(""),
-      sort: parseAsString.withDefault("created"),
-      order: parseAsString.withDefault("desc"),
-    },
-    {
-      urlKeys: {
-        categoryId: "id",
-      },
-    }
-  );
-
-  const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Category",
-    "This action cannot be undone",
-    "destructive"
-  );
-
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
+  const [{ sort, order }, setQuery] = useQueryStates({
+    sort: parseAsString.withDefault("created"),
+    order: parseAsString.withDefault("desc"),
+  });
 
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
-  const { data, refetch, isRefetching, isSuccess, isPending } =
-    useGetCategories({
+  const { data, refetch, isRefetching, isSuccess, isPending } = useGetCustomers(
+    {
       q: searchValue,
       p: page,
       limit,
       sort,
       order,
-    });
+    }
+  );
 
-  const loading = isDeleting || isRefetching || isPending;
+  const loading = isRefetching || isPending;
 
-  const categoriesList = useMemo(() => {
+  const customersList = useMemo(() => {
     return data?.data?.data ?? [];
   }, [data]);
-
-  const handleDelete = async (id: string) => {
-    const ok = await confirmDelete();
-    if (!ok) return;
-    deleteCategory({ params: { id } });
-  };
-
-  useEffect(() => {
-    if (categoryId && (!dialog || dialog === null)) {
-      setQuery({ dialog: null });
-    }
-  }, [categoryId, dialog]);
 
   useEffect(() => {
     if (data && isSuccess) {
       setPagination(data.data.pagination);
     }
   }, [isSuccess, data]);
+
   return (
     <div className="w-full flex flex-col gap-6">
-      <DeleteDialog />
-      <CreateEditDialog
-        open={dialog === "create" || dialog === "edit"}
-        onOpenChange={() => {
-          setQuery({ categoryId: null, dialog: null });
-        }}
-        categoryId={categoryId}
-      />
       <div className="w-full flex items-center gap-4 justify-between">
-        <h1 className="text-xl font-semibold">Categories</h1>
+        <h1 className="text-xl font-semibold">Customers</h1>
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">
@@ -104,7 +65,7 @@ export const Client = () => {
             <div className="relative flex items-center group">
               <Input
                 className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search category..."
+                placeholder="Search customer..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -166,17 +127,17 @@ export const Client = () => {
             </div>
             <Button
               className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
-              onClick={() => setQuery({ dialog: "create" })}
+              onClick={() => {}}
               disabled={loading}
             >
               <Plus className="size-3" />
-              Add Category
+              Add Customer
             </Button>
           </div>
         </div>
         <DataTable
-          data={categoriesList}
-          columns={column({ metaPage, setQuery, handleDelete })}
+          data={customersList}
+          columns={column({ metaPage, setQuery })}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}

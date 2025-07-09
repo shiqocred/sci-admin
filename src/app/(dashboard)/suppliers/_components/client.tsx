@@ -65,7 +65,7 @@ export const Client = () => {
 
   const loading = isDeleting || isRefetching || isPending;
 
-  const categoriesList = useMemo(() => {
+  const suppliersList = useMemo(() => {
     return data?.data?.data ?? [];
   }, [data]);
 
@@ -105,7 +105,7 @@ export const Client = () => {
             <div className="relative flex items-center group">
               <Input
                 className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search product..."
+                placeholder="Search supplier..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -176,7 +176,7 @@ export const Client = () => {
           </div>
         </div>
         <DataTable
-          data={categoriesList}
+          data={suppliersList}
           columns={column({ metaPage, setQuery, handleDelete })}
         />
         <Pagination

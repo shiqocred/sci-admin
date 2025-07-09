@@ -40,9 +40,7 @@ export async function GET(
 
     const supplierWithImageUrl = {
       ...supplierRes,
-      image: supplierRes.image
-        ? `https://s3.sro.my.id/${supplierRes.image}`
-        : null,
+      image: supplierRes.image ? `${r2Public}/${supplierRes.image}` : null,
     };
 
     return successRes(supplierWithImageUrl, "Supplier detail");
@@ -128,7 +126,7 @@ export async function PUT(
       .set({
         name,
         slug,
-        image: null,
+        image: existSupplier.image,
         updatedAt: sql`NOW()`,
       })
       .where(eq(suppliers.id, supplierId))
@@ -139,7 +137,12 @@ export async function PUT(
         image: suppliers.image,
       });
 
-    return successRes(supplier, "Supplier successfully updated");
+    const supplierWithImageUrl = {
+      ...supplier,
+      image: supplier.image ? `${r2Public}/${supplier.image}` : null,
+    };
+
+    return successRes(supplierWithImageUrl, "Supplier successfully updated");
   } catch (error) {
     console.log("ERROR_UPDATE_SUPPLIER:", error);
     return errorRes("Internal Error", 500);

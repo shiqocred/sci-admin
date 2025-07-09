@@ -7,6 +7,7 @@ export const pets = pgTable("pets", {
     .$defaultFn(() => createId()),
   name: text("name").notNull(),
   slug: text("slug").unique().notNull(),
+  image: text("image"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

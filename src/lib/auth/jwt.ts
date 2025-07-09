@@ -8,32 +8,38 @@ export const signJWT = (
   return sign(payload, jwtSecret, options);
 };
 
-export function verifyJwt(
-  token: string
-): { sub: string; verified: boolean } | null {
-  try {
-    return verify(token, jwtSecret) as { sub: string; verified: boolean };
-  } catch {
-    return null;
-  }
-}
-
-export const isAuth = async (req: Request) => {
+const tokenJWT = (req: Request) => {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader) {
-    return { status: false, userId: null };
-  }
+
+  if (!authHeader) return null;
 
   const token = authHeader.replace("Bearer ", "");
-  const payload = verifyJwt(token);
+
+  return token;
+};
+
+// cek auth semua halaman
+export const isAuth = async (
+  req: Request,
+  type: "verify" | "noverify" = "noverify"
+) => {
+  const token = tokenJWT(req);
+
+  if (!token) return null;
+
+  const payload: { sub: string; email: string; password: string } | null =
+    verify(token, jwtSecret) as {
+      sub: string;
+      email: string;
+      password: string;
+    };
 
   if (
-    !payload?.sub ||
-    payload?.verified === undefined ||
-    payload?.verified === null
-  ) {
-    return { status: false, userId: null };
-  }
+    (type === "noverify" && payload.email) ||
+    (type === "noverify" && payload.password) ||
+    (type === "verify" && payload.sub)
+  )
+    return null;
 
-  return { status: true, userId: payload.sub };
+  return payload;
 };
