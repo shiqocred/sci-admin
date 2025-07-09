@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
           name,
           image,
           emailVerified: new Date(),
-          role: null,
+          role: "BASIC",
         })
         .returning({ id: users.id });
 
