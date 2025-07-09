@@ -27,6 +27,12 @@ async function main() {
         role: f.default({
           defaultValue: "ADMIN",
         }),
+        image: f.default({
+          defaultValue: null,
+        }),
+        phoneNumber: f.default({
+          defaultValue: null,
+        }),
       },
       count: 1,
     },
@@ -38,8 +44,20 @@ async function main() {
         role: f.default({
           defaultValue: "ADMIN",
         }),
-        isVerified: f.default({
-          defaultValue: true,
+        status: f.default({
+          defaultValue: null,
+        }),
+        fileKta: f.default({
+          defaultValue: null,
+        }),
+        fileKtp: f.default({
+          defaultValue: null,
+        }),
+        name: f.default({
+          defaultValue: null,
+        }),
+        nik: f.default({
+          defaultValue: null,
         }),
       },
       count: 1,

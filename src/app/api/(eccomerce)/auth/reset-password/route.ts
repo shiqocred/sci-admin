@@ -100,11 +100,13 @@ export async function POST(req: NextRequest) {
         ...passwordMatch,
       });
 
-    db.update(users)
+    const [user] = await db
+      .update(users)
       .set({ password: await hash(password) })
-      .where(eq(users.id, userId));
+      .where(eq(users.id, userId))
+      .returning({ id: users.id });
 
-    return successRes(null, "Password successfully reseted");
+    return successRes({ userId: user.id }, "Password successfully reseted");
   } catch (error) {
     console.error("ERROR_RESET_PASSWORD", error);
     return errorRes("Internal Error", 500);

@@ -119,7 +119,6 @@ export async function POST(req: Request) {
     await db.insert(userRoleDetails).values({
       userId,
       role: "BASIC",
-      isVerified: true,
     });
 
     const otp = generateOtp();

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const expires = add(new Date(), { minutes: 15 });
 
     await db.insert(verificationOtp).values({
-      identifier: userExists.id,
+      identifier: userExists.email,
       otp,
       type: "EMAIL_VERIFICATION",
       expires,

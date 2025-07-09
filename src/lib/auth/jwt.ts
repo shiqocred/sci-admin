@@ -1,5 +1,6 @@
 import { sign, SignOptions, verify } from "jsonwebtoken";
 import { jwtSecret } from "@/config";
+import { errorRes } from "./response";
 
 export const signJWT = (
   payload: string | Buffer | object,

@@ -6,6 +6,8 @@ export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
 
+    console.log(email, password);
+
     const user = await db.query.users.findFirst({
       where: (u, { eq }) => eq(u.email, email),
     });
@@ -15,7 +17,7 @@ export async function POST(req: Request) {
     const match = await verify(user.password, password);
     if (!match) return errorRes("Invalid credentials", 401);
 
-    const token = signJWT({ sub: user.id, verified: !!user.emailVerified });
+    const token = signJWT({ sub: user.id });
 
     return successRes(
       {
