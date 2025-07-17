@@ -8,7 +8,7 @@ import { convertToWebP } from "@/lib/convert-image";
 
 const upgradeRolePetshop = z.object({
   nik: z.string().min(16, "Invalid NIK number"),
-  no_kta: z.string().min(1, "KTA number is required"),
+  noKta: z.string().min(1, "KTA number is required"),
   full_name: z.string().min(1, "full name is required"),
   ktp: z
     .custom<File>((val) => val instanceof File, {
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest) {
     const body = {
       full_name: formData.get("full_name") as string,
       nik: formData.get("nik") as string,
-      no_kta: formData.get("no_kta") as string,
+      noKta: formData.get("no_kta") as string,
       ktp: formData.get("ktp") as File,
       kta: formData.get("kta") as File,
     };
@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest) {
       return errorRes("Validation failed", 400, errors);
     }
 
-    const { nik, no_kta, full_name, ktp, kta } = result.data;
+    const { nik, noKta, full_name, ktp, kta } = result.data;
 
     const baseKey = `images/roles/veterinarian/${userId}`;
 
@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest) {
         userId,
         name: full_name,
         nik,
-        no_kta,
+        noKta,
         role: "VETERINARIAN",
         status: "PENDING",
         fileKtp: keyKtp,
