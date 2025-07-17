@@ -1,12 +1,12 @@
 import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
+import { convertToWebP } from "@/lib/convert-image";
 import { pets, db, products, productToPets } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { uploadToR2 } from "@/lib/providers";
 import { createId } from "@paralleldrive/cuid2";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
-import sharp from "sharp";
 import slugify from "slugify";
 import { z } from "zod/v4";
 
@@ -93,8 +93,7 @@ export async function POST(req: Request) {
     const { name, slug } = result.data;
 
     if (image) {
-      const buffer = Buffer.from(await image.arrayBuffer());
-      const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
+      const webpBuffer = await convertToWebP(image);
       const key = `images/pets/${createId()}-${slugify(name, { lower: true })}.webp`;
 
       const r2Up = await uploadToR2({ buffer: webpBuffer, key });

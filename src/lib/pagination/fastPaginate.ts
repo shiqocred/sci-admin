@@ -1,3 +1,5 @@
+import { NextRequest } from "next/server";
+
 export type PaginationMeta = {
   firstPage: number;
   lastPage: number;
@@ -9,7 +11,7 @@ export type PaginationMeta = {
 };
 
 type PaginationOptions = {
-  req: Request | URL | string;
+  req: NextRequest;
   total: number;
   pageParamName?: string;
   limitParamName?: string;
@@ -25,17 +27,16 @@ export function fastPagination({
   offset: number;
   limit: number;
 } {
-  const url =
-    typeof req === "string"
-      ? new URL(req)
-      : req instanceof URL
-        ? req
-        : new URL(req.url);
+  const url = req.nextUrl;
 
-  const page = parseInt(url.searchParams.get(pageParamName) ?? "1", 10);
-  const limit = parseInt(url.searchParams.get(limitParamName) ?? "10", 10);
+  let page = parseInt(url.searchParams.get(pageParamName) ?? "1", 10);
+  let limit = parseInt(url.searchParams.get(limitParamName) ?? "10", 10);
+
+  // ✅ Validasi untuk menghindari NaN atau nilai tidak valid
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1) limit = 10;
+
   const offset = (page - 1) * limit;
-
   const lastPage = Math.max(Math.ceil(total / limit), 1);
   const from = total === 0 ? 0 : offset + 1;
   const last = Math.min(offset + limit, total);

@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { LogInIcon } from "lucide-react";
 import { signIn } from "next-auth/react";
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 import { useSearchParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
@@ -34,12 +34,32 @@ export const Client = () => {
         redirect: true,
         redirectTo: redirectURL ?? "/",
       });
-      toast.success("Login Successfully");
     } catch (error) {
       toast.error("Invalid Credentials");
       console.log("ERROR_LOGIN:", error);
     }
   };
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const code = searchParams.get("code");
+
+    if (error === "CredentialsSignin" && code === "credential_not_match") {
+      toast.error("Email atau password tidak cocok");
+
+      // Menghapus query parameter tanpa reload
+      const newParams = new URLSearchParams(window.location.search);
+      newParams.delete("error");
+      newParams.delete("code");
+
+      if (typeof window !== "undefined") {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const rest = newParams.toString();
+        const cleanUrl = rest ? `${baseUrl}?${rest}` : baseUrl;
+        window.history.replaceState(null, "", cleanUrl);
+      }
+    }
+  }, [searchParams]);
   return (
     <form
       onSubmit={credentialsAction}

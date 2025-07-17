@@ -8,8 +8,19 @@ import { convertToWebP } from "@/lib/convert-image";
 
 const upgradeRolePetshop = z.object({
   nik: z.string().min(16, "Invalid NIK number"),
+  no_kta: z.string().min(1, "KTA number is required"),
   full_name: z.string().min(1, "full name is required"),
   ktp: z
+    .custom<File>((val) => val instanceof File, {
+      message: "File is required",
+    })
+    .refine((file) => file.size > 0, {
+      message: "File is empty",
+    })
+    .refine((file) => file.type.startsWith("image/"), {
+      message: "Only image files are allowed",
+    }),
+  kta: z
     .custom<File>((val) => val instanceof File, {
       message: "File is required",
     })
@@ -34,7 +45,9 @@ export async function PUT(req: NextRequest) {
     const body = {
       full_name: formData.get("full_name") as string,
       nik: formData.get("nik") as string,
+      no_kta: formData.get("no_kta") as string,
       ktp: formData.get("ktp") as File,
+      kta: formData.get("kta") as File,
     };
 
     const result = upgradeRolePetshop.safeParse(body);
@@ -50,20 +63,32 @@ export async function PUT(req: NextRequest) {
       return errorRes("Validation failed", 400, errors);
     }
 
-    const { nik, full_name, ktp } = result.data;
+    const { nik, no_kta, full_name, ktp, kta } = result.data;
 
-    const webpBuffer = await convertToWebP(ktp);
+    const baseKey = `images/roles/veterinarian/${userId}`;
 
-    const key = `images/roles/petshop/ktp-${userId}.webp`;
+    // upload KTP
+    const webpBufferKtp = await convertToWebP(ktp);
 
-    const r2Up = await uploadToR2({ buffer: webpBuffer, key });
+    const keyKtp = `${baseKey}/ktp.webp`;
 
-    if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
+    const r2UpKtp = await uploadToR2({ buffer: webpBufferKtp, key: keyKtp });
+
+    if (!r2UpKtp) return errorRes("Upload Failed", 400, r2UpKtp);
+
+    // upload KTP
+    const webpBufferKta = await convertToWebP(kta);
+
+    const keyKta = `${baseKey}/kta.webp`;
+
+    const r2UpKta = await uploadToR2({ buffer: webpBufferKta, key: keyKta });
+
+    if (!r2UpKta) return errorRes("Upload Failed", 400, r2UpKta);
 
     const [user] = await db
       .update(users)
       .set({
-        role: "PETSHOP",
+        role: "VETERINARIAN",
         updatedAt: sql`NOW()`,
       })
       .where(eq(users.id, userId))
@@ -75,9 +100,11 @@ export async function PUT(req: NextRequest) {
         userId,
         name: full_name,
         nik,
-        role: "PETSHOP",
+        no_kta,
+        role: "VETERINARIAN",
         status: "PENDING",
-        fileKtp: key,
+        fileKtp: keyKtp,
+        fileKta: keyKta,
         updatedAt: sql`NOW()`,
       })
       .where(eq(userRoleDetails.userId, userId))
@@ -95,7 +122,7 @@ export async function PUT(req: NextRequest) {
 
     return successRes(response, "Document successfully submited");
   } catch (error) {
-    console.log("ERROR_UPGRADE_ROLE_PETSHOP", error);
+    console.log("ERROR_UPGRADE_ROLE_VETERINARIAN", error);
     return errorRes("Internal Error", 500);
   }
 }

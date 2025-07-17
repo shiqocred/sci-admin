@@ -95,11 +95,9 @@ export async function POST(req: Request) {
         ...passwordMatch,
       });
 
-    const userId = createId();
-    const user = await db
+    const [user] = await db
       .insert(users)
       .values({
-        id: userId,
         email,
         name,
         phoneNumber: phone_number,
@@ -117,7 +115,7 @@ export async function POST(req: Request) {
       });
 
     await db.insert(userRoleDetails).values({
-      userId,
+      userId: user.id,
       role: "BASIC",
     });
 
@@ -140,7 +138,7 @@ export async function POST(req: Request) {
 
     const jwt = signJWT({ email }, { expiresIn: "15m" });
 
-    return successRes({ token: jwt, user: user[0] }, "Register successfully");
+    return successRes({ token: jwt, user }, "Register successfully");
   } catch (error) {
     console.log("ERROR_REGISTER", error);
     return errorRes("Internal Error", 500);

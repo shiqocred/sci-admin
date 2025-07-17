@@ -11,7 +11,7 @@ export const orderStatusEnum = pgEnum("order_status", [
 export const roleUserEnum = pgEnum("user_role", [
   "BASIC",
   "PETSHOP",
-  "DOCTOR",
+  "VETERINARIAN",
   "ADMIN",
 ]);
 

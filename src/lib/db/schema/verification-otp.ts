@@ -6,4 +6,5 @@ export const verificationOtp = pgTable("verification_otp", {
   otp: text("otp").notNull(),
   type: typeOtpEnum("type").notNull(),
   expires: timestamp("expires", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
 });

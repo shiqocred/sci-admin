@@ -4,10 +4,10 @@ import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
-import sharp from "sharp";
 import { createId } from "@paralleldrive/cuid2";
 import slugify from "slugify";
 import { r2Public } from "@/config";
+import { convertToWebP } from "@/lib/convert-image";
 
 const petSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
@@ -94,8 +94,7 @@ export async function PUT(
     if (image) {
       if (existPet.image) await deleteR2(existPet.image);
 
-      const buffer = Buffer.from(await image.arrayBuffer());
-      const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
+      const webpBuffer = await convertToWebP(image);
       const key = `images/pets/${createId()}-${slugify(name, { lower: true })}.webp`;
 
       const r2Up = await uploadToR2({ buffer: webpBuffer, key });

@@ -6,8 +6,8 @@ import { count, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { createId } from "@paralleldrive/cuid2";
 import slugify from "slugify";
-import sharp from "sharp";
 import { z } from "zod/v4";
+import { convertToWebP } from "@/lib/convert-image";
 
 const supplierSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
@@ -94,8 +94,7 @@ export async function PUT(
     if (image) {
       if (existSupplier.image) await deleteR2(existSupplier.image);
 
-      const buffer = Buffer.from(await image.arrayBuffer());
-      const webpBuffer = await sharp(buffer).webp({ quality: 50 }).toBuffer();
+      const webpBuffer = await convertToWebP(image);
       const key = `images/suppliers/${createId()}-${slugify(name, { lower: true })}.webp`;
 
       const r2Up = await uploadToR2({ buffer: webpBuffer, key });

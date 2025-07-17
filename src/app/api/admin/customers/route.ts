@@ -1,5 +1,5 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { db, orders, users } from "@/lib/db";
+import { db, orders, userRoleDetails, users } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { and, asc, count, desc, eq, not, sum } from "drizzle-orm";
 import { NextRequest } from "next/server";
@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         isVerified: users.emailVerified,
         role: users.role,
         image: users.image,
+        status_role: userRoleDetails.status,
         orders: count(orders.id).as("orders"),
         amountSpent: sum(orders.totalPrice).as("amountSpent"),
       })
@@ -50,23 +51,33 @@ export async function GET(req: NextRequest) {
           )
         )
       )
+      .leftJoin(userRoleDetails, eq(userRoleDetails.userId, users.id))
       .where(and(where, not(eq(users.role, "ADMIN"))))
-      .groupBy(users.id)
+      .groupBy(users.id, userRoleDetails.status)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)
       .offset(offset);
 
     const formatRole = (
-      role: "BASIC" | "PETSHOP" | "DOCTOR" | "ADMIN" | null
+      role: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN" | null
     ) => {
       if (role === "BASIC") return "Basic";
       if (role === "PETSHOP") return "Pet Shop";
-      return "Doctor";
+      return "Veterinarian";
+    };
+
+    const formatStatus = (
+      status: "PENDING" | "APPROVED" | "REJECTED" | null
+    ) => {
+      if (status === "PENDING") return 1;
+      if (status === "REJECTED") return 2;
+      return 0;
     };
 
     const customersFormatted = customersRes.map((user) => ({
       ...user,
       role: formatRole(user.role),
+      status_role: formatStatus(user.status_role),
       isVerified: user.isVerified !== null,
       orders: Number(user.orders),
       amountSpent: Number(user.amountSpent ?? 0),

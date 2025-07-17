@@ -12,15 +12,12 @@ export function buildWhereClause(
   q: string,
   fields: AnyPgColumn[]
 ): SQL | undefined {
-  if (!q || fields.length === 0) return undefined;
+  const trimmed = q.trim();
+  if (!trimmed || fields.length === 0) return undefined;
 
-  const pattern = `%${q}%`;
+  const pattern = `%${trimmed}%`;
 
-  // Kembalikan satu ilike jika hanya satu kolom
-  if (fields.length === 1) {
-    return ilike(fields[0], pattern);
-  }
-
-  // Jika banyak kolom, pakai or(...)
-  return or(...fields.map((field) => ilike(field, pattern)));
+  return fields.length === 1
+    ? ilike(fields[0], pattern)
+    : or(...fields.map((field) => ilike(field, pattern)));
 }

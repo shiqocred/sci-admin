@@ -135,12 +135,13 @@ export async function GET(req: NextRequest) {
         : petFilter
       : baseWhere;
 
-    const { offset, limit, pagination } = await getTotalAndPagination(
+    const { where, offset, limit, pagination } = await getTotalAndPagination(
       products,
       q,
       [products.name, products.slug],
       req,
-      baseWhere
+      finalWhere,
+      true
     );
 
     const results = await db
@@ -170,7 +171,7 @@ export async function GET(req: NextRequest) {
       .leftJoin(productToPets, eq(products.id, productToPets.productId))
       .leftJoin(pets, eq(productToPets.petId, pets.id))
       .leftJoin(productVariants, eq(productVariants.productId, products.id))
-      .where(finalWhere)
+      .where(where)
       .groupBy(products.id, categories.name, suppliers.name)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)

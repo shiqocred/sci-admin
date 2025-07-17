@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
@@ -27,6 +27,10 @@ export async function authorizeWithCredentials(
   };
 }
 
+class CustomError extends CredentialsSignin {
+  code = "credential_not_match";
+}
+
 export const { handlers, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -49,25 +53,20 @@ export const { handlers, auth } = NextAuth({
           );
 
           if (!user || user.role !== "ADMIN") {
-            throw Object.assign(new Error("Invalid credentials"), {
-              name: "CredentialsSignin",
-              code: "invalid_credentials", // akan muncul di URL ?error=invalid_credentials
-            });
+            throw new CustomError();
           }
 
           return user;
         } catch (error) {
           console.log("CREDENTIALS", error);
-          throw Object.assign(new Error("Internal server error"), {
-            name: "CredentialsSignin", // tetap pakai name ini agar tidak error=Configuration
-            code: "internal_error", // custom code
-          });
+          throw new CustomError();
         }
       },
     }),
   ],
   pages: {
     error: "/login",
+    signIn: "/login",
   },
   session: {
     strategy: "jwt",

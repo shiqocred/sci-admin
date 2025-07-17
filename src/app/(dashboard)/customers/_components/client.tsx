@@ -15,6 +15,7 @@ import { column } from "./columns";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
 import { parseAsString, useQueryStates } from "nuqs";
+import { SheetRole } from "./dialogs/sheet-role";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -24,10 +25,19 @@ const filterField = [
 ];
 
 export const Client = () => {
-  const [{ sort, order }, setQuery] = useQueryStates({
-    sort: parseAsString.withDefault("created"),
-    order: parseAsString.withDefault("desc"),
-  });
+  const [{ sort, order, dialog, customerId }, setQuery] = useQueryStates(
+    {
+      sort: parseAsString.withDefault("created"),
+      order: parseAsString.withDefault("desc"),
+      dialog: parseAsString.withDefault(""),
+      customerId: parseAsString.withDefault(""),
+    },
+    {
+      urlKeys: {
+        customerId: "id",
+      },
+    }
+  );
 
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
@@ -56,6 +66,13 @@ export const Client = () => {
 
   return (
     <div className="w-full flex flex-col gap-6">
+      <SheetRole
+        open={dialog === "review"}
+        onOpenChange={() => {
+          setQuery({ dialog: null, customerId: null });
+        }}
+        id={customerId}
+      />
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Customers</h1>
       </div>

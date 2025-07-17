@@ -14,11 +14,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import {
   BadgeCheck,
   CheckCircle,
+  Clock,
   Edit,
   IdCard,
   ImageIcon,
   MoreHorizontal,
   Trash2,
+  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { cn, formatRupiah, sizesImage } from "@/lib/utils";
@@ -88,20 +90,32 @@ export const column = ({
     header: "Role",
     accessorKey: "role",
     cell: ({ row }) => {
-      const role = row.original.role;
+      const customer = row.original;
       return (
-        <p
-          className={cn(
-            "text-center w-fit px-2 py-0.5 font-medium rounded",
-            role === "Basic"
-              ? "bg-emerald-200"
-              : role === "Pet Shop"
-                ? "bg-violet-200"
-                : "bg-amber-200"
+        <div className="text-center w-fit font-medium flex gap-2 items-center">
+          <p
+            className={cn(
+              "px-2 py-0.5 rounded-full",
+              customer.role === "Basic"
+                ? "bg-emerald-100"
+                : customer.role === "Pet Shop"
+                  ? "bg-violet-100"
+                  : "bg-amber-100"
+            )}
+          >
+            {customer.role}
+          </p>
+          {customer.status_role === 1 && (
+            <TooltipText value={"Pending"}>
+              <Clock className="size-3 text-gray-500" />
+            </TooltipText>
           )}
-        >
-          {role}
-        </p>
+          {customer.status_role === 2 && (
+            <TooltipText value={"Rejected"}>
+              <XCircle className="size-3 text-red-500" />
+            </TooltipText>
+          )}
+        </div>
       );
     },
   },
@@ -127,7 +141,7 @@ export const column = ({
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const supplier = row.original;
+      const customer = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -141,11 +155,21 @@ export const column = ({
               Actions
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-xs" onSelect={() => {}}>
+            <DropdownMenuItem
+              disabled={customer.isVerified}
+              className="text-xs"
+              onSelect={() => {}}
+            >
               <BadgeCheck className="size-3.5" />
               Mark email as verified
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs" onSelect={() => {}}>
+            <DropdownMenuItem
+              className="text-xs"
+              disabled={customer.status_role !== 1}
+              onSelect={() =>
+                setQuery({ dialog: "review", customerId: customer.id })
+              }
+            >
               <IdCard className="size-3.5" />
               Review upgrade role
             </DropdownMenuItem>
