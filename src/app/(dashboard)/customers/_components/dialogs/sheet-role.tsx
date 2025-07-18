@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const SheetRole = ({
   open,
@@ -146,148 +147,150 @@ export const SheetRole = ({
               <p className="text-sm">Loading document...</p>
             </div>
           ) : (
-            <div className="flex flex-col">
-              {reviewData?.fileKtp && (
-                <div className="flex flex-col w-full items-center px-10 justify-center border-b border-white py-5 gap-2 text-sm">
-                  <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                    <Image
-                      src={reviewData.fileKtp}
-                      fill
-                      sizes={sizesImage}
-                      className="object-cover"
-                      alt="KTP"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setUrlReview(reviewData.fileKtp);
-                      setIsActive("KTP");
-                    }}
-                    className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                  >
-                    <Eye />
-                    KTP
-                  </Button>
-                </div>
-              )}
-              {reviewData?.storefront && (
-                <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
-                  <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                    <Image
-                      src={reviewData.storefront}
-                      fill
-                      sizes={sizesImage}
-                      className="object-cover"
-                      alt="Pet Shop Building"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setUrlReview(reviewData.storefront);
-                      setIsActive("Pet Shop Building");
-                    }}
-                    className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                  >
-                    <Eye />
-                    Pet Shop Building
-                  </Button>
-                </div>
-              )}
-              {reviewData?.fileKta && (
-                <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
-                  <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                    <Image
-                      src={reviewData.fileKta}
-                      fill
-                      sizes={sizesImage}
-                      className="object-cover"
-                      alt="KTA"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setUrlReview(reviewData.fileKta);
-                      setIsActive("KTA");
-                    }}
-                    className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                  >
-                    <Eye />
-                    KTA
-                  </Button>
-                </div>
-              )}
-              <div className="flex flex-col bg-white">
-                <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
-                  <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
-                    NIK
-                  </div>
-                  <div className="pr-5">{reviewData?.nik}</div>
-                </div>
-                {reviewData?.noKta && (
-                  <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
-                    <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
-                      No KTA
-                    </div>
-                    <div className="pr-5">{reviewData?.noKta}</div>
-                  </div>
-                )}
-                <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
-                  <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
-                    Full Name
-                  </div>
-                  <div className="pr-5">{reviewData?.name}</div>
-                </div>
-              </div>
-              <div className="w-full h-10 grid grid-cols-2 mt-4">
-                <Dialog open={isReject} onOpenChange={setIsReject}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full h-full rounded-none shadow-none bg-red-300 text-black hover:bg-red-400 ">
-                      <X />
-                      Rejected
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent showCloseButton={false}>
-                    <DialogHeader>
-                      <DialogTitle>Reject Document</DialogTitle>
-                      <DialogDescription>
-                        This action cannot be undone
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-1.5">
-                      <Label>Message</Label>
-                      <Textarea
-                        className="focus-visible:ring-0"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
+            <div className="h-[calc(100vh-56px+16px)] overflow-y-auto">
+              <div className="flex flex-col pb-10">
+                {reviewData?.fileKtp && (
+                  <div className="flex flex-col w-full items-center px-10 justify-center border-b border-white py-5 gap-2 text-sm">
+                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                      <Image
+                        src={reviewData.fileKtp}
+                        fill
+                        sizes={sizesImage}
+                        className="object-cover"
+                        alt="KTP"
                       />
                     </div>
-                    <DialogFooter>
-                      <Button
-                        variant={"outline"}
-                        onClick={() => {
-                          setIsReject(false);
-                          setInput("");
-                        }}
-                      >
-                        Cancel
+                    <Button
+                      onClick={() => {
+                        setUrlReview(reviewData.fileKtp);
+                        setIsActive("KTP");
+                      }}
+                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                    >
+                      <Eye />
+                      KTP
+                    </Button>
+                  </div>
+                )}
+                {reviewData?.storefront && (
+                  <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
+                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                      <Image
+                        src={reviewData.storefront}
+                        fill
+                        sizes={sizesImage}
+                        className="object-cover"
+                        alt="Pet Shop Building"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setUrlReview(reviewData.storefront);
+                        setIsActive("Pet Shop Building");
+                      }}
+                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                    >
+                      <Eye />
+                      Pet Shop Building
+                    </Button>
+                  </div>
+                )}
+                {reviewData?.fileKta && (
+                  <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
+                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                      <Image
+                        src={reviewData.fileKta}
+                        fill
+                        sizes={sizesImage}
+                        className="object-cover"
+                        alt="KTA"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setUrlReview(reviewData.fileKta);
+                        setIsActive("KTA");
+                      }}
+                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                    >
+                      <Eye />
+                      KTA
+                    </Button>
+                  </div>
+                )}
+                <div className="flex flex-col bg-white">
+                  <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
+                    <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
+                      NIK
+                    </div>
+                    <div className="pr-5">{reviewData?.nik}</div>
+                  </div>
+                  {reviewData?.noKta && (
+                    <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
+                      <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
+                        No KTA
+                      </div>
+                      <div className="pr-5">{reviewData?.noKta}</div>
+                    </div>
+                  )}
+                  <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
+                    <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
+                      Full Name
+                    </div>
+                    <div className="pr-5">{reviewData?.name}</div>
+                  </div>
+                </div>
+                <div className="w-full h-10 grid grid-cols-2 mt-4">
+                  <Dialog open={isReject} onOpenChange={setIsReject}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full h-full rounded-none shadow-none bg-red-300 text-black hover:bg-red-400 ">
+                        <X />
+                        Rejected
                       </Button>
-                      <Button
-                        onClick={handleReject}
-                        disabled={!input}
-                        className="bg-red-300 text-black hover:bg-red-400 "
-                      >
-                        Confirm
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  onClick={handleApprove}
-                  className="w-full h-full rounded-none shadow-none bg-green-300 text-black hover:bg-green-400"
-                >
-                  <Check />
-                  Approved
-                </Button>
+                    </DialogTrigger>
+                    <DialogContent showCloseButton={false}>
+                      <DialogHeader>
+                        <DialogTitle>Reject Document</DialogTitle>
+                        <DialogDescription>
+                          This action cannot be undone
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Message</Label>
+                        <Textarea
+                          className="focus-visible:ring-0"
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant={"outline"}
+                          onClick={() => {
+                            setIsReject(false);
+                            setInput("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleReject}
+                          disabled={!input}
+                          className="bg-red-300 text-black hover:bg-red-400 "
+                        >
+                          Confirm
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  <Button
+                    onClick={handleApprove}
+                    className="w-full h-full rounded-none shadow-none bg-green-300 text-black hover:bg-green-400"
+                  >
+                    <Check />
+                    Approved
+                  </Button>
+                </div>
               </div>
             </div>
           )}
