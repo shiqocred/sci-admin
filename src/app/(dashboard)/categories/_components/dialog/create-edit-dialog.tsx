@@ -16,10 +16,13 @@ import {
   useGetShowCategory,
   useUpdateCategory,
 } from "../../_api";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const initialValue = {
   name: "",
   slug: "",
+  image: null as File | null,
+  imageOld: "" as string | null,
 };
 
 export const CreateEditDialog = ({
@@ -36,14 +39,13 @@ export const CreateEditDialog = ({
   const [isGenerating, setIsGenerating] = useState(false); // trigger dari luar
 
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-  const { mutate: updateeCategory, isPending: isUpdateing } =
-    useUpdateCategory();
+  const { mutate: UpdateCategory, isPending: isupdating } = useUpdateCategory();
   const { data, isPending, isSuccess } = useGetShowCategory({
     categoryId,
     open,
   });
 
-  const loading = isCreating || isUpdateing || (isPending && !!categoryId);
+  const loading = isCreating || isupdating || (isPending && !!categoryId);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.target;
@@ -52,9 +54,16 @@ export const CreateEditDialog = ({
 
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
+    const body = new FormData();
+    body.append("name", input.name);
+    body.append("slug", input.slug);
+    if (input.image) {
+      body.append("image", input.image);
+    }
+
     if (categoryId) {
-      return updateeCategory(
-        { body: input, params: { id: categoryId } },
+      return UpdateCategory(
+        { body, params: { id: categoryId } },
         {
           onSuccess: () => {
             setIsGenerating(true);
@@ -63,8 +72,9 @@ export const CreateEditDialog = ({
         }
       );
     }
+
     return createCategory(
-      { body: input },
+      { body },
       {
         onSuccess: () => {
           setIsGenerating(true);
@@ -87,6 +97,8 @@ export const CreateEditDialog = ({
       setInput({
         name: category.name,
         slug: category.slug,
+        image: null,
+        imageOld: category.image,
       });
       // get unique code in last slug
       const getUnique = category.slug.match(/-(\d+)$/);
@@ -114,7 +126,7 @@ export const CreateEditDialog = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{categoryId ? "Edit" : "Create"} Category</DialogTitle>
+          <DialogTitle>{categoryId ? "Edit" : "Create"} category</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         <form onSubmit={handleCreate} className="gap-6 flex flex-col">
@@ -125,6 +137,16 @@ export const CreateEditDialog = ({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              <FileUpload
+                multiple={false}
+                imageOld={input.imageOld}
+                setImageOld={(e: any) =>
+                  setInput((prev) => ({ ...prev, imageOld: e }))
+                }
+                onChange={(e) =>
+                  setInput((prev) => ({ ...prev, image: e as File }))
+                }
+              />
               <LabelInput
                 label="Name"
                 id="name"

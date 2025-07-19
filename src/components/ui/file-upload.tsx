@@ -102,6 +102,7 @@ export const FileUpload = ({
                 />
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-sm">
                   <Button
+                    type="button"
                     size="icon"
                     variant="ghost"
                     className="text-white hover:text-red-400"

@@ -1,9 +1,14 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { categories, db, products } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
+import { uploadToR2 } from "@/lib/providers";
+import { createId } from "@paralleldrive/cuid2";
 import { asc, count, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import slugify from "slugify";
 import { z } from "zod/v4";
+import { r2Public } from "@/config";
+import { convertToWebP } from "@/lib/convert-image";
 
 const categorySchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),
@@ -38,6 +43,7 @@ export async function GET(req: NextRequest) {
         id: categories.id,
         name: categories.name,
         slug: categories.slug,
+        image: categories.image,
         totalProducts: count(products.id).as("totalProducts"),
       })
       .from(categories)
@@ -48,7 +54,15 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    return successRes({ data: categoriesRes, pagination }, "Category list");
+    const categoriesResFormated = categoriesRes.map((item) => ({
+      ...item,
+      image: item.image ? `${r2Public}/${item.image}` : null,
+    }));
+
+    return successRes(
+      { data: categoriesResFormated, pagination },
+      "Categories list"
+    );
   } catch (error) {
     console.log("ERROR_GET_CATEGORIES", error);
     return errorRes("Internal Error", 500);
@@ -60,8 +74,13 @@ export async function POST(req: Request) {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const body = await req.json();
-    const result = categorySchema.safeParse(body);
+    const body = await req.formData();
+    const nameBody = body.get("name") as string;
+    const slugBody = body.get("slug") as string;
+    const image = body.get("image") as File | null;
+
+    const result = categorySchema.safeParse({ name: nameBody, slug: slugBody });
+
     if (!result.success) {
       const errors: Record<string, string> = {};
 
@@ -75,15 +94,49 @@ export async function POST(req: Request) {
 
     const { name, slug } = result.data;
 
+    if (image) {
+      const webpBuffer = await convertToWebP(image);
+      const key = `images/categories/${createId()}-${slugify(name, { lower: true })}.webp`;
+
+      const r2Up = await uploadToR2({ buffer: webpBuffer, key });
+
+      if (!r2Up) return errorRes("Upload Failed", 400, r2Up);
+
+      const [category] = await db
+        .insert(categories)
+        .values({
+          name,
+          slug,
+          image: key,
+        })
+        .returning({
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          image: categories.image,
+        });
+
+      const categoryWithImageUrl = {
+        ...category,
+        image: category.image ? `${r2Public}/${category.image}` : null,
+      };
+
+      return successRes(categoryWithImageUrl, "Category successfully created");
+    }
+
     const [category] = await db
       .insert(categories)
       .values({
         name,
         slug,
       })
-      .returning({ name: categories.name, slug: categories.slug });
+      .returning({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+      });
 
-    return successRes(category, "Category successfully created");
+    return successRes(category, "Category Successfully created");
   } catch (error) {
     console.log("ERROR_CREATE_CATEGORY:", error);
     return errorRes("Internal Error", 500);

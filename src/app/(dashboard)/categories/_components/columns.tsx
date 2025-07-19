@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { MetaPageProps } from "@/lib/pagination";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, ImageIcon, MoreHorizontal, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { sizesImage } from "@/lib/utils";
 
 export const column = ({
   metaPage,
@@ -30,6 +32,29 @@ export const column = ({
         {(metaPage.from + row.index).toLocaleString()}
       </div>
     ),
+  },
+  {
+    header: "",
+    accessorKey: "image",
+    cell: ({ row }) => {
+      const category = row.original;
+
+      return (
+        <div className="size-10 relative rounded overflow-hidden flex items-center justify-center border">
+          {category.image ? (
+            <Image
+              src={category.image}
+              alt={category.name}
+              fill
+              sizes={sizesImage}
+              className="object-cover"
+            />
+          ) : (
+            <ImageIcon className="size-5" />
+          )}
+        </div>
+      );
+    },
   },
   {
     header: "Name",

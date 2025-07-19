@@ -7,6 +7,7 @@ type Response = {
       id: string;
       name: string;
       slug: string;
+      image: string | null;
     }[];
     pagination: PaginationMeta;
   };
