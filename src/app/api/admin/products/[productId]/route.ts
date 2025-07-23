@@ -308,41 +308,30 @@ const imageHandle = async (
   const removedImageId = removedImages.map((item) => item.id);
   const removedImageKey = removedImages.map((item) => item.url);
 
-  const uploadedKeys: string[] = [];
+  // --- Operasi R2 (di luar transaksi DB, bisa paralel) ---
+  // Mulai hapus gambar lama dari R2 (tidak perlu menunggu)
+  const deleteR2Promises = removedImageKey.map((key) => deleteR2(key));
 
-  // --- Combine DB and R2 operations into transaction ---
-  await db.transaction(async (tx) => {
-    // 1. Delete removed images from DB
-    if (removedImageId.length > 0) {
-      await tx
-        .delete(productImages)
-        .where(inArray(productImages.id, removedImageId));
-    }
-
-    // 2. Delete removed images from R2 (outside transaction, but batched)
-    if (removedImageKey.length > 0) {
-      await Promise.all(removedImageKey.map((key) => deleteR2(key)));
-    }
-
-    // 3. Upload new images to R2 and prepare keys
-    for (const image of images) {
-      const buffer = await convertToWebP(image);
-      const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
-      await uploadToR2({ buffer, key }); // Assuming uploadToR2 is not awaited for DB insert
-      uploadedKeys.push(key);
-    }
-
-    // 4. Insert new image records into DB
-    if (uploadedKeys.length > 0) {
-      await tx.insert(productImages).values(
-        uploadedKeys.map((url) => ({
-          id: createId(),
-          productId,
-          url,
-        }))
-      );
-    }
+  // --- Upload Gambar Baru (Paralel) ---
+  // Konversi dan upload gambar baru ke R2 secara paralel
+  const uploadPromises = images.map(async (image) => {
+    const buffer = await convertToWebP(image);
+    const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
+    await uploadToR2({ buffer, key });
+    return key;
   });
+
+  // Tunggu hingga semua upload selesai
+  const uploadedKeys = await Promise.all(uploadPromises);
+
+  // Tunggu juga hingga semua delete R2 selesai (opsional, bisa dilakukan di background)
+  // await Promise.all(deleteR2Promises); // Tergantung apakah perlu menunggu atau tidak
+
+  // Kembalikan informasi yang dibutuhkan untuk operasi DB
+  return {
+    removedImageId, // ID gambar yang perlu dihapus dari DB
+    uploadedKeys, // Key gambar baru yang perlu dimasukkan ke DB
+  };
 };
 
 const petHandle = async (tx: any, productId: string, petIds: string[]) => {
@@ -720,14 +709,34 @@ export async function PUT(
         })
         .where(eq(products.id, productId));
 
-      // 2. Handle Images (including DB operations)
-      await imageHandle(formData, productId, title); // Pass tx if needed inside
+      const { removedImageId, uploadedKeys } = await imageHandle(
+        formData,
+        productId,
+        title
+      );
+
+      // Operasi DB gambar dilakukan dalam transaksi utama
+      // Hapus gambar lama dari DB
+      if (removedImageId.length > 0) {
+        await tx
+          .delete(productImages)
+          .where(inArray(productImages.id, removedImageId));
+      }
+      // Masukkan gambar baru ke DB
+      if (uploadedKeys.length > 0) {
+        await tx.insert(productImages).values(
+          uploadedKeys.map((url) => ({
+            id: createId(),
+            productId,
+            url,
+          }))
+        );
+      }
 
       // 3. Handle Pets
       if (petIds && petIds.length > 0) {
         await petHandle(tx, productId, petIds);
       } else {
-        // If petIds is empty or null, remove all existing associations
         await tx
           .delete(productToPets)
           .where(eq(productToPets.productId, productId));
@@ -737,14 +746,13 @@ export async function PUT(
       if (compositions?.length) {
         await compositionHandle(tx, productId, compositions);
       } else {
-        // If compositions is empty or null, remove all existing ones
         await tx
           .delete(productCompositions)
           .where(eq(productCompositions.productId, productId));
       }
 
       // 5. Handle Variants
-      await handleVariants(tx, variants, defaultVariant, productId); // Pass tx
+      await handleVariants(tx, variants, defaultVariant, productId);
     });
 
     return successRes({ id: productId }, "Product updated", 200); // 200 OK is more standard for updates
