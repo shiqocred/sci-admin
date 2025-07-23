@@ -15,6 +15,7 @@ import {
   Edit,
   ImageIcon,
   MoreHorizontal,
+  ReceiptText,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
@@ -23,12 +24,12 @@ export const column = ({
   metaPage,
   handleDelete,
   handleChangeStatus,
-  handleMoveEdit,
+  handleMove,
 }: {
   metaPage: MetaPageProps;
   handleDelete: (id: string) => Promise<void>;
   handleChangeStatus: (id: string) => Promise<void>;
-  handleMoveEdit: (id: string) => void;
+  handleMove: (id: string, type: "detail" | "edit") => void;
 }): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -139,7 +140,14 @@ export const column = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-xs"
-              onSelect={() => handleMoveEdit(product.id)}
+              onSelect={() => handleMove(product.id, "detail")}
+            >
+              <ReceiptText className="size-3.5" />
+              Detail
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-xs"
+              onSelect={() => handleMove(product.id, "edit")}
             >
               <Edit className="size-3.5" />
               Edit

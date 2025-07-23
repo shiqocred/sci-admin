@@ -25,10 +25,7 @@ export async function generateMetadata({
   const data = await dataDetail({ params });
 
   return {
-    title: data.name,
-    openGraph: {
-      images: data.image ?? "/images/logo-sci.png",
-    },
+    title: `detail ${data.name}`,
   };
 }
 
@@ -50,7 +47,7 @@ const ProductsPage = async ({
       breadcrumbs={[
         { label: "Home", url: "/" },
         { label: "Products", url: "/products" },
-        { label: "Edit" },
+        { label: "Detail" },
         { label: data.name },
       ]}
     >

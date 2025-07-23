@@ -2,7 +2,6 @@ import {
   pgTable,
   text,
   numeric,
-  integer,
   boolean,
   timestamp,
   uniqueIndex,
@@ -31,7 +30,7 @@ export const productVariants = pgTable(
     petShopPrice: numeric("pet_shop_price", { precision: 10, scale: 0 }),
     doctorPrice: numeric("doctor_price", { precision: 10, scale: 0 }),
 
-    stock: integer("stock").notNull().default(0),
+    stock: numeric("stock", { precision: 8, scale: 0 }),
     weight: numeric("weight", { precision: 8, scale: 0 }),
 
     isDefault: boolean("is_default").default(false), // optional if you want to mark a default variant

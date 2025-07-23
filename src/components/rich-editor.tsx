@@ -10,7 +10,7 @@ import {
   useEditor,
 } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
@@ -300,6 +300,12 @@ export const RichInput = forwardRef<Editor, RichInputProps>(
       onUpdate: ({ editor }) => onChange?.(editor.getHTML()),
       immediatelyRender: false,
     });
+
+    useEffect(() => {
+      if (editor && content !== undefined && content !== editor.getHTML()) {
+        editor.commands.setContent(content);
+      }
+    }, [content, editor]);
 
     if (!editor) {
       return (

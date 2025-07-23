@@ -50,6 +50,16 @@ export const Client = () => {
     }
   );
 
+  let formatedStatus: boolean | undefined;
+
+  if (statusProduct === "publish") {
+    formatedStatus = true;
+  } else if (statusProduct === "daft") {
+    formatedStatus = false;
+  } else {
+    formatedStatus = undefined;
+  }
+
   const [ChangeStatusDialog, confirmChangeStatus] = useConfirm(
     "Change Status Product",
     "This action cannot be undone"
@@ -75,12 +85,7 @@ export const Client = () => {
     categoryId: categoryId ?? undefined,
     petId: petId ?? undefined,
     supplierId: supplierId ?? undefined,
-    status:
-      statusProduct === "publish"
-        ? true
-        : statusProduct === "draft"
-          ? false
-          : undefined,
+    status: formatedStatus,
   });
 
   const loading = isPending || isRefetching || isChanging || isDeleting;
@@ -89,8 +94,8 @@ export const Client = () => {
     return data?.data.data ?? [];
   }, [data]);
 
-  const handleMoveEdit = (id: string) => {
-    router.push(`/products/${id}`);
+  const handleMove = (id: string, type: "detail" | "edit") => {
+    router.push(`/products/${id}/${type === "detail" ? "detail" : "edit"}`);
   };
 
   const handleChangeStatus = async (id: string) => {
@@ -209,7 +214,7 @@ export const Client = () => {
             metaPage,
             handleDelete,
             handleChangeStatus,
-            handleMoveEdit,
+            handleMove,
           })}
         />
         <Pagination

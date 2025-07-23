@@ -8,11 +8,15 @@ export const ProductCore = ({
   handleOnChange,
   disabled,
   setImagesProduct,
+  imageOld,
+  setImageOld,
 }: {
   input: any;
   handleOnChange: any;
   disabled: boolean;
   setImagesProduct: React.Dispatch<React.SetStateAction<File[] | null>>;
+  imageOld: string[];
+  setImageOld: React.Dispatch<React.SetStateAction<string[]>>;
 }) => {
   return (
     <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
@@ -28,10 +32,8 @@ export const ProductCore = ({
         <Label>Images</Label>
         <FileUpload
           onChange={(e) => setImagesProduct(e as File[])}
-          // imageOld={input.imageOld}
-          // setImageOld={(e: any) =>
-          //   setInput((prev) => ({ ...prev, imageOld: e }))
-          // }
+          imageOld={imageOld}
+          setImageOld={(e: any) => setImageOld(e)}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { count, Table, and, SQL, eq } from "drizzle-orm";
+import { count, Table, and, SQL, eq, countDistinct } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { buildWhereClause } from "../search";
 import { db } from "./client";
@@ -22,13 +22,27 @@ export async function getTotalAndPagination(
 
   const baseQuery = db.select({ count: count() }).from(table);
 
-  if (joinPets) {
-    baseQuery.leftJoin(productToPets, eq(productToPets.productId, products.id));
-  }
-
   const totalResult = await baseQuery.where(where);
 
-  const total = totalResult[0].count;
+  let total: number;
+
+  total = totalResult[0].count;
+
+  if (joinPets) {
+    const baseQueryA = db
+      .select({ count: countDistinct(products.id) })
+      .from(products);
+    baseQueryA.leftJoin(
+      productToPets,
+      eq(productToPets.productId, products.id)
+    );
+
+    const totalResultA = await baseQueryA.where(where);
+
+    total = totalResultA[0].count;
+  }
+
+  console.log("Total products:", total);
 
   const { offset, limit, pagination } = fastPagination({ req, total });
 

@@ -31,12 +31,15 @@ import {
   ChevronDown,
   ChevronRight,
   CirclePlus,
+  Eye,
+  RefreshCcw,
   Save,
+  Trash2,
   X,
 } from "lucide-react";
-import React, { MouseEvent, useMemo, useState } from "react";
+import React, { MouseEvent, useEffect, useMemo, useState } from "react";
 import {
-  useCreateProduct,
+  useUpdateProduct,
   useGetSelectCategories,
   useGetSelectPets,
   useGetSelectSuppliers,
@@ -46,58 +49,81 @@ import { ProductDescription } from "./product-description";
 import { SingleVariant } from "./single-variant";
 import { MultipleVariant } from "./multiple-variant";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useDeleteProduct } from "../../../_api";
+import { useGetShowProduct } from "../../_api";
+import { TooltipText } from "@/providers/tooltip-provider";
+
+interface CompositionProps {
+  id: string;
+  name: string;
+  value: string;
+}
+
+interface VariantsProps {
+  id: string;
+  name: string;
+  sku: string;
+  barcode: string;
+  quantity: string;
+  normalPrice: string;
+  basicPrice: string;
+  petShopPrice: string;
+  doctorPrice: string;
+  weight: string;
+  isOpen: boolean;
+}
+
+const initialValue = {
+  title: "",
+  description: "",
+  indication: "",
+  dosageUsage: "",
+  storageInstruction: "",
+  packaging: "",
+  registrationNumber: "",
+  isActive: false,
+  categoryId: "",
+  supplierId: "",
+};
+
+const initialDefaultVariant = {
+  id: "",
+  name: "default",
+  sku: "",
+  barcode: "",
+  quantity: "0",
+  normalPrice: "0",
+  basicPrice: "0",
+  petShopPrice: "0",
+  doctorPrice: "0",
+  weight: "0",
+};
 
 export const Client = () => {
+  const { productId } = useParams();
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSupplierOpen, setIsSupplierOpen] = useState(false);
   const [isPetOpen, setIsPetOpen] = useState(false);
   const [isVariant, setIsVariant] = useState<boolean | "indeterminate">(false);
   const [imagesProduct, setImagesProduct] = useState<File[] | null>(null);
-  const [input, setInput] = useState({
-    title: "",
-    description: "",
-    indication: "",
-    dosageUsage: "",
-    storageInstruction: "",
-    packaging: "",
-    registrationNumber: "",
-    isActive: false,
-    categoryId: "",
-    supplierId: "",
-  });
+  const [imageOld, setImageOld] = useState<string[]>([]);
+  const [input, setInput] = useState(initialValue);
   const [petIds, setPetIds] = useState<string[]>([]);
-  const [compositions, setCompositions] = useState<
-    { id: string; name: string; value: string }[]
-  >([]);
-  const [defaultVariants, setDefaultVariants] = useState({
-    id: "",
-    name: "default",
-    sku: "",
-    barcode: "",
-    quantity: "0",
-    normalPrice: "0",
-    basicPrice: "0",
-    petShopPrice: "0",
-    doctorPrice: "0",
-    weight: "0",
-  });
-  const [variants, setVariants] = useState<
-    {
-      id: string;
-      name: string;
-      sku: string;
-      barcode: string;
-      quantity: string;
-      normalPrice: string;
-      basicPrice: string;
-      petShopPrice: string;
-      doctorPrice: string;
-      weight: string;
-      isOpen: boolean;
-    }[]
-  >([]);
+  const [compositions, setCompositions] = useState<CompositionProps[]>([]);
+  const [defaultVariants, setDefaultVariants] = useState(initialDefaultVariant);
+  const [variants, setVariants] = useState<VariantsProps[]>([]);
 
-  const { mutate: createProduct, isPending: isCreating } = useCreateProduct();
+  const [DeleteDialog, confirmDelete] = useConfirm(
+    "Delete Product",
+    "This action cannot be undone",
+    "destructive"
+  );
+
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
+
+  const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
 
   const { data: categoriesSelect, isPending: isPendingCategories } =
     useGetSelectCategories();
@@ -105,8 +131,64 @@ export const Client = () => {
     useGetSelectSuppliers();
   const { data: petsSelect, isPending: isPendingPets } = useGetSelectPets();
 
+  const { data, refetch, isRefetching } = useGetShowProduct({
+    productId: productId as string,
+  });
+
+  useEffect(() => {
+    const product = data?.data;
+
+    setInput({
+      title: product?.title ?? "",
+      description: product?.description ?? "",
+      indication: product?.indication ?? "",
+      dosageUsage: product?.dosageUsage ?? "",
+      storageInstruction: product?.storageInstruction ?? "",
+      packaging: product?.packaging ?? "",
+      registrationNumber: product?.registrationNumber ?? "",
+      isActive: product ? product.status : false,
+      categoryId: product?.category.id ?? "",
+      supplierId: product?.supplier.id ?? "",
+    });
+
+    if (product && product?.variants.length > 0) {
+      if (product?.variants[0].isDefault) {
+        const dataDefaultVariant = product?.variants[0];
+        setDefaultVariants({
+          id: dataDefaultVariant.id,
+          name: "default",
+          sku: dataDefaultVariant.sku,
+          barcode: dataDefaultVariant.barcode,
+          quantity: dataDefaultVariant.stock,
+          normalPrice: dataDefaultVariant.normalPrice,
+          basicPrice: dataDefaultVariant.basicPrice,
+          petShopPrice: dataDefaultVariant.petShopPrice,
+          doctorPrice: dataDefaultVariant.doctorPrice,
+          weight: dataDefaultVariant.weight,
+        });
+      } else {
+        const dataVariant = product?.variants;
+        setIsVariant(true);
+        setVariants(
+          (dataVariant ?? []).map((item) => ({
+            ...item,
+            quantity: item.stock,
+            isOpen: false,
+          }))
+        );
+      }
+    }
+    setCompositions(product?.compositions ?? []);
+    setPetIds((product?.pets ?? []).map((item) => item.id));
+    setImageOld(product?.images ?? []);
+  }, [data]);
+
   const loadingSelect =
-    isPendingCategories || isPendingSuppliers || isPendingPets || isCreating;
+    isPendingCategories ||
+    isPendingSuppliers ||
+    isPendingPets ||
+    isUpdating ||
+    isDeleting;
 
   const categoriesList = useMemo(() => {
     return categoriesSelect?.data ?? [];
@@ -126,59 +208,153 @@ export const Client = () => {
     e.preventDefault();
     const body = new FormData();
 
-    body.set("title", input.title);
+    body.append("title", input.title);
+    imageOld?.forEach((img) => body.append("imageOld", img)); // <-- gunakan append!
     imagesProduct?.forEach((img) => body.append("image", img)); // <-- gunakan append!
 
-    body.set("description", input.description);
-    body.set("indication", input.indication);
-    body.set("dosageUsage", input.dosageUsage);
-    body.set("storageInstruction", input.storageInstruction);
-    body.set("packaging", input.packaging);
-    body.set("registrationNumber", input.registrationNumber);
-    body.set("isActive", input.isActive.toString());
-    body.set("categoryId", input.categoryId);
-    body.set("supplierId", input.supplierId);
+    body.append("description", input.description);
+    body.append("indication", input.indication);
+    body.append("dosageUsage", input.dosageUsage);
+    body.append("storageInstruction", input.storageInstruction);
+    body.append("packaging", input.packaging);
+    body.append("registrationNumber", input.registrationNumber);
+    body.append("isActive", input.isActive.toString());
+    body.append("categoryId", input.categoryId);
+    body.append("supplierId", input.supplierId);
 
     // Pet many-to-many
-    body.set("petId", JSON.stringify(petIds)); // <-- kirim sebagai array string
+    body.append("petId", JSON.stringify(petIds)); // <-- kirim sebagai array string
 
-    body.set("compositions", JSON.stringify(compositions));
-    body.set("variants", JSON.stringify(variants));
-    body.set("defaultVariant", JSON.stringify(defaultVariants));
+    body.append("compositions", JSON.stringify(compositions));
+    if (isVariant) {
+      body.append(
+        "variants",
+        JSON.stringify(
+          variants.map((item) => ({
+            id: item.id,
+            name: item.name,
+            sku: item.sku,
+            stock: item.quantity,
+            normalPrice: item.normalPrice,
+            basicPrice: item.basicPrice,
+            petShopPrice: item.petShopPrice,
+            doctorPrice: item.doctorPrice,
+            weight: item.weight,
+            barcode: item.barcode,
+          }))
+        )
+      );
+    } else {
+      body.append(
+        "defaultVariant",
+        JSON.stringify({
+          id: defaultVariants.id,
+          name: defaultVariants.name,
+          sku: defaultVariants.sku,
+          stock: defaultVariants.quantity,
+          normalPrice: defaultVariants.normalPrice,
+          basicPrice: defaultVariants.basicPrice,
+          petShopPrice: defaultVariants.petShopPrice,
+          doctorPrice: defaultVariants.doctorPrice,
+          weight: defaultVariants.weight,
+          barcode: defaultVariants.barcode,
+        })
+      );
+    }
 
-    createProduct({ body });
+    updateProduct({ body, params: { productId: productId as string } });
+  };
+
+  const handleDelete = async () => {
+    const ok = await confirmDelete();
+    if (!ok) return;
+    deleteProduct({ params: { id: productId as string } });
+  };
+
+  const handleRemovePet = (i: any) => {
+    setPetIds((v) => v.filter((z) => z !== i));
+  };
+
+  const handleChangePet = (id: any) => {
+    setPetIds(
+      (prev) =>
+        prev.includes(id)
+          ? prev.filter((pid) => pid !== id) // jika sudah ada, hapus
+          : [...prev, id] // jika belum ada, tambahkan
+    );
   };
 
   return (
     <div className="w-full flex flex-col gap-6 pb-20">
-      <div className="w-full flex items-center gap-2">
-        <Button
-          size={"icon"}
-          variant={"secondary"}
-          className="size-7 hover:bg-gray-200"
-          asChild
-        >
-          <Link href="/products">
-            <ChartNoAxesGantt className="size-5" />
-          </Link>
-        </Button>
-        <ChevronRight className="size-4 text-gray-500" />
-        <h1 className="text-xl font-semibold">Add Products</h1>
+      <DeleteDialog />
+      <div className="flex justify-between gap-4 items-center">
+        <div className="w-full flex items-center gap-2">
+          <Button
+            size={"icon"}
+            variant={"secondary"}
+            className="size-7 hover:bg-gray-200"
+            asChild
+          >
+            <Link href="/products">
+              <ChartNoAxesGantt className="size-5" />
+            </Link>
+          </Button>
+          <ChevronRight className="size-4 text-gray-500" />
+          <h1 className="text-xl font-semibold">Edit Products</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <TooltipText value="Reload data">
+            <Button
+              size={"icon"}
+              variant={"secondary"}
+              className="size-7 hover:bg-gray-200 hover:cursor-pointer"
+              onClick={() => refetch()}
+            >
+              <RefreshCcw
+                className={cn("size-4", isRefetching && "animate-spin")}
+              />
+            </Button>
+          </TooltipText>
+          <TooltipText value="Detail">
+            <Button
+              size={"icon"}
+              variant={"secondary"}
+              className="size-7 hover:bg-yellow-200"
+              asChild
+            >
+              <Link href={`/products/${productId}/detail`}>
+                <Eye className="size-4" />
+              </Link>
+            </Button>
+          </TooltipText>
+          <TooltipText value="Delete">
+            <Button
+              size={"icon"}
+              variant={"secondary"}
+              className="size-7 hover:bg-red-200 hover:cursor-pointer"
+              onClick={handleDelete}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </TooltipText>
+        </div>
       </div>
       <div className="w-full grid grid-cols-3 gap-6">
         <div className="col-span-2 w-full flex flex-col gap-4">
           <ProductCore
             input={input}
             handleOnChange={handleOnChange}
-            disabled={isCreating}
+            disabled={isUpdating}
             setImagesProduct={setImagesProduct}
+            imageOld={imageOld}
+            setImageOld={setImageOld}
           />
           <ProductDescription
             input={input}
             handleOnChange={handleOnChange}
             compositions={compositions}
             setCompositions={setCompositions}
-            disabled={isCreating}
+            disabled={isUpdating}
           />
 
           <div className="w-full flex items-center gap-2 px-3 py-5 bg-gradient-to-br from-gray-100 to-gray-200 border rounded-lg border-gray-300">
@@ -195,13 +371,13 @@ export const Client = () => {
             <MultipleVariant
               setVariants={setVariants}
               variants={variants}
-              disabled={isCreating}
+              disabled={isUpdating}
             />
           ) : (
             <SingleVariant
               defaultVariants={defaultVariants}
               setDefaultVariants={setDefaultVariants}
-              disabled={isCreating}
+              disabled={isUpdating}
             />
           )}
         </div>
@@ -215,7 +391,7 @@ export const Client = () => {
                     <Button
                       className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group overflow-hidden"
                       variant={"outline"}
-                      disabled={isCreating || loadingSelect}
+                      disabled={isUpdating || loadingSelect}
                     >
                       {input.categoryId ? (
                         <span className="font-normal w-full truncate text-left">
@@ -276,7 +452,7 @@ export const Client = () => {
                     <Button
                       className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
                       variant={"outline"}
-                      disabled={isCreating || loadingSelect}
+                      disabled={isUpdating || loadingSelect}
                     >
                       {input.supplierId ? (
                         <span className="font-normal w-full truncate text-left">
@@ -349,9 +525,7 @@ export const Client = () => {
                           <div className="w-full bg-gradient-to-r from-gray-300/50 to-gray-300 h-5" />
                           <button
                             className="px-2 flex-none bg-gray-300 h-full"
-                            onClick={() =>
-                              setPetIds((v) => v.filter((z) => z !== i))
-                            }
+                            onClick={() => handleRemovePet(i)}
                           >
                             <X className="size-3" />
                           </button>
@@ -364,7 +538,7 @@ export const Client = () => {
                       <Button
                         className="w-full bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 text-xs group"
                         variant={"outline"}
-                        disabled={isCreating || loadingSelect}
+                        disabled={isUpdating || loadingSelect}
                       >
                         <CirclePlus className="size-3.5" />
                         Add Pets
@@ -382,12 +556,7 @@ export const Client = () => {
                             {petsList.map((pet) => (
                               <CommandItem
                                 onSelect={(id) => {
-                                  setPetIds(
-                                    (prev) =>
-                                      prev.includes(id)
-                                        ? prev.filter((pid) => pid !== id) // jika sudah ada, hapus
-                                        : [...prev, id] // jika belum ada, tambahkan
-                                  );
+                                  handleChangePet(id);
                                 }}
                                 value={pet.id}
                                 key={pet.id}
@@ -438,7 +607,7 @@ export const Client = () => {
               </div>
               <Button onClick={handleSubmit}>
                 <Save />
-                Create
+                Update
               </Button>
             </div>
           </div>

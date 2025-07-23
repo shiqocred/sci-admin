@@ -16,16 +16,7 @@ import { uploadToR2 } from "@/lib/providers";
 import slugify from "slugify";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { z } from "zod";
-import {
-  and,
-  asc,
-  count,
-  countDistinct,
-  desc,
-  eq,
-  inArray,
-  sql,
-} from "drizzle-orm";
+import { and, asc, countDistinct, desc, eq, inArray, sql } from "drizzle-orm";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { r2Public } from "@/config";
 
@@ -162,7 +153,7 @@ export async function GET(req: NextRequest) {
           (SELECT COALESCE(SUM(${productVariants.stock}), 0) 
            FROM ${productVariants} 
            WHERE ${productVariants.productId} = ${products.id})`.as("stock"),
-        variantCount: count(productVariants.id).as("variantCount"),
+        variantCount: countDistinct(productVariants.id).as("variantCount"),
         petCount: countDistinct(pets.id).as("petCount"),
       })
       .from(products)
@@ -240,7 +231,7 @@ export async function POST(req: NextRequest) {
       defaultVariant: JSON.parse(
         (formData.get("defaultVariant") as string) || "null"
       ),
-      variants: JSON.parse((formData.get("variants") as string) || "[]"),
+      variants: JSON.parse((formData.get("variants") as string) || "null"),
     };
 
     const parsed = productSchema.safeParse(payload);
@@ -328,7 +319,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (variants?.length) {
+    if (variants) {
       await db.insert(productVariants).values(
         variants.map((v) => ({
           id: createId(),
@@ -340,7 +331,7 @@ export async function POST(req: NextRequest) {
           basicPrice: v.basicPrice,
           petShopPrice: v.petShopPrice,
           doctorPrice: v.doctorPrice,
-          stock: parseInt(v.quantity),
+          stock: v.quantity,
           weight: v.weight,
           isDefault: false,
         }))
@@ -356,7 +347,7 @@ export async function POST(req: NextRequest) {
         basicPrice: defaultVariant.basicPrice,
         petShopPrice: defaultVariant.petShopPrice,
         doctorPrice: defaultVariant.doctorPrice,
-        stock: parseInt(defaultVariant.quantity),
+        stock: defaultVariant.quantity,
         weight: defaultVariant.weight,
         isDefault: true,
       });
