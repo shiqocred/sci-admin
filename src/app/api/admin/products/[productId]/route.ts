@@ -309,11 +309,10 @@ const imageHandle = async (
   const removedImageKey = removedImages.map((item) => item.url);
 
   // --- Operasi R2 (di luar transaksi DB, bisa paralel) ---
-  // Mulai hapus gambar lama dari R2 (tidak perlu menunggu)
+  // Mulai hapus gambar lama dari R2 (tidak ditunggu di sini)
+  // Variabel ini dideklarasikan dan digunakan untuk menyimpan promise penghapusan
   const deleteR2Promises = removedImageKey.map((key) => deleteR2(key));
-
-  // --- Upload Gambar Baru (Paralel) ---
-  // Konversi dan upload gambar baru ke R2 secara paralel
+  // Mulai upload gambar baru secara paralel
   const uploadPromises = images.map(async (image) => {
     const buffer = await convertToWebP(image);
     const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
@@ -324,13 +323,11 @@ const imageHandle = async (
   // Tunggu hingga semua upload selesai
   const uploadedKeys = await Promise.all(uploadPromises);
 
-  // Tunggu juga hingga semua delete R2 selesai (opsional, bisa dilakukan di background)
-  // await Promise.all(deleteR2Promises); // Tergantung apakah perlu menunggu atau tidak
-
-  // Kembalikan informasi yang dibutuhkan untuk operasi DB
+  // Kembalikan informasi yang dibutuhkan untuk operasi DB dan promise penghapusan
   return {
-    removedImageId, // ID gambar yang perlu dihapus dari DB
-    uploadedKeys, // Key gambar baru yang perlu dimasukkan ke DB
+    removedImageId,
+    uploadedKeys,
+    deleteR2Promises, // Dikembalikan untuk penanganan error atau logging jika diperlukan
   };
 };
 
@@ -688,6 +685,11 @@ export async function PUT(
 
     const slug = slugify(title, { lower: true });
 
+    let imageResult: {
+      removedImageId: string[];
+      uploadedKeys: string[];
+      deleteR2Promises: Promise<any>[];
+    } | null = null;
     // --- Main Transaction ---
     await db.transaction(async (tx) => {
       // 1. Update main product details
@@ -709,23 +711,17 @@ export async function PUT(
         })
         .where(eq(products.id, productId));
 
-      const { removedImageId, uploadedKeys } = await imageHandle(
-        formData,
-        productId,
-        title
-      );
+      imageResult = await imageHandle(formData, productId, title);
 
       // Operasi DB gambar dilakukan dalam transaksi utama
-      // Hapus gambar lama dari DB
-      if (removedImageId.length > 0) {
+      if (imageResult.removedImageId.length > 0) {
         await tx
           .delete(productImages)
-          .where(inArray(productImages.id, removedImageId));
+          .where(inArray(productImages.id, imageResult.removedImageId));
       }
-      // Masukkan gambar baru ke DB
-      if (uploadedKeys.length > 0) {
+      if (imageResult.uploadedKeys.length > 0) {
         await tx.insert(productImages).values(
-          uploadedKeys.map((url) => ({
+          imageResult.uploadedKeys.map((url) => ({
             id: createId(),
             productId,
             url,
