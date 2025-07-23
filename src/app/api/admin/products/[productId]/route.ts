@@ -289,7 +289,6 @@ const imageHandle = async (
   productId: string,
   title: string
 ) => {
-  // --- Image Handling ---
   const imagesExist: ExistingImageData[] =
     await db.query.productImages.findMany({
       columns: { id: true, url: true },
@@ -308,11 +307,8 @@ const imageHandle = async (
   const removedImageId = removedImages.map((item) => item.id);
   const removedImageKey = removedImages.map((item) => item.url);
 
-  // --- Operasi R2 (di luar transaksi DB, bisa paralel) ---
-  // Mulai hapus gambar lama dari R2 (tidak ditunggu di sini)
-  // Variabel ini dideklarasikan dan digunakan untuk menyimpan promise penghapusan
-  const deleteR2Promises = removedImageKey.map((key) => deleteR2(key));
-  // Mulai upload gambar baru secara paralel
+  removedImageKey.map((key) => deleteR2(key));
+
   const uploadPromises = images.map(async (image) => {
     const buffer = await convertToWebP(image);
     const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
@@ -320,19 +316,15 @@ const imageHandle = async (
     return key;
   });
 
-  // Tunggu hingga semua upload selesai
   const uploadedKeys = await Promise.all(uploadPromises);
 
-  // Kembalikan informasi yang dibutuhkan untuk operasi DB dan promise penghapusan
   return {
     removedImageId,
     uploadedKeys,
-    deleteR2Promises, // Dikembalikan untuk penanganan error atau logging jika diperlukan
   };
 };
 
 const petHandle = async (tx: any, productId: string, petIds: string[]) => {
-  // --- Pet Handling ---
   const petsExist: ExistingPetData[] = await tx.query.productToPets.findMany({
     columns: { petId: true },
     where: (p: any, { eq }: { eq: any }) => eq(p.productId, productId),
@@ -342,7 +334,6 @@ const petHandle = async (tx: any, productId: string, petIds: string[]) => {
   const addedPetIds = petIds.filter((id) => !existingPetIds.includes(id));
   const removedPetIds = existingPetIds.filter((id) => !petIds.includes(id));
 
-  // Perform operations within the transaction context (tx)
   if (removedPetIds.length > 0) {
     await tx
       .delete(productToPets)
@@ -359,11 +350,10 @@ const petHandle = async (tx: any, productId: string, petIds: string[]) => {
 };
 
 const compositionHandle = async (
-  tx: any, // Accept transaction context
+  tx: any,
   productId: string,
   compositions: CompositionData[]
 ) => {
-  // --- Composition Handling ---
   const compositionExist: ExistingCompositionData[] =
     await tx.query.productCompositions.findMany({
       columns: { id: true, name: true, value: true },
@@ -384,10 +374,9 @@ const compositionHandle = async (
     return (
       oldItem &&
       (oldItem.name !== newItem.name || oldItem.value !== newItem.value)
-    ); // More efficient comparison
+    );
   });
 
-  // Perform operations within the transaction context (tx)
   if (addedComposition.length > 0) {
     await tx.insert(productCompositions).values(
       addedComposition.map((item) => ({
@@ -419,14 +408,12 @@ const compositionHandle = async (
 };
 
 const handleIsVariant = async (
-  tx: any, // Accept transaction context
+  tx: any,
   variantExist: ExistingVariantData[],
   variants: VariantData[],
   productId: string
 ) => {
-  // --- Handle Non-Default Variants ---
   if (variantExist[0]?.isDefault) {
-    // If previously default, delete all and insert new variants
     await tx
       .delete(productVariants)
       .where(eq(productVariants.productId, productId));
@@ -449,9 +436,8 @@ const handleIsVariant = async (
       );
     }
   } else {
-    // Otherwise, perform diff and update
     const oldVariantIds = new Set(variantExist.map((item) => item.id));
-    const newVariantIds = new Set(variants.map((item) => item.id)); // Fix: was newCompositionIds
+    const newVariantIds = new Set(variants.map((item) => item.id));
 
     const addedVariant = variants.filter((item) => !oldVariantIds.has(item.id));
     const deletedVariant = variantExist.filter(
@@ -460,7 +446,7 @@ const handleIsVariant = async (
     const updatedVariant = variants.filter((newItem) => {
       const oldItem = variantExist.find((old) => old.id === newItem.id);
       if (!oldItem) return false;
-      // More efficient comparison
+
       return (
         oldItem.name !== newItem.name ||
         oldItem.sku !== newItem.sku ||
@@ -474,7 +460,6 @@ const handleIsVariant = async (
       );
     });
 
-    // Perform operations within the transaction context (tx)
     if (addedVariant.length > 0) {
       await tx.insert(productVariants).values(
         addedVariant.map((v) => ({
@@ -524,14 +509,12 @@ const handleIsVariant = async (
 };
 
 const handleDefaultVariant = async (
-  tx: any, // Accept transaction context
+  tx: any,
   variantExist: ExistingVariantData[],
   defaultVariant: VariantData,
   productId: string
 ) => {
-  // --- Handle Default Variant ---
   if (!variantExist[0]?.isDefault) {
-    // If previously not default, delete all and insert new default
     await tx
       .delete(productVariants)
       .where(eq(productVariants.productId, productId));
@@ -550,9 +533,8 @@ const handleDefaultVariant = async (
       isDefault: true,
     });
   } else if (variantExist[0].isDefault) {
-    // If previously default, check for updates
     const oldItem = variantExist[0];
-    // More efficient comparison
+
     const isChanged =
       oldItem.id !== defaultVariant.id ||
       oldItem.name !== defaultVariant.name ||
@@ -581,18 +563,17 @@ const handleDefaultVariant = async (
           weight: defaultVariant.weight,
           updatedAt: sql`NOW()`,
         })
-        .where(eq(productVariants.id, oldItem.id)); // Use oldItem.id for WHERE clause
+        .where(eq(productVariants.id, oldItem.id));
     }
   }
 };
 
 const handleVariants = async (
-  tx: any, // Accept transaction context
+  tx: any,
   variants: VariantData[] | undefined,
   defaultVariant: VariantData | undefined,
   productId: string
 ) => {
-  // --- Variant Handling Logic ---
   const variantExist: ExistingVariantData[] =
     await tx.query.productVariants.findMany({
       columns: {
@@ -616,7 +597,6 @@ const handleVariants = async (
   } else if (defaultVariant) {
     await handleDefaultVariant(tx, variantExist, defaultVariant, productId);
   } else {
-    // If neither variants nor defaultVariant, delete existing variants
     await tx
       .delete(productVariants)
       .where(eq(productVariants.productId, productId));
@@ -685,14 +665,7 @@ export async function PUT(
 
     const slug = slugify(title, { lower: true });
 
-    let imageResult: {
-      removedImageId: string[];
-      uploadedKeys: string[];
-      deleteR2Promises: Promise<any>[];
-    } | null = null;
-    // --- Main Transaction ---
     await db.transaction(async (tx) => {
-      // 1. Update main product details
       await tx
         .update(products)
         .set({
@@ -707,21 +680,24 @@ export async function PUT(
           status: isActive,
           categoryId,
           supplierId,
-          updatedAt: sql`NOW()`, // Optional: Update timestamp
+          updatedAt: sql`NOW()`,
         })
         .where(eq(products.id, productId));
 
-      imageResult = await imageHandle(formData, productId, title);
+      const { uploadedKeys, removedImageId } = await imageHandle(
+        formData,
+        productId,
+        title
+      );
 
-      // Operasi DB gambar dilakukan dalam transaksi utama
-      if (imageResult.removedImageId.length > 0) {
+      if (removedImageId.length > 0) {
         await tx
           .delete(productImages)
-          .where(inArray(productImages.id, imageResult.removedImageId));
+          .where(inArray(productImages.id, removedImageId));
       }
-      if (imageResult.uploadedKeys.length > 0) {
+      if (uploadedKeys.length > 0) {
         await tx.insert(productImages).values(
-          imageResult.uploadedKeys.map((url) => ({
+          uploadedKeys.map((url) => ({
             id: createId(),
             productId,
             url,
@@ -729,7 +705,6 @@ export async function PUT(
         );
       }
 
-      // 3. Handle Pets
       if (petIds && petIds.length > 0) {
         await petHandle(tx, productId, petIds);
       } else {
@@ -738,7 +713,6 @@ export async function PUT(
           .where(eq(productToPets.productId, productId));
       }
 
-      // 4. Handle Compositions
       if (compositions?.length) {
         await compositionHandle(tx, productId, compositions);
       } else {
@@ -747,17 +721,13 @@ export async function PUT(
           .where(eq(productCompositions.productId, productId));
       }
 
-      // 5. Handle Variants
       await handleVariants(tx, variants, defaultVariant, productId);
     });
 
-    return successRes({ id: productId }, "Product updated", 200); // 200 OK is more standard for updates
+    return successRes({ id: productId }, "Product updated", 200);
   } catch (error) {
     console.error("ERROR_UPDATE_PRODUCT:", error);
-    // Return specific error message if possible, otherwise generic
-    if (error instanceof Error) {
-      return errorRes(error.message, 500);
-    }
+
     return errorRes("Internal Error", 500);
   }
 }
