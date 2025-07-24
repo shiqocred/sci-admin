@@ -439,9 +439,7 @@ export const Client = () => {
                       {comp.name}
                     </div>
                     <div className="h-[2px] flex-1 bg-[radial-gradient(circle,_#364153_1px,_transparent_1px)] [background-size:5px_4px] mt-2" />
-                    <div className="text-xs font-mono text-gray-900">
-                      {comp.value}
-                    </div>
+                    <div className="text-xs text-gray-900">{comp.value}</div>
                   </div>
                 ))}
               </div>
@@ -466,13 +464,6 @@ export const Client = () => {
                 className="text-sm text-gray-800 leading-relaxed prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: product?.dosageUsage ?? "" }}
               />
-              <div className="text-xs bg-gray-50 border border-gray-200 p-4 mt-4 rounded-md">
-                <strong className="text-gray-900">Important:</strong>
-                <span className="text-gray-700 ml-1">
-                  Always consult with a qualified veterinarian before
-                  administering any medication to your pet.
-                </span>
-              </div>
             </div>
 
             <div className="mb-10">

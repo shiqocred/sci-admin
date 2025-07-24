@@ -19,35 +19,42 @@ import { z } from "zod";
 import { and, asc, countDistinct, desc, eq, inArray, sql } from "drizzle-orm";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { r2Public } from "@/config";
+import { generateRandomNumber } from "@/lib/utils";
 
 const productSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  indication: z.string().optional(),
-  dosageUsage: z.string().optional(),
-  storageInstruction: z.string().optional(),
-  packaging: z.string().optional(),
-  registrationNumber: z.string().optional(),
+  title: z.string().min(1, { message: "Title is required." }),
+  description: z.string().min(1, { message: "Description is required." }),
+  indication: z.string().min(1, { message: "Indication is required." }),
+  dosageUsage: z.string().min(1, { message: "Dosage & usage is required." }),
+  storageInstruction: z
+    .string()
+    .min(1, { message: "Storage instruction is required." }),
+  packaging: z.string().min(1, { message: "Packaging is required." }),
+  registrationNumber: z
+    .string()
+    .min(1, { message: "Registration number is required." }),
   isActive: z.coerce.boolean(),
-  categoryId: z.string().optional(),
-  supplierId: z.string().optional(),
-  petIds: z.array(z.string()).optional(),
+  categoryId: z.string().min(1, { message: "Category is required." }),
+  supplierId: z.string().min(1, { message: "Supplier is required." }),
+  petIds: z
+    .array(z.string().min(1, { message: "Pet is required." }))
+    .min(1, { message: "Pet is required." }),
   compositions: z
     .array(
       z.object({
         id: z.string().optional(),
-        name: z.string(),
-        value: z.string(),
+        name: z.string().min(1, { message: "Composition name is required." }),
+        value: z.string().min(1, { message: "Composition value is required." }),
       })
     )
-    .optional(),
+    .min(1, { message: "Compositions is required." }),
   defaultVariant: z
     .object({
       id: z.string().optional(),
-      name: z.string().default("default"),
-      sku: z.string(),
-      barcode: z.string().optional(),
-      quantity: z.string(),
+      name: z.string(),
+      sku: z.string().min(1, { message: "SKU is required." }),
+      barcode: z.string().min(1, { message: "Barcode is required." }),
+      stock: z.string(),
       normalPrice: z.string(),
       basicPrice: z.string(),
       petShopPrice: z.string(),
@@ -59,16 +66,15 @@ const productSchema = z.object({
     .array(
       z.object({
         id: z.string().optional(),
-        name: z.string(),
-        sku: z.string(),
-        barcode: z.string().optional(),
-        quantity: z.string(),
+        name: z.string().min(1, { message: "Variant name is required." }),
+        sku: z.string().min(1, { message: "Variant SKU is required." }),
+        barcode: z.string().min(1, { message: "Variant barcode is required." }),
+        stock: z.string(),
         normalPrice: z.string(),
         basicPrice: z.string(),
         petShopPrice: z.string(),
         doctorPrice: z.string(),
         weight: z.string(),
-        isOpen: z.boolean().optional(),
       })
     )
     .optional(),
@@ -213,6 +219,7 @@ export async function POST(req: NextRequest) {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
+    const rawDefaultVariant = formData.get("defaultVariant");
     const payload = {
       title: formData.get("title"),
       description: formData.get("description"),
@@ -228,10 +235,10 @@ export async function POST(req: NextRequest) {
       compositions: JSON.parse(
         (formData.get("compositions") as string) || "[]"
       ),
-      defaultVariant: JSON.parse(
-        (formData.get("defaultVariant") as string) || "null"
-      ),
-      variants: JSON.parse((formData.get("variants") as string) || "null"),
+      defaultVariant: rawDefaultVariant
+        ? JSON.parse(rawDefaultVariant as string)
+        : undefined,
+      variants: JSON.parse((formData.get("variants") as string) || "[]"),
     };
 
     const parsed = productSchema.safeParse(payload);
@@ -264,6 +271,7 @@ export async function POST(req: NextRequest) {
     const images = formData.getAll("image") as File[];
     const uploadedKeys: string[] = [];
 
+    // Upload images
     for (const image of images) {
       const buffer = await convertToWebP(image);
       const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
@@ -272,86 +280,95 @@ export async function POST(req: NextRequest) {
     }
 
     const productId = createId();
-    const slug = slugify(title, { lower: true });
+    const titleFormatted = `${title}-${generateRandomNumber(5)}`;
+    const slug = slugify(titleFormatted, { lower: true });
 
-    await db.insert(products).values({
-      id: productId,
-      name: title,
-      slug,
-      description,
-      indication,
-      dosageUsage,
-      storageInstruction,
-      packaging,
-      registrationNumber,
-      status: isActive,
-      categoryId,
-      supplierId,
-    });
-
-    if (uploadedKeys.length) {
-      await db.insert(productImages).values(
-        uploadedKeys.map((url) => ({
-          id: createId(),
-          productId,
-          url,
-        }))
-      );
-    }
-
-    if (petIds?.length) {
-      await db.insert(productToPets).values(
-        petIds.map((petId) => ({
-          productId,
-          petId,
-        }))
-      );
-    }
-
-    if (compositions?.length) {
-      await db.insert(productCompositions).values(
-        compositions.map((c) => ({
-          id: createId(),
-          productId,
-          name: c.name,
-          value: c.value,
-        }))
-      );
-    }
-
-    if (variants) {
-      await db.insert(productVariants).values(
-        variants.map((v) => ({
-          id: createId(),
-          productId,
-          name: v.name,
-          sku: v.sku,
-          barcode: v.barcode,
-          normalPrice: v.normalPrice,
-          basicPrice: v.basicPrice,
-          petShopPrice: v.petShopPrice,
-          doctorPrice: v.doctorPrice,
-          stock: v.quantity,
-          weight: v.weight,
-          isDefault: false,
-        }))
-      );
-    } else if (defaultVariant) {
-      await db.insert(productVariants).values({
-        id: createId(),
-        productId,
-        name: defaultVariant.name,
-        sku: defaultVariant.sku,
-        barcode: defaultVariant.barcode,
-        normalPrice: defaultVariant.normalPrice,
-        basicPrice: defaultVariant.basicPrice,
-        petShopPrice: defaultVariant.petShopPrice,
-        doctorPrice: defaultVariant.doctorPrice,
-        stock: defaultVariant.quantity,
-        weight: defaultVariant.weight,
-        isDefault: true,
+    // Jalankan semua operasi dalam satu transaksi
+    await db.transaction(async (tx) => {
+      // Insert product
+      await tx.insert(products).values({
+        id: productId,
+        name: title,
+        slug,
+        description,
+        indication,
+        dosageUsage,
+        storageInstruction,
+        packaging,
+        registrationNumber,
+        status: isActive,
+        categoryId,
+        supplierId,
       });
-    }
+
+      // Insert images
+      if (uploadedKeys.length) {
+        await tx.insert(productImages).values(
+          uploadedKeys.map((url) => ({
+            id: createId(),
+            productId,
+            url,
+          }))
+        );
+      }
+
+      // Insert pet relations
+      if (petIds?.length) {
+        await tx.insert(productToPets).values(
+          petIds.map((petId) => ({
+            productId,
+            petId,
+          }))
+        );
+      }
+
+      // Insert compositions
+      if (compositions?.length) {
+        await tx.insert(productCompositions).values(
+          compositions.map((c) => ({
+            id: createId(),
+            productId,
+            name: c.name,
+            value: c.value,
+          }))
+        );
+      }
+
+      // Insert variants
+      if (variants && variants.length > 0) {
+        await tx.insert(productVariants).values(
+          variants.map((v) => ({
+            id: createId(),
+            productId,
+            name: v.name,
+            sku: v.sku,
+            barcode: v.barcode,
+            normalPrice: v.normalPrice,
+            basicPrice: v.basicPrice,
+            petShopPrice: v.petShopPrice,
+            doctorPrice: v.doctorPrice,
+            stock: v.stock,
+            weight: v.weight,
+            isDefault: false,
+          }))
+        );
+      } else if (defaultVariant) {
+        await tx.insert(productVariants).values({
+          id: createId(),
+          productId,
+          name: defaultVariant.name,
+          sku: defaultVariant.sku,
+          barcode: defaultVariant.barcode,
+          normalPrice: defaultVariant.normalPrice,
+          basicPrice: defaultVariant.basicPrice,
+          petShopPrice: defaultVariant.petShopPrice,
+          doctorPrice: defaultVariant.doctorPrice,
+          stock: defaultVariant.stock,
+          weight: defaultVariant.weight,
+          isDefault: true,
+        });
+      }
+    });
 
     return successRes({ id: productId }, "Product created", 201);
   } catch (err) {

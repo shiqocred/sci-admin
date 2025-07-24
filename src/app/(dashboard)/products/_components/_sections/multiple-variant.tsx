@@ -4,40 +4,56 @@ import { cn, generateRandomNumber } from "@/lib/utils";
 import { Edit3, PlusCircle, Tag } from "lucide-react";
 import React, { FormEvent, useState } from "react";
 import { VariantOpen } from "./variant-open";
+import { toast } from "sonner";
+
+const initialValue = {
+  name: "",
+  sku: "",
+  barcode: "",
+  quantity: "0",
+  normalPrice: "0",
+  basicPrice: "0",
+  petShopPrice: "0",
+  doctorPrice: "0",
+  weight: "0",
+  isOpen: true,
+};
+
+// Ubah menjadi array errors per variant
+const transformErrors = (errors: Record<string, string>) => {
+  const variantErrors: Record<number, Record<string, string>> = {};
+
+  Object.keys(errors).forEach((key) => {
+    if (key.startsWith("variants.")) {
+      const match = key.match(/variants\.(\d+)\.(.+)/);
+      if (match) {
+        const index = parseInt(match[1]);
+        const field = match[2];
+
+        if (!variantErrors[index]) {
+          variantErrors[index] = {};
+        }
+        variantErrors[index][field] = errors[key];
+      }
+    }
+  });
+
+  return variantErrors;
+};
 
 export const MultipleVariant = ({
   variants,
   setVariants,
   disabled,
+  errors,
 }: {
   variants: any;
   setVariants: any;
   disabled: boolean;
+  errors: any;
 }) => {
-  const [variantItem, setVariantItem] = useState({
-    name: "",
-    sku: "",
-    barcode: "",
-    quantity: "0",
-    normalPrice: "0",
-    basicPrice: "0",
-    petShopPrice: "0",
-    doctorPrice: "0",
-    weight: "0",
-    isOpen: true,
-  });
-
-  const handleChangeVariant = (
-    id: string,
-    field: keyof (typeof variants)[number],
-    value: string | boolean
-  ) => {
-    setVariants((prev: any) =>
-      prev.map((item: any) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
-  };
+  const [variantItem, setVariantItem] = useState(initialValue);
+  const transformedErrors = transformErrors(errors ?? {});
 
   const handleOpen = (id: string) =>
     setVariants((prev: any) =>
@@ -48,6 +64,21 @@ export const MultipleVariant = ({
 
   const handleAddVariant = (e: FormEvent) => {
     e.preventDefault();
+    const isNameExists = variants.some(
+      (variant: any) =>
+        variant.name.toLowerCase() === variantItem.name.toLowerCase()
+    );
+
+    if (isNameExists) {
+      toast.error("Variant name already exists!");
+      return; // Hentikan eksekusi jika nama sudah ada
+    }
+
+    // Cek apakah name tidak kosong
+    if (!variantItem.name.trim()) {
+      toast.error("Variant name is required!");
+      return;
+    }
     setVariants((prev: any) => [
       ...prev,
       { id: generateRandomNumber(3), ...variantItem },
@@ -92,10 +123,10 @@ export const MultipleVariant = ({
               key={variant.id}
               variant={variant}
               idx={idx}
-              handleChangeVariant={handleChangeVariant}
               variants={variants}
               setVariants={setVariants}
               disabled={disabled}
+              errors={transformedErrors}
             />
           ) : (
             <Button

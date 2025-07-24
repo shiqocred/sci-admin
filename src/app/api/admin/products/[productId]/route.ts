@@ -13,6 +13,7 @@ import {
   suppliers,
 } from "@/lib/db";
 import { deleteR2, uploadToR2 } from "@/lib/providers";
+import { generateRandomNumber } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
 import { eq, inArray, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
@@ -663,7 +664,25 @@ export async function PUT(
       variants,
     }: ProductData = parsed.data;
 
-    const slug = slugify(title, { lower: true });
+    const productExist = await db.query.products.findFirst({
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      where: (p, { eq }) => eq(p.id, productId),
+    });
+
+    if (!productExist) return errorRes("Product not found", 404);
+
+    let slug: string;
+
+    if (productExist.name === title) {
+      slug = productExist.slug;
+    } else if (productExist.name !== title) {
+      const titleFormatted = `${title}-${generateRandomNumber(5)}`;
+      slug = slugify(titleFormatted, { lower: true });
+    }
 
     await db.transaction(async (tx) => {
       await tx

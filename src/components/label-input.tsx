@@ -14,7 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "./ui/command";
-import { cn } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
 import { phoneNumberCode } from "@/lib/dial-phone";
 import { Skeleton } from "./ui/skeleton";
 
@@ -24,6 +24,7 @@ export const LabelInput = ({
   isPassword = false,
   isPhone = false,
   isLoading = false,
+  isPricing = false,
   className,
   disabled,
   classLabel,
@@ -34,6 +35,7 @@ export const LabelInput = ({
   isPassword?: boolean;
   isPhone?: boolean;
   isLoading?: boolean;
+  isPricing?: boolean;
   classContainer?: string;
   classLabel?: string;
 }) => {
@@ -48,6 +50,7 @@ export const LabelInput = ({
         isPhone={isPhone}
         isLoading={isLoading}
         className={className}
+        isPricing={isPricing}
         disabled={disabled}
         {...props}
       />
@@ -61,11 +64,13 @@ const CustomInput = ({
   className,
   disabled,
   isLoading,
+  isPricing,
   ...props
 }: ComponentProps<"input"> & {
   isPassword?: boolean;
   isPhone?: boolean;
   isLoading?: boolean;
+  isPricing?: boolean;
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [dialCode, setDialCode] = useState("+62");
@@ -89,6 +94,22 @@ const CustomInput = ({
 
   if (isLoading) {
     return <Skeleton className={cn("h-9 w-full min-w-0", className)} />;
+  }
+
+  if (isPricing) {
+    return (
+      <div className="relative w-full flex items-center">
+        <Input
+          className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+          type="number"
+          {...props}
+          disabled={disabled}
+        />
+        <p className="text-[11px] bg-gray-200 px-2 rounded-sm absolute right-3 text-gray-600">
+          {formatRupiah(props.value as string)}
+        </p>
+      </div>
+    );
   }
 
   if (isPassword) {

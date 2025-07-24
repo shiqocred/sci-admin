@@ -33,11 +33,18 @@ import {
   Undo2,
 } from "lucide-react";
 
-const Toolbar = ({ editor }: { editor: Editor }) => {
+const Toolbar = ({
+  editor,
+  className,
+}: {
+  editor: Editor;
+  className?: string;
+}) => {
   return (
     <div
       className={cn(
-        "flex-wrap flex items-center gap-1 border rounded-t-md border-gray-300"
+        "flex-wrap flex items-center gap-1 border rounded-t-md border-gray-300",
+        className
       )}
     >
       <div className="flex items-center gap-1 p-1 border-r border-gray-300">
@@ -275,6 +282,7 @@ type RichInputProps = {
   onChange?: (value: string) => void;
   className?: string;
   editorClassName?: string;
+  toolbarClassName?: string;
 } & Omit<
   EditorContentProps,
   "ref" | "editor" | "content" | "value" | "onChange" | "className"
@@ -282,7 +290,14 @@ type RichInputProps = {
 
 export const RichInput = forwardRef<Editor, RichInputProps>(
   (
-    { content, onChange, className, editorClassName, ...props },
+    {
+      content,
+      onChange,
+      className,
+      toolbarClassName,
+      editorClassName,
+      ...props
+    },
     _ref // eslint-disable-line @typescript-eslint/no-unused-vars
   ) => {
     const editor = useEditor({
@@ -318,7 +333,7 @@ export const RichInput = forwardRef<Editor, RichInputProps>(
 
     return (
       <div>
-        <Toolbar editor={editor} />
+        <Toolbar className={toolbarClassName} editor={editor} />
         <EditorContent
           editor={editor}
           className={cn(

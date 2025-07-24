@@ -51,3 +51,7 @@ export const pronoun = (num: string | number) => {
   if (!value || isNaN(value)) return "Rp 0";
   return value > 1 ? "s" : "";
 };
+
+export const numericString = (e: string) => {
+  return e.startsWith("0") ? e.replace(/^0+/, "") : e;
+};

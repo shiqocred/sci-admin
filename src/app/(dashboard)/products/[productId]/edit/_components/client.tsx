@@ -2,20 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -27,27 +14,21 @@ import {
 import { cn } from "@/lib/utils";
 import {
   ChartNoAxesGantt,
-  Check,
-  ChevronDown,
   ChevronRight,
-  CirclePlus,
   Eye,
   RefreshCcw,
   Save,
   Trash2,
-  X,
 } from "lucide-react";
-import React, { MouseEvent, useEffect, useMemo, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
+import { useUpdateProduct } from "../_api";
 import {
-  useUpdateProduct,
-  useGetSelectCategories,
-  useGetSelectPets,
-  useGetSelectSuppliers,
-} from "../_api";
-import { ProductCore } from "./product-core";
-import { ProductDescription } from "./product-description";
-import { SingleVariant } from "./single-variant";
-import { MultipleVariant } from "./multiple-variant";
+  ProductCore,
+  ProductDescription,
+  SingleVariant,
+  MultipleVariant,
+  ReferenceMenu,
+} from "../../../_components/_sections";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -103,9 +84,6 @@ const initialDefaultVariant = {
 
 export const Client = () => {
   const { productId } = useParams();
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [isSupplierOpen, setIsSupplierOpen] = useState(false);
-  const [isPetOpen, setIsPetOpen] = useState(false);
   const [isVariant, setIsVariant] = useState<boolean | "indeterminate">(false);
   const [imagesProduct, setImagesProduct] = useState<File[] | null>(null);
   const [imageOld, setImageOld] = useState<string[]>([]);
@@ -114,6 +92,12 @@ export const Client = () => {
   const [compositions, setCompositions] = useState<CompositionProps[]>([]);
   const [defaultVariants, setDefaultVariants] = useState(initialDefaultVariant);
   const [variants, setVariants] = useState<VariantsProps[]>([]);
+  const [compositionItem, setCompositionItem] = useState({
+    name: "",
+    value: "",
+  });
+
+  const [errors, setErrors] = useState<any>();
 
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete Product",
@@ -124,12 +108,6 @@ export const Client = () => {
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
-
-  const { data: categoriesSelect, isPending: isPendingCategories } =
-    useGetSelectCategories();
-  const { data: suppliersSelect, isPending: isPendingSuppliers } =
-    useGetSelectSuppliers();
-  const { data: petsSelect, isPending: isPendingPets } = useGetSelectPets();
 
   const { data, refetch, isRefetching } = useGetShowProduct({
     productId: productId as string,
@@ -183,22 +161,7 @@ export const Client = () => {
     setImageOld(product?.images ?? []);
   }, [data]);
 
-  const loadingSelect =
-    isPendingCategories ||
-    isPendingSuppliers ||
-    isPendingPets ||
-    isUpdating ||
-    isDeleting;
-
-  const categoriesList = useMemo(() => {
-    return categoriesSelect?.data ?? [];
-  }, [categoriesSelect]);
-  const suppliersList = useMemo(() => {
-    return suppliersSelect?.data ?? [];
-  }, [suppliersSelect]);
-  const petsList = useMemo(() => {
-    return petsSelect?.data ?? [];
-  }, [petsSelect]);
+  const loading = isDeleting || isUpdating;
 
   const handleOnChange = (id: string, value: string) => {
     setInput((prev) => ({ ...prev, [id]: value }));
@@ -262,7 +225,14 @@ export const Client = () => {
       );
     }
 
-    updateProduct({ body, params: { productId: productId as string } });
+    updateProduct(
+      { body, params: { productId: productId as string } },
+      {
+        onError: (data) => {
+          setErrors((data.response?.data as any).errors);
+        },
+      }
+    );
   };
 
   const handleDelete = async () => {
@@ -271,18 +241,26 @@ export const Client = () => {
     deleteProduct({ params: { id: productId as string } });
   };
 
-  const handleRemovePet = (i: any) => {
-    setPetIds((v) => v.filter((z) => z !== i));
-  };
-
-  const handleChangePet = (id: any) => {
-    setPetIds(
-      (prev) =>
-        prev.includes(id)
-          ? prev.filter((pid) => pid !== id) // jika sudah ada, hapus
-          : [...prev, id] // jika belum ada, tambahkan
-    );
-  };
+  useEffect(() => {
+    if (isNaN(parseFloat(defaultVariants.normalPrice))) {
+      setDefaultVariants((prev) => ({ ...prev, normalPrice: "0" }));
+    }
+    if (isNaN(parseFloat(defaultVariants.basicPrice))) {
+      setDefaultVariants((prev) => ({ ...prev, basicPrice: "0" }));
+    }
+    if (isNaN(parseFloat(defaultVariants.petShopPrice))) {
+      setDefaultVariants((prev) => ({ ...prev, petShopPrice: "0" }));
+    }
+    if (isNaN(parseFloat(defaultVariants.doctorPrice))) {
+      setDefaultVariants((prev) => ({ ...prev, doctorPrice: "0" }));
+    }
+    if (isNaN(parseFloat(defaultVariants.quantity))) {
+      setDefaultVariants((prev) => ({ ...prev, quantity: "0" }));
+    }
+    if (isNaN(parseFloat(defaultVariants.weight))) {
+      setDefaultVariants((prev) => ({ ...prev, weight: "0" }));
+    }
+  }, [defaultVariants]);
 
   return (
     <div className="w-full flex flex-col gap-6 pb-20">
@@ -348,6 +326,7 @@ export const Client = () => {
             setImagesProduct={setImagesProduct}
             imageOld={imageOld}
             setImageOld={setImageOld}
+            errors={errors}
           />
           <ProductDescription
             input={input}
@@ -355,6 +334,9 @@ export const Client = () => {
             compositions={compositions}
             setCompositions={setCompositions}
             disabled={isUpdating}
+            compositionItem={compositionItem}
+            setCompositionItem={setCompositionItem}
+            errors={errors}
           />
 
           <div className="w-full flex items-center gap-2 px-3 py-5 bg-gradient-to-br from-gray-100 to-gray-200 border rounded-lg border-gray-300">
@@ -372,213 +354,27 @@ export const Client = () => {
               setVariants={setVariants}
               variants={variants}
               disabled={isUpdating}
+              errors={errors}
             />
           ) : (
             <SingleVariant
               defaultVariants={defaultVariants}
               setDefaultVariants={setDefaultVariants}
               disabled={isUpdating}
+              errors={errors}
             />
           )}
         </div>
         <div className="col-span-1 w-full relative">
           <div className="flex flex-col gap-3 sticky top-3">
-            <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
-              <div className="flex flex-col gap-1.5 w-full">
-                <Label>Category</Label>
-                <Popover open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group overflow-hidden"
-                      variant={"outline"}
-                      disabled={isUpdating || loadingSelect}
-                    >
-                      {input.categoryId ? (
-                        <span className="font-normal w-full truncate text-left">
-                          {
-                            categoriesList.find(
-                              (category) => category.id === input.categoryId
-                            )?.name
-                          }
-                        </span>
-                      ) : (
-                        <span className="font-normal text-gray-500 text-xs">
-                          Choose a category
-                        </span>
-                      )}
-                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                    align="end"
-                  >
-                    <Command>
-                      <CommandInput />
-                      <CommandList>
-                        <CommandEmpty />
-                        <CommandGroup>
-                          {categoriesList.map((category) => (
-                            <CommandItem
-                              onSelect={(e) => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  categoryId: e,
-                                }));
-                                setIsCategoryOpen(false);
-                              }}
-                              value={category.id}
-                              key={category.id}
-                            >
-                              {category.name}
-                              <Check
-                                className={cn(
-                                  "hidden ml-auto",
-                                  category.id === input.categoryId && "flex"
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="flex flex-col gap-1.5 w-full">
-                <Label>Supplier</Label>
-                <Popover open={isSupplierOpen} onOpenChange={setIsSupplierOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      className="w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group"
-                      variant={"outline"}
-                      disabled={isUpdating || loadingSelect}
-                    >
-                      {input.supplierId ? (
-                        <span className="font-normal w-full truncate text-left">
-                          {
-                            suppliersList.find(
-                              (supplier) => supplier.id === input.supplierId
-                            )?.name
-                          }
-                        </span>
-                      ) : (
-                        <span className="font-normal text-gray-500 text-xs">
-                          Choose a supplier
-                        </span>
-                      )}
-                      <ChevronDown className="text-gray-500 group-data-[state=open]:rotate-180 transition-all" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                    align="end"
-                  >
-                    <Command>
-                      <CommandInput />
-                      <CommandList>
-                        <CommandEmpty />
-                        <CommandGroup>
-                          {suppliersList.map((supplier) => (
-                            <CommandItem
-                              onSelect={(e) => {
-                                setInput((prev) => ({
-                                  ...prev,
-                                  supplierId: e,
-                                }));
-                                setIsSupplierOpen(false);
-                              }}
-                              value={supplier.id}
-                              key={supplier.id}
-                            >
-                              {supplier.name}
-                              <Check
-                                className={cn(
-                                  "hidden ml-auto",
-                                  supplier.id === input.supplierId && "flex"
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="flex flex-col gap-1.5 w-full">
-                <Label>Pet</Label>
-                <div
-                  className={cn(
-                    "flex flex-col gap-3",
-                    petIds.length > 0 && "border rounded-md p-3 "
-                  )}
-                >
-                  <div className="flex flex-wrap gap-3">
-                    {petIds.map((i) => (
-                      <div
-                        className="text-xs px-3 py-0.5 bg-gray-300 w-fit rounded relative flex items-center group"
-                        key={i}
-                      >
-                        {petsList.find((v) => v.id === i)?.name}
-                        <div className="group-hover:flex hidden items-center w-full absolute right-0">
-                          <div className="w-full bg-gradient-to-r from-gray-300/50 to-gray-300 h-5" />
-                          <button
-                            className="px-2 flex-none bg-gray-300 h-full"
-                            onClick={() => handleRemovePet(i)}
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Popover open={isPetOpen} onOpenChange={setIsPetOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        className="w-full bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 text-xs group"
-                        variant={"outline"}
-                        disabled={isUpdating || loadingSelect}
-                      >
-                        <CirclePlus className="size-3.5" />
-                        Add Pets
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                      align="end"
-                    >
-                      <Command>
-                        <CommandInput />
-                        <CommandList>
-                          <CommandEmpty />
-                          <CommandGroup>
-                            {petsList.map((pet) => (
-                              <CommandItem
-                                onSelect={(id) => {
-                                  handleChangePet(id);
-                                }}
-                                value={pet.id}
-                                key={pet.id}
-                              >
-                                {pet.name}
-                                <Check
-                                  className={cn(
-                                    "hidden ml-auto",
-                                    petIds.includes(pet.id) && "flex"
-                                    // pet.id === input.petId && "flex"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-            </div>
+            <ReferenceMenu
+              loading={loading}
+              setPetIds={setPetIds}
+              petIds={petIds}
+              input={input}
+              setInput={setInput}
+              errors={errors}
+            />
             <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
               <div className="flex flex-col gap-1.5 w-full">
                 <Label>Status</Label>
