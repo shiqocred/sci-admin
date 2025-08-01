@@ -16,12 +16,14 @@ export const useUpdateReview = () => {
   const mutation = useMutate<Body, Params>({
     endpoint: "/admin/customers/:id/review",
     method: "put",
-    onSuccess: ({ data }) => {
-      toast.success(data.message ?? "User successfully approve upgrade role");
-      invalidateQuery(queryClient, [["customers-list"], ["customers-review"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
+        ["customers-list"],
+        ["customers-review"],
+      ]);
     },
     onError: {
-      message: "User failed to approved upgrade role",
       title: "APPROVE_UPGRADE_ROLE",
     },
   });

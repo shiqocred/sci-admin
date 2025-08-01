@@ -10,12 +10,11 @@ export const useCreatePet = () => {
   const mutation = useMutate<Body>({
     endpoint: "/admin/pets",
     method: "post",
-    onSuccess: () => {
-      toast.success("Pet successfully created");
-      invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
     },
     onError: {
-      message: "Pet failed to create",
       title: "CREATE_Pet",
     },
   });

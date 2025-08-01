@@ -14,9 +14,9 @@ export const useUpdatePet = () => {
   const mutation = useMutate<Body, Params>({
     endpoint: "/admin/pets/:id",
     method: "put",
-    onSuccess: ({ data }) => {
-      toast.success("Pet successfully updated");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["pets-list"],
         ["pets-select"],
         ["pet-show", { ...data.id }],
@@ -24,7 +24,6 @@ export const useUpdatePet = () => {
       console.log(data.id);
     },
     onError: {
-      message: "Pet failed to update",
       title: "UPDATE_PET",
     },
   });

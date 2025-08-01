@@ -12,15 +12,14 @@ export const useChangeStatus = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/admin/products/:id/status",
     method: "put",
-    onSuccess: ({ data }) => {
-      toast.success(data.message ?? "Product successfully changed status");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["products-list"],
         ["products-show", { ...data.id }],
       ]);
     },
     onError: {
-      message: "Product failed to change status",
       title: "CHANGE_STATUS_PRODUCT",
     },
   });

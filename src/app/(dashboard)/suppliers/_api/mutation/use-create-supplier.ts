@@ -10,12 +10,14 @@ export const useCreateSupplier = () => {
   const mutation = useMutate<Body>({
     endpoint: "/admin/suppliers",
     method: "post",
-    onSuccess: () => {
-      toast.success("Supplier successfully created");
-      invalidateQuery(queryClient, [["suppliers-list"], ["suppliers-select"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
+        ["suppliers-list"],
+        ["suppliers-select"],
+      ]);
     },
     onError: {
-      message: "Supplier failed to create",
       title: "CREATE_SUPPLIER",
     },
   });

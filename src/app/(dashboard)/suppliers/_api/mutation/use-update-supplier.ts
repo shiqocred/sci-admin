@@ -14,17 +14,15 @@ export const useUpdateSupplier = () => {
   const mutation = useMutate<Body, Params>({
     endpoint: "/admin/suppliers/:id",
     method: "put",
-    onSuccess: ({ data }) => {
-      toast.success("Supplier successfully updated");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["suppliers-list"],
         ["suppliers-select"],
         ["supplier-show", { ...data.id }],
       ]);
-      console.log(data.id);
     },
     onError: {
-      message: "Supplier failed to update",
       title: "UPDATE_SUPPLIER",
     },
   });

@@ -12,12 +12,11 @@ export const useDeleteProduct = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/admin/products/:id",
     method: "delete",
-    onSuccess: () => {
-      toast.success("Product successfully deleted");
-      invalidateQuery(queryClient, [["products-list"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [["products-list"]]);
     },
     onError: {
-      message: "Product failed to delete",
       title: "DELETE_PRODUCT",
     },
   });

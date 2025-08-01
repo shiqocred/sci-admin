@@ -16,17 +16,15 @@ export const useUpdateProduct = () => {
   const mutation = useMutate<Body, Params>({
     endpoint: "/admin/products/:productId",
     method: "put",
-    onSuccess: ({ data }) => {
-      console.log(data.data.id);
-      toast.success("Product successfully updated");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["products-list"],
         ["show-product", data.data.id],
       ]);
       router.push("/products");
     },
     onError: {
-      message: "Product failed to update",
       title: "UPDATE_PRODUCT",
     },
   });

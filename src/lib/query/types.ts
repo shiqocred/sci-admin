@@ -25,10 +25,6 @@ export type UseMutateConfig<
   ) => unknown | Promise<unknown>;
   onError: {
     /**
-     * Default message to show if server response doesn't contain one.
-     */
-    message: string;
-    /**
      * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
      */
     title: string;
@@ -40,10 +36,6 @@ export type ErrorResposeType = {
    * Axios error object.
    */
   err: AxiosError;
-  /**
-   * Default message to show if server response doesn't contain one.
-   */
-  message: string;
   /**
    * title for error logging like "ADD_USER" it will be "ERROR_ADD_USER"
    */

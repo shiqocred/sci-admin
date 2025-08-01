@@ -1,11 +1,15 @@
 import {
   accounts,
+  addresses,
   authenticators,
-  cartItems,
   carts,
   categories,
-  discountProducts,
-  discountRoles,
+  discountProductVariants,
+  discountCategories,
+  discountSuppliers,
+  discountPets,
+  discountToRoles,
+  discountUsers,
   discounts,
   orderItems,
   orders,
@@ -30,12 +34,16 @@ import {
 
 export const schema = {
   accounts,
+  addresses,
   authenticators,
-  cartItems,
   carts,
   categories,
-  discountProducts,
-  discountRoles,
+  discountProductVariants,
+  discountCategories,
+  discountSuppliers,
+  discountPets,
+  discountToRoles,
+  discountUsers,
   discounts,
   orderItems,
   orders,
@@ -59,12 +67,11 @@ export const schema = {
 };
 
 export * from "./accounts";
+export * from "./addresses";
 export * from "./authenticators";
-export * from "./cart-items";
 export * from "./carts";
 export * from "./categories";
-export * from "./discount-products";
-export * from "./discount-roles";
+export * from "./discount-relations";
 export * from "./discounts";
 export * from "./enums";
 export * from "./order-items";

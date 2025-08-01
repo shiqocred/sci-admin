@@ -27,7 +27,7 @@ export function isRecord(value: any): value is Record<string, any> {
  * @param key bakal di buat sesuai jumlah key
  * @example
  * ```tsx
- *    invalidateQuery([["key-a"], ["key-b"]]);
+ *    await invalidateQuery([["key-a"], ["key-b"]]);
  * ```
  * dan akan di generate seperti ini
  * ```tsx
@@ -35,6 +35,12 @@ export function isRecord(value: any): value is Record<string, any> {
  *    queryClient.invalidateQueries({ queryKey: ["key-b"] })
  * ```
  */
-export const invalidateQuery = (queryClient: QueryClient, keys: string[][]) => {
-  keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
+export const invalidateQuery = async (
+  queryClient: QueryClient,
+  keys: string[][]
+) => {
+  await Promise.all(
+    keys.map((key) => queryClient.invalidateQueries({ queryKey: key }))
+  );
+  await new Promise((res) => setTimeout(res, 100));
 };

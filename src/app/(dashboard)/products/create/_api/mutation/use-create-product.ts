@@ -12,13 +12,12 @@ export const useCreateProduct = () => {
   const mutation = useMutate<Body>({
     endpoint: "/admin/products",
     method: "post",
-    onSuccess: () => {
-      toast.success("Product successfully created");
-      invalidateQuery(queryClient, [["products-list"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [["products-list"]]);
       router.push("/products");
     },
     onError: {
-      message: "Product failed to create",
       title: "CREATE_PRODUCT",
     },
   });

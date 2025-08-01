@@ -42,8 +42,6 @@ export async function getTotalAndPagination(
     total = totalResultA[0].count;
   }
 
-  console.log("Total products:", total);
-
   const { offset, limit, pagination } = fastPagination({ req, total });
 
   return { where, offset, limit, pagination, total };

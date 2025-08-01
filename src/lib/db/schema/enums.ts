@@ -25,3 +25,19 @@ export const statusRoleEnum = pgEnum("status_role", [
   "APPROVED",
   "REJECTED",
 ]);
+
+export const discountApplyEnum = pgEnum("apply_type", [
+  "categories",
+  "suppliers",
+  "pets",
+  "products",
+]);
+export const discountValueTypeEnum = pgEnum("discount_value_type", [
+  "percentage",
+  "fixed",
+]);
+export const minRequirementTypeEnum = pgEnum("min_requirement_type", [
+  "amount",
+  "quantity",
+]);
+export const eligibilityTypeEnum = pgEnum("eligibility_type", ["user", "role"]);

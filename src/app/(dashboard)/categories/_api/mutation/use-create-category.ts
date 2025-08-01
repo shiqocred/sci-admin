@@ -10,15 +10,14 @@ export const useCreateCategory = () => {
   const mutation = useMutate<Body>({
     endpoint: "/admin/categories",
     method: "post",
-    onSuccess: () => {
-      toast.success("Category successfully created");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["categories-list"],
         ["categories-select"],
       ]);
     },
     onError: {
-      message: "Category failed to create",
       title: "CREATE_CATEGORY",
     },
   });

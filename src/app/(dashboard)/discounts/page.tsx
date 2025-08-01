@@ -3,6 +3,7 @@ import { ContainerPage } from "@/components/container-page";
 import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { Client } from "./_components/client";
 
 export const metadata: Metadata = { title: "Discounts" };
 
@@ -17,7 +18,7 @@ const DiscountsPage = async () => {
     <ContainerPage
       breadcrumbs={[{ label: "Home", url: "/" }, { label: "Discounts" }]}
     >
-      Discounts Page
+      <Client />
     </ContainerPage>
   );
 };

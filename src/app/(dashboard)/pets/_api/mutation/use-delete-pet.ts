@@ -12,12 +12,11 @@ export const useDeletePet = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/admin/pets/:id",
     method: "delete",
-    onSuccess: () => {
-      toast.success("Pet successfully deleted");
-      invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [["pets-list"], ["pets-select"]]);
     },
     onError: {
-      message: "Pet failed to delete",
       title: "DELETE_PET",
     },
   });

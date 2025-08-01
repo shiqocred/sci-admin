@@ -15,3 +15,5 @@ export const r2AccountId = process.env.CLOUDFLARE_ACCOUNT_ID!;
 export const r2AccessId = process.env.CLOUDFLARE_ACCESS_KEY_ID!;
 export const r2AccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY!;
 export const r2bucket = process.env.CLOUDFLARE_BUCKET_NAME!;
+
+export const apiGMaps = process.env.NEXT_PUBLIC_API_GMAPS!;

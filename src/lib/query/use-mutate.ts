@@ -69,7 +69,6 @@ export const useMutate = <
     onError: (err) =>
       errorResponse({
         err,
-        message: onError.message,
         title: onError.title,
       }),
   });

@@ -12,12 +12,14 @@ export const useDeleteSupplier = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/admin/suppliers/:id",
     method: "delete",
-    onSuccess: () => {
-      toast.success("Supplier successfully deleted");
-      invalidateQuery(queryClient, [["suppliers-list"], ["suppliers-select"]]);
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
+        ["suppliers-list"],
+        ["suppliers-select"],
+      ]);
     },
     onError: {
-      message: "Supplier failed to delete",
       title: "DELETE_SUPPLIER",
     },
   });

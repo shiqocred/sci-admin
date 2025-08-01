@@ -8,9 +8,11 @@ export const productImages = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    productId: text("product_id").references(() => products.id, {
-      onDelete: "cascade",
-    }),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, {
+        onDelete: "cascade",
+      }),
     url: text("url").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),

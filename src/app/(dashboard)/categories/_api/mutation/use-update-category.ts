@@ -14,9 +14,9 @@ export const useUpdateCategory = () => {
   const mutation = useMutate<Body, Params>({
     endpoint: "/admin/categories/:id",
     method: "put",
-    onSuccess: ({ data }) => {
-      toast.success("Category successfully updated");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["categories-list"],
         ["categories-select"],
         ["category-show", { ...data.id }],
@@ -24,7 +24,6 @@ export const useUpdateCategory = () => {
       console.log(data.id);
     },
     onError: {
-      message: "Category failed to update",
       title: "UPDATE_CATEGORY",
     },
   });

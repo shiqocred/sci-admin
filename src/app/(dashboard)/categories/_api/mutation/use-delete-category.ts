@@ -12,15 +12,14 @@ export const useDeleteCategory = () => {
   const mutation = useMutate<undefined, Params>({
     endpoint: "/admin/categories/:id",
     method: "delete",
-    onSuccess: () => {
-      toast.success("Category successfully deleted");
-      invalidateQuery(queryClient, [
+    onSuccess: async ({ data }) => {
+      toast.success(data.message);
+      await invalidateQuery(queryClient, [
         ["categories-list"],
         ["categories-select"],
       ]);
     },
     onError: {
-      message: "Category failed to delete",
       title: "DELETE_CATEGORY",
     },
   });

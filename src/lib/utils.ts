@@ -1,3 +1,4 @@
+import { CheckedState } from "@radix-ui/react-checkbox";
 import { clsx, type ClassValue } from "clsx";
 import { formatInTimeZone } from "date-fns-tz";
 import { twMerge } from "tailwind-merge";
@@ -54,4 +55,28 @@ export const pronoun = (num: string | number) => {
 
 export const numericString = (e: string) => {
   return e.startsWith("0") ? e.replace(/^0+/, "") : e;
+};
+
+export function generateRandomString(length: number): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    const randIndex = Math.floor(Math.random() * chars.length);
+    result += chars[randIndex];
+  }
+  return result;
+}
+
+export const checkedFormat = (value: string): CheckedState => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return "indeterminate";
+};
+
+export const checkedToString = (
+  val: CheckedState
+): "true" | "false" | "indeterminate" => {
+  if (val === true) return "true";
+  if (val === false) return "false";
+  return "indeterminate";
 };

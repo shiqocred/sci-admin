@@ -1,27 +1,43 @@
-import { createId } from '@paralleldrive/cuid2';
 import {
-  integer,
-  numeric,
   pgTable,
   text,
+  boolean,
   timestamp,
-} from 'drizzle-orm/pg-core';
+  numeric,
+} from "drizzle-orm/pg-core";
+import { createId } from "@paralleldrive/cuid2";
+import {
+  discountApplyEnum,
+  discountValueTypeEnum,
+  eligibilityTypeEnum,
+  minRequirementTypeEnum,
+} from "./enums";
 
-export const discounts = pgTable('discounts', {
-  id: text('id')
+export const discounts = pgTable("discounts", {
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
 
-  name: text('name'), // nama promosi
-  type: text('type'), // "product" | "voucher"
-  code: text('code'), // hanya diisi jika type = "voucher"
+  code: text("code").notNull(),
 
-  percentage: integer('percentage'), // diskon dalam persen, misal: 10 = 10%
-  minPurchase: numeric('min_purchase', { precision: 12, scale: 0 }), // minimal pembelian
+  apply: discountApplyEnum("apply").notNull(),
+  valueType: discountValueTypeEnum("value_type").notNull(), // fixed / percentage
+  value: numeric("value", { precision: 10, scale: 0 }).notNull(),
 
-  startsAt: timestamp('starts_at'),
-  endsAt: timestamp('ends_at'),
+  // Minimum requirement
+  minimumType: minRequirementTypeEnum("minimum_type"),
+  eligibilityType: eligibilityTypeEnum("eligibility_type"),
+  minimum: numeric("minimum", { precision: 10, scale: 0 }),
 
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  // Voucher limitation (optional if type === "VOUCHER")
+  maxTotalUse: numeric("max_total_use", { precision: 10, scale: 0 }),
+  maxUserOnce: boolean("max_user_once"),
+
+  // Dates
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at"),
+  isActive: boolean("active"),
+
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
