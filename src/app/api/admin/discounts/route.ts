@@ -54,7 +54,8 @@ const discountSchema = z.object({
   }),
   eligibility: z
     .array(z.string().min(1, { message: "Selected eligibility is required" }))
-    .min(1, { message: "Selected eligibility is required" }),
+    .min(1, { message: "Selected eligibility is required" })
+    .nullish(),
   minimumType: z.enum(["nothing", "quantity", "amount"], {
     message:
       "Type minimum is unavailable, valid type value 'nothing' or 'quantity' or 'amount'",
@@ -265,17 +266,19 @@ export async function POST(req: Request) {
       );
     }
 
-    if (eligibilityType === "role") {
-      await db.insert(discountToRoles).values(
-        eligibility.map((role) => ({
-          discountId,
-          role: role as "BASIC" | "PETSHOP" | "VETERINARIAN",
-        }))
-      );
-    } else if (eligibilityType === "user") {
-      await db
-        .insert(discountUsers)
-        .values(eligibility.map((userId) => ({ discountId, userId })));
+    if (eligibility) {
+      if (eligibilityType === "role") {
+        await db.insert(discountToRoles).values(
+          eligibility.map((role) => ({
+            discountId,
+            role: role as "BASIC" | "PETSHOP" | "VETERINARIAN",
+          }))
+        );
+      } else if (eligibilityType === "user") {
+        await db
+          .insert(discountUsers)
+          .values(eligibility.map((userId) => ({ discountId, userId })));
+      }
     }
 
     return successRes({ id: discountId }, "Discount successfully created");
