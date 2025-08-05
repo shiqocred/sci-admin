@@ -5,7 +5,20 @@ export const orderStatusEnum = pgEnum("order_status", [
   "PACKING", // Dikemas
   "SHIPPING", // Dikirim
   "DELIVERED", // Selesai
+  "EXPIRED", // Selesai
   "CANCELLED", // Dibatalkan
+]);
+
+export const orderDraftShippingsEnum = pgEnum("order_draft_shipping_enum", [
+  "EXPRESS",
+  "REGULAR",
+  "ECONOMY",
+]);
+
+export const orderDraftStatusEnum = pgEnum("order_draft_status_enum", [
+  "ACTIVE",
+  "EXPIRED",
+  "ABANDONED",
 ]);
 
 export const roleUserEnum = pgEnum("user_role", [

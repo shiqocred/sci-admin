@@ -1,0 +1,45 @@
+import { createId } from "@paralleldrive/cuid2";
+import { index, numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { orderDraft } from "./order-draft";
+import { orderDraftShippingsEnum } from "./enums";
+import { addresses } from "./addresses";
+
+export const orderDraftShippings = pgTable(
+  "order_draft_shippings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+
+    orderDraftId: text("order_draft_id")
+      .notNull()
+      .references(() => orderDraft.id, {
+        onDelete: "cascade",
+      }),
+
+    addressId: text("address_id")
+      .notNull()
+      .references(() => addresses.id, {
+        onDelete: "cascade",
+      }),
+
+    price: numeric("price", { precision: 12, scale: 0 }).notNull(),
+
+    name: orderDraftShippingsEnum("name").notNull(),
+    company: text("company").notNull(),
+    type: text("type").notNull(),
+    duration: text("duration").notNull(),
+    weight: text("weight").notNull(),
+
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("idx_order_draft_shippings_order_id").on(table.orderDraftId),
+    index("idx_order_draft_addr_weight").on(
+      table.orderDraftId,
+      table.addressId,
+      table.weight
+    ),
+  ]
+);

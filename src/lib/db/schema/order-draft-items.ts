@@ -1,18 +1,18 @@
 import { createId } from "@paralleldrive/cuid2";
 import { index, numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { orders } from "./orders";
 import { productVariants } from "./product-variants";
+import { orderDraft } from "./order-draft";
 
-export const orderItems = pgTable(
-  "order_items",
+export const orderDraftItems = pgTable(
+  "order_draft_items",
   {
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
 
-    orderId: text("order_id")
+    orderDraftId: text("order_draft_id")
       .notNull()
-      .references(() => orders.id, {
+      .references(() => orderDraft.id, {
         onDelete: "cascade",
       }),
 
@@ -30,5 +30,5 @@ export const orderItems = pgTable(
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
-  (table) => [index("idx_order_items_order_id").on(table.orderId)]
+  (table) => [index("idx_order_draft_items_order_id").on(table.orderDraftId)]
 );

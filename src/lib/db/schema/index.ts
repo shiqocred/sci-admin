@@ -4,6 +4,7 @@ import {
   authenticators,
   carts,
   categories,
+  couriers,
   discountProductVariants,
   discountCategories,
   discountSuppliers,
@@ -12,6 +13,9 @@ import {
   discountUsers,
   discounts,
   orderItems,
+  orderDraftShippings,
+  orderDraftItems,
+  orderDraft,
   orders,
   orderStatusEnum,
   pets,
@@ -24,6 +28,7 @@ import {
   sessions,
   shippingHistories,
   shippings,
+  storeAddress,
   suppliers,
   testimonies,
   userRoleDetails,
@@ -38,6 +43,7 @@ export const schema = {
   authenticators,
   carts,
   categories,
+  couriers,
   discountProductVariants,
   discountCategories,
   discountSuppliers,
@@ -46,6 +52,9 @@ export const schema = {
   discountUsers,
   discounts,
   orderItems,
+  orderDraftShippings,
+  orderDraftItems,
+  orderDraft,
   orders,
   orderStatusEnum,
   pets,
@@ -58,6 +67,7 @@ export const schema = {
   sessions,
   shippingHistories,
   shippings,
+  storeAddress,
   suppliers,
   testimonies,
   userRoleDetails,
@@ -71,10 +81,14 @@ export * from "./addresses";
 export * from "./authenticators";
 export * from "./carts";
 export * from "./categories";
+export * from "./courier";
 export * from "./discount-relations";
 export * from "./discounts";
 export * from "./enums";
 export * from "./order-items";
+export * from "./order-draft-items";
+export * from "./order-draft-shippings";
+export * from "./order-draft";
 export * from "./orders";
 export * from "./pets";
 export * from "./product-compositions";
@@ -85,6 +99,7 @@ export * from "./products";
 export * from "./sessions";
 export * from "./shipping-histories";
 export * from "./shippings";
+export * from "./store-address";
 export * from "./suppliers";
 export * from "./testimonies";
 export * from "./user-role-details";

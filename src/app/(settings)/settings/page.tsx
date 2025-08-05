@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import React from "react";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -10,7 +9,7 @@ const SettingsPage = async () => {
   if (!session) {
     redirect("/login?redirect=login");
   }
-  return <div>setting</div>;
+  redirect("/settings/shipping");
 };
 
 export default SettingsPage;
