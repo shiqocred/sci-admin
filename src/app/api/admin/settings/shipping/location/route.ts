@@ -1,5 +1,5 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { db, storeAddress } from "@/lib/db";
+import { db, storeDetail } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -8,8 +8,9 @@ export async function GET() {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const address = await db.query.storeAddress.findFirst({
+    const address = await db.query.storeDetail.findFirst({
       columns: {
+        address: true,
         longitude: true,
         latitude: true,
       },
@@ -17,6 +18,7 @@ export async function GET() {
 
     const response = address
       ? {
+          address: address.address,
           lat: address.latitude,
           long: address.longitude,
         }
@@ -34,21 +36,22 @@ export async function PUT(req: NextRequest) {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const { lat, long } = await req.json();
+    const { address, lat, long } = await req.json();
 
-    const address = await db.query.storeAddress.findFirst({
+    const addressExist = await db.query.storeDetail.findFirst({
       columns: { id: true },
     });
 
-    if (!address) return errorRes("Please seed storeAddress first");
+    if (!addressExist) return errorRes("Please seed storeDetail first");
 
     await db
-      .update(storeAddress)
+      .update(storeDetail)
       .set({
+        address,
         latitude: lat,
         longitude: long,
       })
-      .where(eq(storeAddress.id, address.id));
+      .where(eq(storeDetail.id, addressExist.id));
 
     return successRes(null, "Store Address Updated");
   } catch (error) {

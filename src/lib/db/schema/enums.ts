@@ -54,3 +54,19 @@ export const minRequirementTypeEnum = pgEnum("min_requirement_type", [
   "quantity",
 ]);
 export const eligibilityTypeEnum = pgEnum("eligibility_type", ["user", "role"]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "PENDING",
+  "PAID",
+  "EXPIRED",
+]);
+
+export const shippingStatusEnum = pgEnum("shipping_status", [
+  "CONFIRMED",
+  "PICKING_UP",
+  "PICKED",
+  "DROPPING_OFF",
+  "DELIVERED",
+  "CANCELLED",
+  "PENDING",
+]);

@@ -1,35 +1,35 @@
-import { createId } from '@paralleldrive/cuid2';
-import {
-  integer,
-  numeric,
-  pgTable,
-  text,
-  timestamp,
-} from 'drizzle-orm/pg-core';
+import { createId } from "@paralleldrive/cuid2";
+import { numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { orders } from "./orders";
+import { shippingStatusEnum } from "./enums";
 
-export const shippings = pgTable('shippings', {
-  id: text('id')
+export const shippings = pgTable("shippings", {
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
 
-  waybillId: text('waybill_id').unique().notNull(), // untuk cek tracking
-  courierCompany: text('courier_company').notNull(), // grab, jne, etc
+  orderId: text("order_id")
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
 
-  // Courier dari Biteship
-  courierDriverName: text('courier_driver_name'),
-  courierDriverPhone: text('courier_driver_phone'),
-  courierDriverPlate: text('courier_driver_plate'),
-  courierDriverPhotoUrl: text('courier_driver_photo_url'),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  address_note: text("address_note").notNull(),
+  latitude: text("latitude").notNull(),
+  longitude: text("longitude").notNull(),
 
-  destinationAddress: text('destination_address'),
+  trackingId: text("tracking_id"),
 
-  trackingLink: text('tracking_link'),
-  orderRefId: text('order_ref_id'), // order_id dari Biteship
+  waybillId: text("waybill_id"), // untuk cek tracking
+  courierName: text("courier_name").notNull(), // grab, jne, etc
+  courierCompany: text("courier_company").notNull(), // grab, jne, etc
+  courierType: text("courier_type").notNull(), // grab, jne, etc
 
-  shippingCost: numeric('shipping_cost', { precision: 12, scale: 0 }),
-  estimatedDay: integer('estimated_day'),
-  status: text('status').default('WAITING'), // delivered, etc
+  price: numeric("price", { precision: 12, scale: 0 }).notNull(),
+  duration: text("duration").notNull(),
+  status: shippingStatusEnum("status").default("PENDING"), // delivered, etc
 
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });

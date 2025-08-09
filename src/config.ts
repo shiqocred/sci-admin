@@ -17,3 +17,8 @@ export const r2AccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY!;
 export const r2bucket = process.env.CLOUDFLARE_BUCKET_NAME!;
 
 export const apiGMaps = process.env.NEXT_PUBLIC_API_GMAPS!;
+export const apiXenditDev = process.env.NEXT_PUBLIC_API_XENDIT!;
+
+export const biteshipUrl = process.env.BITESHIP_URL!;
+
+export const biteshipAPI = process.env.NEXT_PUBLIC_API_BITESHIP!;

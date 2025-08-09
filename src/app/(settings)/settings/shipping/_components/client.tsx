@@ -42,7 +42,11 @@ import {
 } from "../_api";
 
 export const Client = () => {
-  const [input, setInput] = useState({ latitude: "", longitude: "" });
+  const [input, setInput] = useState({
+    latitude: "",
+    longitude: "",
+    address: "",
+  });
 
   const [couriers, setCouriers] = useState<
     {
@@ -73,7 +77,11 @@ export const Client = () => {
   const handleUpdateLocation = (e: MouseEvent) => {
     e.preventDefault();
     updateLocation({
-      body: { lat: input.latitude, long: input.longitude },
+      body: {
+        lat: input.latitude,
+        long: input.longitude,
+        address: input.address,
+      },
     });
   };
 
@@ -82,8 +90,12 @@ export const Client = () => {
       const location = dataLocation.data;
       setInput(
         location
-          ? { latitude: location.lat, longitude: location.long }
-          : { latitude: "", longitude: "" }
+          ? {
+              latitude: location.lat,
+              longitude: location.long,
+              address: location.address,
+            }
+          : { latitude: "", longitude: "", address: "" }
       );
     }
   }, [dataLocation]);
@@ -286,6 +298,7 @@ const Maps = ({
     });
 
     setInput({
+      address: formattedAddress,
       latitude: lat.toString(),
       longitude: lng.toString(),
     });
@@ -325,6 +338,7 @@ const Maps = ({
       });
 
       setInput({
+        address: formattedAddress,
         latitude: lat.toString(),
         longitude: lng.toString(),
       });
@@ -364,6 +378,7 @@ const Maps = ({
       });
 
       setInput({
+        address: formattedAddress,
         latitude: lat.toString(),
         longitude: lng.toString(),
       });
@@ -424,6 +439,7 @@ const Maps = ({
     setInput({
       latitude: "0",
       longitude: "0",
+      address: "",
     });
     clearSuggestions();
   };
@@ -456,6 +472,7 @@ const Maps = ({
     });
 
     setInput({
+      address: formattedAddress,
       latitude: lat.toString(),
       longitude: lng.toString(),
     });
@@ -507,6 +524,7 @@ const Maps = ({
           });
 
           setInput({
+            address: formattedAddress,
             latitude: lat.toString(),
             longitude: lng.toString(),
           });

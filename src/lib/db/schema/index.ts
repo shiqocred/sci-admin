@@ -12,6 +12,7 @@ import {
   discountToRoles,
   discountUsers,
   discounts,
+  invoices,
   orderItems,
   orderDraftShippings,
   orderDraftItems,
@@ -28,7 +29,7 @@ import {
   sessions,
   shippingHistories,
   shippings,
-  storeAddress,
+  storeDetail,
   suppliers,
   testimonies,
   userRoleDetails,
@@ -51,6 +52,7 @@ export const schema = {
   discountToRoles,
   discountUsers,
   discounts,
+  invoices,
   orderItems,
   orderDraftShippings,
   orderDraftItems,
@@ -67,7 +69,7 @@ export const schema = {
   sessions,
   shippingHistories,
   shippings,
-  storeAddress,
+  storeDetail,
   suppliers,
   testimonies,
   userRoleDetails,
@@ -85,6 +87,7 @@ export * from "./courier";
 export * from "./discount-relations";
 export * from "./discounts";
 export * from "./enums";
+export * from "./invoice";
 export * from "./order-items";
 export * from "./order-draft-items";
 export * from "./order-draft-shippings";
@@ -99,7 +102,7 @@ export * from "./products";
 export * from "./sessions";
 export * from "./shipping-histories";
 export * from "./shippings";
-export * from "./store-address";
+export * from "./store-detail";
 export * from "./suppliers";
 export * from "./testimonies";
 export * from "./user-role-details";

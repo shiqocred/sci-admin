@@ -16,7 +16,7 @@ export const addresses = pgTable(
     name: text("name").notNull(),
     phoneNumber: text("phone_number").notNull(),
     address: text("address").notNull(),
-    detail: text("detail"),
+    detail: text("detail").notNull(),
     province: text("province").notNull(), // provinsi
     city: text("city").notNull(), // kabupaten
     district: text("district").notNull(), // kecamatan

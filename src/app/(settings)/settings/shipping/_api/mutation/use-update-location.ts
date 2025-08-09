@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 type Body = {
+  address: string;
   lat: string;
   long: string;
 };

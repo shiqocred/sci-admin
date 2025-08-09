@@ -2,7 +2,6 @@ import { createId } from "@paralleldrive/cuid2";
 import { numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { orderStatusEnum } from "./enums";
-import { shippings } from "./shippings";
 import { discounts } from "./discounts";
 
 export const orders = pgTable("orders", {
@@ -16,16 +15,17 @@ export const orders = pgTable("orders", {
       onDelete: "cascade",
     }),
 
-  shippingId: text("shipping_id").references(() => shippings.id, {
-    onDelete: "set null",
-  }),
-
   discountId: text("discount_id").references(() => discounts.id, {
     onDelete: "set null",
   }),
 
   status: orderStatusEnum("status").notNull().default("WAITING_PAYMENT"),
-  invoiceId: text("invoice_id"),
+
+  productPrice: numeric("product_price", { precision: 12, scale: 0 }).notNull(),
+  shippingPrice: numeric("shipping_price", {
+    precision: 12,
+    scale: 0,
+  }).notNull(),
   totalPrice: numeric("total_price", { precision: 12, scale: 0 }).notNull(),
 
   createdAt: timestamp("created_at").defaultNow(),

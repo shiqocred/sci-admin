@@ -4,6 +4,7 @@ type Response = {
   data: {
     lat: string;
     long: string;
+    address: string;
   } | null;
 };
 

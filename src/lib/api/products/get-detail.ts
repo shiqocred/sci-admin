@@ -29,7 +29,7 @@ export const getProductDetail = async (productId: string) => {
 
   const productFormated = {
     ...productExists,
-    image: productExists.image ? `${r2Public}/${productExists.image}` : null,
+    image: productExists?.image ? `${r2Public}/${productExists.image}` : null,
   };
 
   return productFormated;

@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
 
-export const metadata: Metadata = { title: "Orders" };
+export const metadata: Metadata = { title: "Orders Detail" };
 
-const OrdersPage = async () => {
+const OrdersDetailPage = async () => {
   const session = await auth();
   if (!session) {
     const path = "/orders";
@@ -16,11 +16,15 @@ const OrdersPage = async () => {
 
   return (
     <ContainerPage
-      breadcrumbs={[{ label: "Home", url: "/" }, { label: "Orders" }]}
+      breadcrumbs={[
+        { label: "Home", url: "/" },
+        { label: "Orders", url: "/orders" },
+        { label: "Detail" },
+      ]}
     >
       <Client />
     </ContainerPage>
   );
 };
 
-export default OrdersPage;
+export default OrdersDetailPage;
