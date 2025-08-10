@@ -10,6 +10,7 @@ export const orderDraftStatusEnum = pgEnum("order_draft_status_enum", [
   "ACTIVE",
   "EXPIRED",
   "ABANDONED",
+  "CHECKOUTED",
 ]);
 
 export const roleUserEnum = pgEnum("user_role", [
