@@ -80,3 +80,4 @@ export const shippingStatusEnum = pgEnum("shipping_status", [
   "DELIVERED",
   "PENDING",
 ]);
+export const durationTypeEnum = pgEnum("duration_type", ["HOUR", "DAY"]);

@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { index, numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { orderDraft } from "./order-draft";
-import { orderDraftShippingsEnum } from "./enums";
+import { durationTypeEnum, orderDraftShippingsEnum } from "./enums";
 import { addresses } from "./addresses";
 import { users } from "./users";
 
@@ -35,7 +35,9 @@ export const orderDraftShippings = pgTable(
     label: text("label").notNull(),
     company: text("company").notNull(),
     type: text("type").notNull(),
-    duration: text("duration").notNull(),
+    fastestEstimate: timestamp("fastest_estimate").notNull(),
+    longestEstimate: timestamp("longest_estimate").notNull(),
+    duration: durationTypeEnum("duration").notNull().default("DAY"),
     weight: text("weight").notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
