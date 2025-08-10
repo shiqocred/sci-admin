@@ -16,6 +16,30 @@ type ProductOutput = {
   variant: Variant[] | null;
 };
 
+type HistoriesExist = {
+  id: string;
+  updatedAt: Date | null;
+  status:
+    | "CONFIRMED"
+    | "SCHEDULED"
+    | "ALLOCATED"
+    | "PICKING_UP"
+    | "PICKED"
+    | "CANCELLED"
+    | "ON_HOLD"
+    | "DROPPING_OFF"
+    | "RETURN_IN_TRANSIT"
+    | "RETURNED"
+    | "REJECTED"
+    | "DISPOSED"
+    | "COURIER_NOT_FOUND"
+    | "DELIVERED"
+    | "PENDING";
+  shippingId: string;
+  note: string | null;
+  serviceType: string | null;
+};
+
 type Response = {
   data: {
     id: string;
@@ -32,6 +56,7 @@ type Response = {
     paymentMethod: string | null;
     amount: string;
     expiredAt: string | null;
+    cancelledAt: string | null;
     paidAt: string | null;
     shipping_name: string;
     shipping_phone: string;
@@ -39,7 +64,7 @@ type Response = {
     shipping_address_note: string;
     shipping_latitude: string;
     shipping_longitude: string;
-    shipping_tracking_id: string | null;
+    shipping_id: string | null;
     shipping_waybill_id: string | null;
     shipping_courier_name: string;
     shipping_courierCompany: string;
@@ -48,6 +73,7 @@ type Response = {
     shipping_duration: string;
     shipping_status: string;
     products: ProductOutput[];
+    histories: HistoriesExist[];
   };
 };
 

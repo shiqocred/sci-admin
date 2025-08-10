@@ -1,14 +1,5 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const orderStatusEnum = pgEnum("order_status", [
-  "WAITING_PAYMENT", // Menunggu pembayaran
-  "PACKING", // Dikemas
-  "SHIPPING", // Dikirim
-  "DELIVERED", // Selesai
-  "EXPIRED", // Selesai
-  "CANCELLED", // Dibatalkan
-]);
-
 export const orderDraftShippingsEnum = pgEnum("order_draft_shipping_enum", [
   "EXPRESS",
   "REGULAR",
@@ -59,14 +50,32 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "PENDING",
   "PAID",
   "EXPIRED",
+  "CANCELLED",
+]);
+
+export const orderStatusEnum = pgEnum("order_status", [
+  "WAITING_PAYMENT", // Menunggu pembayaran
+  "PACKING", // Dikemas
+  "SHIPPING", // Dikirim
+  "DELIVERED", // Selesai
+  "EXPIRED", // Selesai
+  "CANCELLED", // Dibatalkan
 ]);
 
 export const shippingStatusEnum = pgEnum("shipping_status", [
   "CONFIRMED",
+  "SCHEDULED",
+  "ALLOCATED",
   "PICKING_UP",
   "PICKED",
-  "DROPPING_OFF",
-  "DELIVERED",
   "CANCELLED",
+  "ON_HOLD",
+  "DROPPING_OFF",
+  "RETURN_IN_TRANSIT",
+  "RETURNED",
+  "REJECTED",
+  "DISPOSED",
+  "COURIER_NOT_FOUND",
+  "DELIVERED",
   "PENDING",
 ]);

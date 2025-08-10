@@ -19,6 +19,7 @@ export const invoices = pgTable("invoice", {
 
   expiredAt: timestamp("expired_at"),
   paidAt: timestamp("paid_at"),
+  cancelledAt: timestamp("cancelled_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

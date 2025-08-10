@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       if (status === "SHIPPING") return "shipping";
       if (status === "DELIVERED") return "delivered";
       if (status === "EXPIRED") return "expired";
-      return "canceled";
+      return "cancelled";
     };
 
     const ordersList = ordersRes.map((item) => ({

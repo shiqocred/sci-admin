@@ -6,21 +6,21 @@ type Params = {
   id: string;
 };
 
-export const useChangeStatus = () => {
+export const useCancelOrder = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutate<undefined, Params>({
-    endpoint: "/admin/products/:id/status",
-    method: "put",
+    endpoint: "/admin/orders/:id/cancel",
+    method: "post",
     onSuccess: async ({ data }) => {
       toast.success(data.message);
       await invalidateQuery(queryClient, [
-        ["products-list"],
-        ["products-show", data.id],
+        ["orders-list"],
+        ["order-detail", data.data.id],
       ]);
     },
     onError: {
-      title: "CHANGE_STATUS_PRODUCT",
+      title: "CANCEL_ORDER",
     },
   });
 

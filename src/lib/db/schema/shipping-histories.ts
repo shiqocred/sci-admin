@@ -1,20 +1,21 @@
-import { createId } from '@paralleldrive/cuid2';
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { shippings } from './shippings';
+import { createId } from "@paralleldrive/cuid2";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { shippings } from "./shippings";
+import { shippingStatusEnum } from "./enums";
 
-export const shippingHistories = pgTable('shipping_histories', {
-  id: text('id')
+export const shippingHistories = pgTable("shipping_histories", {
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
 
-  shippingId: text('shipping_id')
+  shippingId: text("shipping_id")
     .notNull()
     .references(() => shippings.id, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     }),
 
-  status: text('status').notNull(), // e.g. confirmed, allocated, delivered
-  note: text('note'),
-  serviceType: text('service_type'),
-  updatedAt: timestamp('updated_at'),
+  status: shippingStatusEnum("status").notNull().default("CONFIRMED"),
+  note: text("note"),
+  serviceType: text("service_type"),
+  updatedAt: timestamp("updated_at"),
 });

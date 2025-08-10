@@ -20,15 +20,17 @@ export const shippings = pgTable("shippings", {
   longitude: text("longitude").notNull(),
 
   trackingId: text("tracking_id"),
+  waybillId: text("waybill_id"),
+  collectionMethod: text("collection_method"),
 
-  waybillId: text("waybill_id"), // untuk cek tracking
-  courierName: text("courier_name").notNull(), // grab, jne, etc
-  courierCompany: text("courier_company").notNull(), // grab, jne, etc
-  courierType: text("courier_type").notNull(), // grab, jne, etc
+  courierName: text("courier_name").notNull(),
+  courierCompany: text("courier_company").notNull(),
+  courierType: text("courier_type").notNull(),
 
   price: numeric("price", { precision: 12, scale: 0 }).notNull(),
   duration: text("duration").notNull(),
-  status: shippingStatusEnum("status").default("PENDING"), // delivered, etc
+
+  status: shippingStatusEnum("status").notNull().default("PENDING"),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

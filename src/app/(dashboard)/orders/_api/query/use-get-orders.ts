@@ -9,7 +9,7 @@ export type OrderResponse = {
     | "shipping"
     | "delivered"
     | "expired"
-    | "canceled";
+    | "cancelled";
   id: string;
   total_price: string;
   total_item: number;

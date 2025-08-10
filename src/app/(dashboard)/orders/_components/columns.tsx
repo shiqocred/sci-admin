@@ -59,7 +59,7 @@ export const column = ({
             row.original.status === "processed" && "bg-blue-200",
             row.original.status === "shipping" && "bg-yellow-200",
             row.original.status === "delivered" && "bg-green-200",
-            row.original.status === "delivered" && "bg-red-200",
+            row.original.status === "cancelled" && "bg-red-200",
             row.original.status === "expired" && "bg-orange-200"
           )}
         >
