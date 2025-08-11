@@ -12,6 +12,7 @@ export const invoices = pgTable("invoice", {
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
 
+  paymentId: text("payment_id"),
   paymentChannel: text("payment_channel"), // grab, jne, etc
   paymentMethod: text("payment_method"), // grab, jne, etc
   amount: text("amount").notNull(), // grab, jne, etc

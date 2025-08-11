@@ -27,6 +27,7 @@ export const orders = pgTable("orders", {
     scale: 0,
   }).notNull(),
   totalPrice: numeric("total_price", { precision: 12, scale: 0 }).notNull(),
+  note: text("note"),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

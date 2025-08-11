@@ -45,6 +45,7 @@ type Response = {
     id: string;
     product_price: string;
     total_price: string;
+    note: string | null;
     status: string;
     userId: string;
     name: string;

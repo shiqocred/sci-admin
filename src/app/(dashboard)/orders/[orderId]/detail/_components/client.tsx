@@ -318,7 +318,8 @@ export const Client = () => {
                         orderData?.shipping_status !== "PENDING" &&
                           "text-black",
                         (orderData?.shipping_status === "CONFIRMED" ||
-                          orderData?.shipping_status === "PICKING_UP") &&
+                          orderData?.shipping_status === "PICKING_UP" ||
+                          orderData?.shipping_status === "ALLOCATED") &&
                           "!bg-blue-300",
                         (orderData?.shipping_status === "PICKED" ||
                           orderData?.shipping_status === "DROPPING_OFF") &&
@@ -412,11 +413,10 @@ export const Client = () => {
             <div className="flex flex-col gap-4 text-sm sticky top-4">
               <div className="flex flex-col gap-4 border rounded-lg bg-gray-50 p-5 w-full">
                 <h3 className="font-semibold">Order Information</h3>
-                <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col gap-0.5 w-full ">
                   <h5 className="font-medium">Customer Note</h5>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    Expedita, earum.
+                  <p className="text-gray-500 underline underline-offset-2">
+                    {orderData?.note ?? "none"}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">

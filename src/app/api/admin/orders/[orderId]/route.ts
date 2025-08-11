@@ -141,6 +141,7 @@ export async function GET(
         product_price: orders.productPrice,
         total_price: orders.totalPrice,
         status: orders.status,
+        note: orders.note,
         userId: orders.userId,
         name: users.name,
         email: users.email,
@@ -302,6 +303,8 @@ export async function POST(
       waybill: biteshipRes.courier.waybill_id,
       status: biteshipRes.status,
     };
+
+    console.log(biteshipRes);
 
     const { ok: historiesOk, response: historiesRes } = await getTracking(
       biteship.tracking
