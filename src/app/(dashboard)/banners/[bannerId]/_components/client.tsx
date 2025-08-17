@@ -36,7 +36,7 @@ export const Client = () => {
     selected: [] as string[],
     image: null as File | null,
     imageOld: "",
-    startDate: undefined as Date | undefined,
+    startDate: new Date() as Date | undefined,
     startTime: "08:00",
     endDate: undefined as Date | undefined,
     endTime: "08:00",
@@ -120,7 +120,10 @@ export const Client = () => {
 
   useEffect(() => {
     if (detail) {
-      setInput(detail.data as any);
+      setInput({
+        ...(detail.data as any),
+        endTime: detail.data.endTime ? detail.data.endTime : "08:00",
+      });
     }
   }, [detail]);
   return (

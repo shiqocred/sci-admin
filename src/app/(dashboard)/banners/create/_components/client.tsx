@@ -21,7 +21,7 @@ export const Client = () => {
       | "promos",
     selected: [] as string[],
     image: null as File | null,
-    startDate: undefined as Date | undefined,
+    startDate: new Date() as Date | undefined,
     startTime: "08:00",
     endDate: undefined as Date | undefined,
     endTime: "08:00",
