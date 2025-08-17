@@ -8,11 +8,13 @@ import { cn, numericString } from "@/lib/utils";
 import React, { ChangeEvent, useState } from "react";
 
 export const SingleVariant = ({
+  available,
   defaultVariants,
   setDefaultVariants,
   disabled,
   errors,
 }: {
+  available: string[];
   defaultVariants: any;
   setDefaultVariants: any;
   disabled: boolean;
@@ -109,47 +111,55 @@ export const SingleVariant = ({
               disabled={disabled}
               isPricing
             />
-            <div className="flex gap-2 h-9 mt-auto items-center">
-              <Label>
-                <Checkbox
-                  checked={isAllPrice}
-                  onCheckedChange={setIsAllPrice}
-                />
-                <span className="text-xs">Apply to all price</span>
-              </Label>
-            </div>
+            {available.length > 0 && (
+              <div className="flex gap-2 h-9 mt-auto items-center">
+                <Label>
+                  <Checkbox
+                    checked={isAllPrice}
+                    onCheckedChange={setIsAllPrice}
+                  />
+                  <span className="text-xs">Apply to all price</span>
+                </Label>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <LabelInput
-              label="Basic price"
-              type="number"
-              placeholder="e.g. 10000"
-              value={defaultVariants.basicPrice}
-              id="basicPrice"
-              onChange={(e) => handleChange(e, true)}
-              disabled={disabled}
-              isPricing
-            />
-            <LabelInput
-              label="Pet shop price"
-              type="number"
-              placeholder="e.g. 10000"
-              value={defaultVariants.petShopPrice}
-              id="petShopPrice"
-              onChange={(e) => handleChange(e, true)}
-              disabled={disabled}
-              isPricing
-            />
-            <LabelInput
-              label="Doctor price"
-              type="number"
-              placeholder="e.g. 10000"
-              value={defaultVariants.doctorPrice}
-              id="doctorPrice"
-              onChange={(e) => handleChange(e, true)}
-              disabled={disabled}
-              isPricing
-            />
+            {available.some((i) => i === "basic") && (
+              <LabelInput
+                label="Pet owner price"
+                type="number"
+                placeholder="e.g. 10000"
+                value={defaultVariants.basicPrice}
+                id="basicPrice"
+                onChange={(e) => handleChange(e, true)}
+                disabled={disabled}
+                isPricing
+              />
+            )}
+            {available.some((i) => i === "petshop") && (
+              <LabelInput
+                label="Pet shop price"
+                type="number"
+                placeholder="e.g. 10000"
+                value={defaultVariants.petShopPrice}
+                id="petShopPrice"
+                onChange={(e) => handleChange(e, true)}
+                disabled={disabled}
+                isPricing
+              />
+            )}
+            {available.some((i) => i === "veterinarian") && (
+              <LabelInput
+                label="Pet Clinic price"
+                type="number"
+                placeholder="e.g. 10000"
+                value={defaultVariants.doctorPrice}
+                id="doctorPrice"
+                onChange={(e) => handleChange(e, true)}
+                disabled={disabled}
+                isPricing
+              />
+            )}
           </div>
         </div>
       </div>

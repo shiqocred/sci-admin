@@ -8,25 +8,14 @@ import { Value } from "./_sub-section/value";
 import { Apply } from "./_sub-section/apply";
 import { SelectApply } from "./_sub-section/select-apply";
 import { Selected } from "./_sub-section/selected";
-import { useGetSelects, useGetSelectsProducts } from "../../_api";
-
-interface Variants {
-  id: string;
-  name: string;
-  stock: number;
-  normalPrice: number;
-  basicPrice: number;
-  petShopPrice: number;
-  doctorPrice: number;
-}
+import {
+  ProductTransformed,
+  useGetSelects,
+  useGetSelectsProducts,
+} from "../../_api";
 
 export interface SelectProduct {
-  data: {
-    id: string;
-    name: string;
-    default_variant: Variants | null;
-    variants: Variants[] | null;
-  }[];
+  data: ProductTransformed[];
 }
 
 interface DiscountCoreProps {

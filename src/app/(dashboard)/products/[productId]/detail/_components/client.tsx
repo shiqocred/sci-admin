@@ -16,10 +16,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useGetShowProduct } from "../../_api";
 import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { useDeleteProduct } from "../../../_api";
 import { useConfirm } from "@/hooks/use-confirm";
+import { Badge } from "@/components/ui/badge";
 
 export const Client = () => {
   const { productId } = useParams();
@@ -122,45 +122,29 @@ export const Client = () => {
         </div>
       ) : (
         <div className="w-full mx-auto gap-6 text-sm">
-          <div className="py-10 border-b border-gray-200">
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold capitalize tracking-wide text-gray-900 mb-4">
-                  {product?.title}
-                </h1>
-                <Separator className="bg-gray-900 mb-6 data-[orientation=horizontal]:w-32" />
+          <div className="border-b pb-6 flex flex-col gap-6">
+            <h1 className="text-3xl font-bold text-foreground">
+              {product.title}
+            </h1>
+            <div className="flex items-start gap-6">
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground">DESCRIPTION</p>
+                <p className="text-sm font-medium leading-relaxed">
+                  {product.description}
+                </p>
               </div>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="md:col-span-2 space-y-4">
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                      Description
-                    </div>
-                    <div className="text-sm text-gray-800 leading-relaxed">
-                      {product?.description}
-                    </div>
-                  </div>
+              <div className="flex items-center gap-4 ml-auto flex-none">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-muted-foreground">CATEGORY</p>
+                  <p className="font-medium">
+                    {product.category?.name || "Uncategorized"}
+                  </p>
                 </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                      Category
-                    </div>
-                    <div className="text-sm font-medium text-gray-900 capitalize">
-                      {product?.category.name}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                      Status
-                    </div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {product?.status ? "Publish" : "Draft"}
-                    </div>
-                  </div>
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-muted-foreground">STATUS</p>
+                  <Badge variant={product.status ? "default" : "secondary"}>
+                    {product.status ? "Active" : "Draft"}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -247,15 +231,37 @@ export const Client = () => {
                       <p>No. Registration</p>
                     </div>
                     <div className="w-full py-3 px-6 capitalize">
-                      {product?.registrationNumber}
+                      {product?.registrationNumber
+                        ? product?.registrationNumber
+                        : "-"}
                     </div>
                   </div>
-                  <div className="w-full flex items-center">
+                  <div className="w-full flex items-center border-b border-gray-200">
                     <div className="w-40 flex-none bg-gray-100 px-6 py-3 font-medium">
                       <p>Packaging</p>
                     </div>
                     <div className="w-full py-3 px-6 capitalize">
-                      {product?.packaging}
+                      {product?.packaging ? product?.packaging : "-"}
+                    </div>
+                  </div>
+                  <div className="w-full flex items-center">
+                    <div className="w-40 flex-none bg-gray-100 px-6 py-3 font-medium">
+                      <p>Available For</p>
+                    </div>
+                    <div className="w-full py-3 px-6 capitalize flex items-center gap-3">
+                      {product.available.length === 3
+                        ? "All Customer"
+                        : product.available.map((role) => (
+                            <Badge
+                              key={role}
+                              className="rounded-full font-normal"
+                            >
+                              {role.toLowerCase() === "basic" && "Pet Owner"}
+                              {role.toLowerCase() === "petshop" && "Pet Shop"}
+                              {role.toLowerCase() === "veterinarian" &&
+                                "Pet Clinic"}
+                            </Badge>
+                          ))}
                     </div>
                   </div>
                 </div>
@@ -303,34 +309,52 @@ export const Client = () => {
                       Normal
                     </div>
                     <div className="text-2xl font-semibold text-gray-900">
-                      {formatRupiah(product.variants[0].normalPrice)}
+                      {formatRupiah(product.variants[0].price)}
                     </div>
                   </div>
                   <div className="grid grid-cols-3 rounded-md overflow-hidden border border-gray-200 h-fit">
-                    <div className="w-full flex items-center">
-                      <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
-                        <p>Basic</p>
+                    {product.available.some((i) => i === "BASIC") && (
+                      <div className="w-full flex items-center">
+                        <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
+                          <p>Pet Owner</p>
+                        </div>
+                        <div className="w-full py-3 px-6 capitalize">
+                          {formatRupiah(
+                            product.variants[0].pricing.find(
+                              (i) => i.role === "BASIC"
+                            )?.price ?? "0"
+                          )}
+                        </div>
                       </div>
-                      <div className="w-full py-3 px-6 capitalize">
-                        {formatRupiah(product?.variants[0].basicPrice)}
+                    )}
+                    {product.available.some((i) => i === "PETSHOP") && (
+                      <div className="w-full flex items-center">
+                        <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
+                          <p>Pet Shop</p>
+                        </div>
+                        <div className="w-full py-3 px-6 capitalize">
+                          {formatRupiah(
+                            product.variants[0].pricing.find(
+                              (i) => i.role === "PETSHOP"
+                            )?.price ?? "0"
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="w-full flex items-center">
-                      <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
-                        <p>Pet Shop</p>
+                    )}
+                    {product.available.some((i) => i === "VETERINARIAN") && (
+                      <div className="w-full flex items-center">
+                        <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
+                          <p>Pet Clinic</p>
+                        </div>
+                        <div className="w-full py-3 px-6 capitalize">
+                          {formatRupiah(
+                            product.variants[0].pricing.find(
+                              (i) => i.role === "VETERINARIAN"
+                            )?.price ?? "0"
+                          )}
+                        </div>
                       </div>
-                      <div className="w-full py-3 px-6 capitalize">
-                        {formatRupiah(product?.variants[0].petShopPrice)}
-                      </div>
-                    </div>
-                    <div className="w-full flex items-center">
-                      <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
-                        <p>Veterinarian</p>
-                      </div>
-                      <div className="w-full py-3 px-6 capitalize">
-                        {formatRupiah(product?.variants[0].doctorPrice)}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -352,25 +376,25 @@ export const Client = () => {
                         <div className="font-medium text-gray-900 items-center flex gap-2">
                           <span>{variant.name}</span>
                           <span>-</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-700">
                             {parseFloat(variant.stock) > 0
                               ? variant.stock
                               : "Not"}{" "}
                             Available
                           </span>
                         </div>
-                        <p>{formatRupiah(variant.normalPrice)}</p>
+                        <p>{formatRupiah(variant.price)}</p>
                       </div>
                       <div className="flex flex-col text-xs">
                         <div className="grid grid-cols-3 p-6">
                           <div>
-                            <span className="text-gray-500 uppercase tracking-wider">
+                            <span className="text-gray-700 uppercase tracking-wider">
                               SKU:{" "}
                             </span>
                             <span className="text-gray-900">{variant.sku}</span>
                           </div>
                           <div>
-                            <span className="text-gray-500 uppercase tracking-wider">
+                            <span className="text-gray-700 uppercase tracking-wider">
                               Barcode:{" "}
                             </span>
                             <span className="text-gray-900">
@@ -378,7 +402,7 @@ export const Client = () => {
                             </span>
                           </div>
                           <div>
-                            <span className="text-gray-500 uppercase tracking-wider">
+                            <span className="text-gray-700 uppercase tracking-wider">
                               Weight:{" "}
                             </span>
                             <span className="text-gray-900">
@@ -390,31 +414,57 @@ export const Client = () => {
                           <div className="flex items-center justify-center h-full border-r px-6">
                             <p>Price</p>
                           </div>
-                          <div className="grid grid-cols-3 size-full">
-                            <div className="px-6 flex h-full items-center border-r">
-                              <span className="text-gray-500 uppercase tracking-wider">
-                                Basic:{" "}
-                              </span>
-                              <span className="text-gray-900">
-                                {formatRupiah(variant.basicPrice)}
-                              </span>
-                            </div>
-                            <div className="px-6 flex h-full items-center border-r">
-                              <span className="text-gray-500 uppercase tracking-wider">
-                                Petshop:{" "}
-                              </span>
-                              <span className="text-gray-900">
-                                {formatRupiah(variant.petShopPrice)}
-                              </span>
-                            </div>
-                            <div className="px-6 flex h-full items-center">
-                              <span className="text-gray-500 uppercase tracking-wider">
-                                Veterinarian:{" "}
-                              </span>
-                              <span className="text-gray-900">
-                                {formatRupiah(variant.doctorPrice)}
-                              </span>
-                            </div>
+                          <div
+                            className={cn(
+                              "grid size-full",
+                              product.available.length === 2 && "grid-cols-2",
+                              product.available.length === 3 && "grid-cols-3"
+                            )}
+                          >
+                            {product.available.some((i) => i === "BASIC") && (
+                              <div className="px-6 flex h-full items-center border-r gap-1 last:border-0">
+                                <span className="text-gray-700 uppercase tracking-wider">
+                                  Pet Owner:
+                                </span>
+                                <span className="text-gray-900">
+                                  {formatRupiah(
+                                    variant.pricing.find(
+                                      (i) => i.role === "BASIC"
+                                    )?.price ?? "0"
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                            {product.available.some((i) => i === "PETSHOP") && (
+                              <div className="px-6 flex h-full items-center border-r gap-1 last:border-0">
+                                <span className="text-gray-700 uppercase tracking-wider">
+                                  Pet Shop:
+                                </span>
+                                <span className="text-gray-900">
+                                  {formatRupiah(
+                                    variant.pricing.find(
+                                      (i) => i.role === "PETSHOP"
+                                    )?.price ?? "0"
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                            {product.available.some(
+                              (i) => i === "VETERINARIAN"
+                            ) && (
+                              <div className="px-6 flex h-full items-center">
+                                <span className="text-gray-700 uppercase tracking-wider gap-1">
+                                  Pet Clinic:
+                                </span>
+                                <span className="text-gray-900">
+                                  {formatRupiah(
+                                    variant.pricing.find(
+                                      (i) => i.role === "VETERINARIAN"
+                                    )?.price ?? "0"
+                                  )}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -424,55 +474,79 @@ export const Client = () => {
               </div>
             )}
 
-            {/* Composition */}
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
-                Composition
-              </h2>
-              <div className="flex flex-col max-w-xl">
-                {product?.compositions.map((comp, index) => (
-                  <div
-                    key={`${comp.name}-${comp.value}-${index}`}
-                    className="flex items-center gap-1 justify-between h-10"
-                  >
-                    <div className="text-sm font-medium text-gray-700 tracking-wider">
-                      {comp.name}
-                    </div>
-                    <div className="h-[2px] flex-1 bg-[radial-gradient(circle,_#364153_1px,_transparent_1px)] [background-size:5px_4px] mt-2" />
-                    <div className="text-xs text-gray-900">{comp.value}</div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex flex-col gap-6">
+                {/* Composition */}
+                <div className="border rounded-lg overflow-hidden">
+                  <h2 className="text-lg font-semibold text-gray-900 py-3 px-5 border-b border-gray-200 bg-gray-100">
+                    Compotition
+                  </h2>
+                  <div className="flex flex-col max-w-xl py-3 px-5">
+                    {product?.compositions.map((comp, index) => (
+                      <div
+                        key={`${comp.name}-${comp.value}-${index}`}
+                        className="flex items-center gap-1 justify-between h-10"
+                      >
+                        <div className="text-sm font-medium text-gray-700 tracking-wider">
+                          {comp.name}
+                        </div>
+                        <div className="h-[2px] flex-1 bg-[radial-gradient(circle,_#364153_1px,_transparent_1px)] [background-size:5px_4px] mt-2" />
+                        <div className="text-sm text-gray-900">
+                          {comp.value}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
+              <div className="flex flex-col gap-6">
+                {/* Medical Information */}
+                <div className="border rounded-lg overflow-hidden">
+                  <h2 className="text-lg font-semibold text-gray-900 py-3 px-5 border-b border-gray-200 bg-gray-100">
+                    Medical Indication
+                  </h2>
+                  <div className=" py-3 px-5">
+                    {product?.indication ? (
+                      <div
+                        className="text-sm text-gray-800 leading-relaxed prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: product.indication,
+                        }}
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </div>
+                </div>
+                <div className="border rounded-lg overflow-hidden">
+                  <h2 className="text-lg font-semibold text-gray-900 py-3 px-5 border-b border-gray-200 bg-gray-100">
+                    Dosage & Usage
+                  </h2>
+                  <div className=" py-3 px-5">
+                    {product?.dosageUsage ? (
+                      <div
+                        className="text-sm text-gray-800 leading-relaxed prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: product?.dosageUsage ?? "",
+                        }}
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </div>
+                </div>
 
-            {/* Medical Information */}
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
-                Medical Indication
-              </h2>
-              <div
-                className="text-sm text-gray-800 leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product?.indication ?? "" }}
-              />
-            </div>
-
-            <div className="mb-10 w-full">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
-                Dosage & Usage
-              </h2>
-              <div
-                className="text-sm text-gray-800 leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product?.dosageUsage ?? "" }}
-              />
-            </div>
-
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
-                Storage Instructions
-              </h2>
-              <p className="text-sm text-gray-800 leading-relaxed">
-                {product?.storageInstruction}
-              </p>
+                <div className="border rounded-lg overflow-hidden">
+                  <h2 className="text-lg font-semibold text-gray-900 py-3 px-5 border-b border-gray-200 bg-gray-100">
+                    Storage Instructions
+                  </h2>
+                  <p className="text-sm text-gray-800 leading-relaxed py-3 px-5">
+                    {product?.storageInstruction
+                      ? product?.storageInstruction
+                      : "-"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

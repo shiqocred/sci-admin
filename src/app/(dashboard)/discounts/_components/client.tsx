@@ -4,7 +4,15 @@ import React, { MouseEvent, useEffect, useMemo, useState } from "react";
 import { useGetDiscounts } from "../_api/query/use-get-discounts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+import {
+  BadgePercent,
+  ChevronRight,
+  Download,
+  Plus,
+  RefreshCcw,
+  Share,
+  XCircle,
+} from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";
@@ -121,8 +129,19 @@ export const Client = () => {
       <DeleteDialog />
       <DeactivateDialog />
       <ActivateDialog />
-      <div className="w-full flex items-center gap-4 justify-between">
-        <h1 className="text-xl font-semibold">Discounts</h1>
+      <div className="w-full flex items-center gap-2">
+        <Button
+          size={"icon"}
+          variant={"secondary"}
+          className="size-7 hover:bg-gray-200"
+          asChild
+        >
+          <Link href="/discounts">
+            <BadgePercent className="size-5" />
+          </Link>
+        </Button>
+        <ChevronRight className="size-4 text-gray-500" />
+        <h1 className="text-xl font-semibold">Add Discount</h1>
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">

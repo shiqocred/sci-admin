@@ -81,3 +81,11 @@ export const shippingStatusEnum = pgEnum("shipping_status", [
   "PENDING",
 ]);
 export const durationTypeEnum = pgEnum("duration_type", ["HOUR", "DAY"]);
+export const bannerTypeEnum = pgEnum("banner_type", [
+  "DETAIL",
+  "PRODUCTS",
+  "PETS",
+  "PROMOS",
+  "SUPPLIERS",
+  "CATEGORIES",
+]);

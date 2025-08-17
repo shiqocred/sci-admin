@@ -54,7 +54,7 @@ export const Client = () => {
 
   if (statusProduct === "publish") {
     formatedStatus = true;
-  } else if (statusProduct === "daft") {
+  } else if (statusProduct === "draft") {
     formatedStatus = false;
   } else {
     formatedStatus = undefined;

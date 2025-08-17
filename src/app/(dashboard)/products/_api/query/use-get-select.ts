@@ -1,31 +1,22 @@
 import { useApiQuery } from "@/lib/query/use-query";
 
+export type SelectValueProps = {
+  name: string;
+  id: string;
+};
+
 type Response = {
   data: {
-    id: string;
-    name: string;
-  }[];
+    categories: SelectValueProps[];
+    suppliers: SelectValueProps[];
+    pets: SelectValueProps[];
+  };
 };
 
-export const useGetSelectCategories = () => {
+export const useGetSelects = () => {
   const query = useApiQuery<Response>({
-    key: ["categories-select"],
-    endpoint: "/admin/categories/select",
-  });
-  return query;
-};
-
-export const useGetSelectSuppliers = () => {
-  const query = useApiQuery<Response>({
-    key: ["suppliers-select"],
-    endpoint: "/admin/suppliers/select",
-  });
-  return query;
-};
-export const useGetSelectPets = () => {
-  const query = useApiQuery<Response>({
-    key: ["pets-select"],
-    endpoint: "/admin/pets/select",
+    key: ["selects"],
+    endpoint: "/admin/selects",
   });
   return query;
 };

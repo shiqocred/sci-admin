@@ -9,6 +9,8 @@ import {
   categories,
   suppliers,
   pets,
+  productAvailableRoles,
+  productVariantPrices,
 } from "@/lib/db/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { convertToWebP } from "@/lib/convert-image";
@@ -16,24 +18,48 @@ import { uploadToR2 } from "@/lib/providers";
 import slugify from "slugify";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { z } from "zod";
-import { and, asc, countDistinct, desc, eq, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  InferSelectModel,
+  sql,
+} from "drizzle-orm";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { r2Public } from "@/config";
 import { generateRandomNumber } from "@/lib/utils";
 
+type Variant = {
+  sku: string;
+  stock: string;
+  name: string;
+};
+
+type ProductGrouped = {
+  id: string;
+  name: string;
+  slug: string;
+  status: boolean;
+  image: string | null;
+  variants: Variant[] | null;
+  default_variant: Variant | null;
+  available: string[]; // sekarang di level product
+};
+
 const productSchema = z.object({
   title: z.string().min(1, { message: "Title is required." }),
   description: z.string().min(1, { message: "Description is required." }),
-  indication: z.string().min(1, { message: "Indication is required." }),
-  dosageUsage: z.string().min(1, { message: "Dosage & usage is required." }),
-  storageInstruction: z
-    .string()
-    .min(1, { message: "Storage instruction is required." }),
-  packaging: z.string().min(1, { message: "Packaging is required." }),
-  registrationNumber: z
-    .string()
-    .min(1, { message: "Registration number is required." }),
+  indication: z.string().optional(),
+  dosageUsage: z.string().optional(),
+  storageInstruction: z.string().optional(),
+  packaging: z.string().optional(),
+  registrationNumber: z.string().optional(),
   isActive: z.coerce.boolean(),
+  available: z
+    .array(z.enum(["BASIC", "PETSHOP", "VETERINARIAN"]))
+    .min(1, { message: "Available role is required" }),
   categoryId: z.string().min(1, { message: "Category is required." }),
   supplierId: z.string().min(1, { message: "Supplier is required." }),
   petIds: z
@@ -56,9 +82,9 @@ const productSchema = z.object({
       barcode: z.string().min(1, { message: "Barcode is required." }),
       stock: z.string(),
       normalPrice: z.string(),
-      basicPrice: z.string(),
-      petShopPrice: z.string(),
-      doctorPrice: z.string(),
+      basicPrice: z.string().nullish(),
+      petShopPrice: z.string().nullish(),
+      doctorPrice: z.string().nullish(),
       weight: z.string(),
     })
     .optional(),
@@ -71,14 +97,69 @@ const productSchema = z.object({
         barcode: z.string().min(1, { message: "Variant barcode is required." }),
         stock: z.string(),
         normalPrice: z.string(),
-        basicPrice: z.string(),
-        petShopPrice: z.string(),
-        doctorPrice: z.string(),
+        basicPrice: z.string().nullish(),
+        petShopPrice: z.string().nullish(),
+        doctorPrice: z.string().nullish(),
         weight: z.string(),
       })
     )
     .optional(),
 });
+
+type RoleType = InferSelectModel<typeof productAvailableRoles>["role"];
+
+function transformData(rows: any[]): ProductGrouped[] {
+  const grouped = Object.values(
+    rows.reduce(
+      (acc, row) => {
+        if (!acc[row.id]) {
+          acc[row.id] = {
+            id: row.id,
+            name: row.name,
+            slug: row.slug,
+            status: row.status,
+            image: row.image,
+            variants: [],
+            default_variant: null,
+            available: [],
+          } as ProductGrouped;
+        }
+
+        // Merge array available dan hapus duplikat
+        acc[row.id].available = Array.from(
+          new Set([...(acc[row.id].available || []), ...(row.available || [])])
+        );
+
+        const variant: Variant = {
+          sku: row.variantSku,
+          stock: row.variantStock,
+          name: row.variantName,
+        };
+
+        if (row.variantDefault) {
+          if (!acc[row.id].default_variant) {
+            acc[row.id].default_variant = variant;
+          }
+        } else {
+          const exists = acc[row.id].variants!.some(
+            (v: any) => v.sku === variant.sku && v.name === variant.name
+          );
+          if (!exists) {
+            acc[row.id].variants!.push(variant);
+          }
+        }
+
+        return acc;
+      },
+      {} as Record<string, ProductGrouped>
+    )
+  );
+
+  return grouped.map((p: any) => ({
+    ...p,
+    variants: p.variants && p.variants.length > 0 ? p.variants : null,
+  }));
+}
 
 const sortField = (s: string) => {
   if (s === "name") return products.name;
@@ -135,9 +216,10 @@ export async function GET(req: NextRequest) {
     const { where, offset, limit, pagination } = await getTotalAndPagination(
       products,
       q,
-      [products.name, products.slug],
+      [products.name, products.slug, productVariants.sku],
       req,
       finalWhere,
+      true,
       true
     );
 
@@ -148,28 +230,35 @@ export async function GET(req: NextRequest) {
         slug: products.slug,
         status: products.status,
         image: sql`
-          (SELECT ${productImages.url} 
-           FROM ${productImages} 
-           WHERE ${productImages.productId} = ${products.id} 
-           ORDER BY ${productImages.createdAt} ASC 
-           LIMIT 1)`.as("image"),
-        categoryName: categories.name,
-        supplierName: suppliers.name,
-        stock: sql`
-          (SELECT COALESCE(SUM(${productVariants.stock}), 0) 
-           FROM ${productVariants} 
-           WHERE ${productVariants.productId} = ${products.id})`.as("stock"),
-        variantCount: countDistinct(productVariants.id).as("variantCount"),
-        petCount: countDistinct(pets.id).as("petCount"),
+      (SELECT ${productImages.url} 
+       FROM ${productImages} 
+       WHERE ${productImages.productId} = ${products.id} 
+       ORDER BY ${productImages.createdAt} ASC 
+       LIMIT 1)`.as("image"),
+        variantSku: productVariants.sku,
+        variantStock: productVariants.stock,
+        variantName: productVariants.name,
+        variantDefault: productVariants.isDefault,
+        available:
+          sql`COALESCE(json_agg(DISTINCT ${productAvailableRoles.role}), '[]')`.as(
+            "available"
+          ),
       })
       .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .leftJoin(suppliers, eq(products.supplierId, suppliers.id))
-      .leftJoin(productToPets, eq(products.id, productToPets.productId))
-      .leftJoin(pets, eq(productToPets.petId, pets.id))
+      .leftJoin(
+        productAvailableRoles,
+        eq(productAvailableRoles.productId, products.id)
+      )
+      .leftJoin(productToPets, eq(productToPets.productId, products.id))
       .leftJoin(productVariants, eq(productVariants.productId, products.id))
       .where(where)
-      .groupBy(products.id, categories.name, suppliers.name)
+      .groupBy(
+        products.id,
+        productVariants.sku,
+        productVariants.stock,
+        productVariants.name,
+        productVariants.isDefault
+      )
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)
       .offset(offset);
@@ -179,24 +268,24 @@ export async function GET(req: NextRequest) {
       image: item.image ? `${r2Public}/${item.image as string}` : null,
     }));
 
-    const supplierOptions = await db
-      .selectDistinct({ id: suppliers.id, name: suppliers.name })
-      .from(products)
-      .innerJoin(suppliers, eq(products.supplierId, suppliers.id));
-
-    const categoryOptions = await db
-      .selectDistinct({ id: categories.id, name: categories.name })
-      .from(products)
-      .innerJoin(categories, eq(products.categoryId, categories.id));
-
-    const petOptions = await db
-      .selectDistinct({ id: pets.id, name: pets.name })
-      .from(productToPets)
-      .innerJoin(pets, eq(productToPets.petId, pets.id));
+    const [supplierOptions, categoryOptions, petOptions] = await Promise.all([
+      db
+        .selectDistinct({ id: suppliers.id, name: suppliers.name })
+        .from(products)
+        .innerJoin(suppliers, eq(products.supplierId, suppliers.id)),
+      db
+        .selectDistinct({ id: categories.id, name: categories.name })
+        .from(products)
+        .innerJoin(categories, eq(products.categoryId, categories.id)),
+      db
+        .selectDistinct({ id: pets.id, name: pets.name })
+        .from(productToPets)
+        .innerJoin(pets, eq(productToPets.petId, pets.id)),
+    ]);
 
     return successRes(
       {
-        data: formatted,
+        data: transformData(formatted),
         selectOptions: {
           suppliers: supplierOptions,
           categories: categoryOptions,
@@ -231,6 +320,7 @@ export async function POST(req: NextRequest) {
       isActive: formData.get("isActive") === "true",
       categoryId: formData.get("categoryId"),
       supplierId: formData.get("supplierId"),
+      available: JSON.parse((formData.get("available") as string) || "[]"),
       petIds: JSON.parse((formData.get("petId") as string) || "[]"),
       compositions: JSON.parse(
         (formData.get("compositions") as string) || "[]"
@@ -260,6 +350,7 @@ export async function POST(req: NextRequest) {
       packaging,
       registrationNumber,
       isActive,
+      available,
       categoryId,
       supplierId,
       petIds,
@@ -283,7 +374,6 @@ export async function POST(req: NextRequest) {
     const titleFormatted = `${title}-${generateRandomNumber(5)}`;
     const slug = slugify(titleFormatted, { lower: true });
 
-    // Jalankan semua operasi dalam satu transaksi
     await db.transaction(async (tx) => {
       // Insert product
       await tx.insert(products).values({
@@ -300,6 +390,16 @@ export async function POST(req: NextRequest) {
         categoryId,
         supplierId,
       });
+
+      // Insert available roles
+      if (available?.length) {
+        await tx.insert(productAvailableRoles).values(
+          available.map((role) => ({
+            productId,
+            role,
+          }))
+        );
+      }
 
       // Insert images
       if (uploadedKeys.length) {
@@ -334,39 +434,50 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Insert variants
-      if (variants && variants.length > 0) {
-        await tx.insert(productVariants).values(
-          variants.map((v) => ({
-            id: createId(),
-            productId,
-            name: v.name,
-            sku: v.sku,
-            barcode: v.barcode,
-            normalPrice: v.normalPrice,
-            basicPrice: v.basicPrice,
-            petShopPrice: v.petShopPrice,
-            doctorPrice: v.doctorPrice,
-            stock: v.stock,
-            weight: v.weight,
-            isDefault: false,
-          }))
-        );
-      } else if (defaultVariant) {
+      // Insert variants + variant prices
+      const insertVariantWithPrices = async (
+        variant: any,
+        isDefault: boolean
+      ) => {
+        const variantId = createId();
+
+        // Insert variant
         await tx.insert(productVariants).values({
-          id: createId(),
+          id: variantId,
           productId,
-          name: defaultVariant.name,
-          sku: defaultVariant.sku,
-          barcode: defaultVariant.barcode,
-          normalPrice: defaultVariant.normalPrice,
-          basicPrice: defaultVariant.basicPrice,
-          petShopPrice: defaultVariant.petShopPrice,
-          doctorPrice: defaultVariant.doctorPrice,
-          stock: defaultVariant.stock,
-          weight: defaultVariant.weight,
-          isDefault: true,
+          name: variant.name,
+          sku: variant.sku,
+          barcode: variant.barcode,
+          price: variant.normalPrice, // optional: simpan normal price sebagai default price
+          stock: variant.stock,
+          weight: variant.weight,
+          isDefault,
         });
+
+        // Insert variant prices per role
+        const rolePriceMap = [
+          { role: "BASIC" as RoleType, price: variant.basicPrice },
+          { role: "PETSHOP" as RoleType, price: variant.petShopPrice },
+          { role: "VETERINARIAN" as RoleType, price: variant.doctorPrice },
+        ].filter((rp) => rp.price !== undefined && rp.price !== null);
+
+        if (rolePriceMap.length) {
+          await tx.insert(productVariantPrices).values(
+            rolePriceMap.map((rp) => ({
+              variantId,
+              role: rp.role,
+              price: rp.price,
+            }))
+          );
+        }
+      };
+
+      if (variants && variants.length > 0) {
+        for (const v of variants) {
+          await insertVariantWithPrices(v, false);
+        }
+      } else if (defaultVariant) {
+        await insertVariantWithPrices(defaultVariant, true);
       }
     });
 

@@ -1,0 +1,175 @@
+import { r2Public } from "@/config";
+import { auth, errorRes, successRes } from "@/lib/auth";
+import { convertToWebP } from "@/lib/convert-image";
+import { bannerItems, banners, db, products } from "@/lib/db";
+import { getTotalAndPagination } from "@/lib/db/pagination";
+import { uploadToR2 } from "@/lib/providers";
+import { pronoun } from "@/lib/utils";
+import { createId } from "@paralleldrive/cuid2";
+import { asc, countDistinct, desc, eq, sql } from "drizzle-orm";
+import { NextRequest } from "next/server";
+
+type BannerType =
+  | "PRODUCTS"
+  | "DETAIL"
+  | "PETS"
+  | "SUPPLIERS"
+  | "PROMOS"
+  | "CATEGORIES";
+
+function combineDateTime(date: string | null, time?: string | null) {
+  if (!date || !time) return null;
+  const [hours, minutes] = time.split(":").map(Number);
+  return new Date(new Date(date).setHours(hours, minutes));
+}
+
+const sortFieldMap: Record<string, any> = {
+  name: banners.name,
+  type: banners.type,
+  created: banners.createdAt,
+};
+
+function statusFormat(item: any) {
+  const now = Date.now();
+  const start = new Date(item.startAt).getTime();
+  const end = item.endAt ? new Date(item.endAt).getTime() : null;
+
+  if (item.isActive === true) return "active";
+  if (item.isActive === false) return "expired";
+  if (now < start) return "scheduled";
+  if (end === null || now <= end) return "active";
+  return "expired";
+}
+
+function applyFormatted(item: any) {
+  const typeMap: Record<string, string> = {
+    PETS: "Pet",
+    PRODUCTS: "Product",
+    PROMOS: "Promo",
+    SUPPLIERS: "Supplier",
+    CATEGORIES: "Categor",
+  };
+
+  if (typeMap[item.type]) {
+    let suffix;
+
+    if (item.type === "CATEGORIES") {
+      suffix = item.totalMount > 1 ? "ies" : "y";
+    } else {
+      suffix = pronoun(item.totalMount);
+    }
+
+    return `${item.totalMount.toLocaleString()} ${typeMap[item.type]}${suffix}`;
+  }
+
+  return `Detail ${item.detail}`;
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    if (!(await auth())) return errorRes("Unauthorized", 401);
+
+    const q = req.nextUrl.searchParams.get("q") ?? "";
+    const sort = req.nextUrl.searchParams.get("sort") ?? "created";
+    const order = req.nextUrl.searchParams.get("order") ?? "desc";
+
+    const { where, offset, limit, pagination } = await getTotalAndPagination(
+      banners,
+      q,
+      [banners.name],
+      req
+    );
+
+    const bannersRes = await db
+      .select({
+        id: banners.id,
+        name: banners.name,
+        image: banners.image,
+        type: banners.type,
+        startAt: banners.startAt,
+        endAt: banners.endAt,
+        isActive: banners.status,
+        totalMount: countDistinct(bannerItems.id).as("totalMount"),
+        detail: sql`MIN(${products.name})`.as("detail"), // ambil nama pertama
+      })
+      .from(banners)
+      .leftJoin(bannerItems, eq(bannerItems.bannerId, banners.id))
+      .leftJoin(products, eq(products.id, bannerItems.productId))
+      .where(where)
+      .groupBy(banners.id)
+      .orderBy(
+        order === "desc" ? desc(sortFieldMap[sort]) : asc(sortFieldMap[sort])
+      )
+      .limit(limit)
+      .offset(offset);
+
+    const bannersResFormated = bannersRes.map((item) => ({
+      id: item.id,
+      name: item.name,
+      image: item.image ? `${r2Public}/${item.image}` : null,
+      status: statusFormat(item),
+      apply: applyFormatted(item),
+    }));
+
+    return successRes({ data: bannersResFormated, pagination }, "Banner list");
+  } catch (error) {
+    console.error("ERROR_GET_BANNERS", error);
+    return errorRes("Internal Error", 500);
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    if (!(await auth())) return errorRes("Unauthorized", 401);
+
+    const body = await req.formData();
+    const name = body.get("name") as string;
+    const type = body.get("type") as BannerType;
+    const apply = body.getAll("apply") as string[];
+    const image = body.get("image") as File | null;
+
+    if (!image) return errorRes("Image is required", 400);
+
+    const start = combineDateTime(
+      body.get("start_date") as string,
+      body.get("start_time") as string
+    );
+    const end = combineDateTime(
+      body.get("end_date") as string | null,
+      body.get("end_time") as string | null
+    );
+
+    const bannerId = createId();
+    const key = `images/banners-${bannerId}-${Date.now()}`;
+
+    await uploadToR2({
+      buffer: await convertToWebP(image),
+      key,
+    });
+
+    await db.insert(banners).values({
+      id: bannerId,
+      name,
+      image: key,
+      startAt: start!,
+      endAt: end,
+      type,
+    });
+
+    const bannerData = apply.map((id) => ({
+      bannerId,
+      productId: ["PRODUCTS", "DETAIL"].includes(type) ? id : null,
+      petId: type === "PETS" ? id : null,
+      supplierId: type === "SUPPLIERS" ? id : null,
+      promoId: type === "PROMOS" ? id : null,
+      categoryId: type === "CATEGORIES" ? id : null,
+    }));
+
+    await db.insert(bannerItems).values(bannerData);
+
+    return successRes({ id: bannerId }, "Banner successfully created");
+  } catch (error) {
+    console.error("ERROR_CREATE_BANNER:", error);
+    return errorRes("Internal Error", 500);
+  }
+}

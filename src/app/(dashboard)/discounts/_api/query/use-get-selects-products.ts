@@ -1,22 +1,27 @@
 import { useApiQuery } from "@/lib/query/use-query";
 
-type Variants = {
+type Pricing = {
+  role: string;
+  price: string;
+};
+
+type Variant = {
   id: string;
   name: string;
-  stock: number;
-  normalPrice: number;
-  basicPrice: number;
-  petShopPrice: number;
-  doctorPrice: number;
+  stock: string;
+  price: string;
+  pricing: Pricing[];
+};
+
+export type ProductTransformed = {
+  id: string;
+  name: string;
+  variants: Variant[] | null;
+  defaultVariant: Variant | null;
 };
 
 type Response = {
-  data: {
-    id: string;
-    name: string;
-    default_variant: Variants | null;
-    variants: Variants[] | null;
-  }[];
+  data: ProductTransformed[];
 };
 
 export const useGetSelectsProducts = () => {

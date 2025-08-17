@@ -3,7 +3,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { buildWhereClause } from "../search";
 import { db } from "./client";
 import { fastPagination } from "../pagination";
-import { products, productToPets } from "./schema";
+import { products, productToPets, productVariants } from "./schema";
 import { NextRequest } from "next/server";
 
 export async function getTotalAndPagination(
@@ -12,7 +12,8 @@ export async function getTotalAndPagination(
   searchableFields: AnyPgColumn[],
   req: NextRequest,
   extraFilter?: SQL,
-  joinPets = false
+  joinPets = false,
+  joinVariants = false
 ) {
   const searchClause = buildWhereClause(q, searchableFields);
   const where =
@@ -20,26 +21,36 @@ export async function getTotalAndPagination(
       ? and(searchClause, extraFilter)
       : searchClause || extraFilter;
 
-  const baseQuery = db.select({ count: count() }).from(table);
-
-  const totalResult = await baseQuery.where(where);
-
   let total: number;
 
-  total = totalResult[0].count;
-
-  if (joinPets) {
-    const baseQueryA = db
+  if (joinPets || joinVariants) {
+    let query: any;
+    const baseQuery = db
       .select({ count: countDistinct(products.id) })
       .from(products);
-    baseQueryA.leftJoin(
-      productToPets,
-      eq(productToPets.productId, products.id)
-    );
 
-    const totalResultA = await baseQueryA.where(where);
+    if (joinPets) {
+      query = baseQuery.leftJoin(
+        productToPets,
+        eq(productToPets.productId, products.id)
+      );
+    }
 
-    total = totalResultA[0].count;
+    if (joinVariants) {
+      query = baseQuery.leftJoin(
+        productVariants,
+        eq(productVariants.productId, products.id)
+      );
+    }
+
+    query = baseQuery.where(where);
+    const totalResult = await query;
+    total = totalResult[0].count;
+  } else {
+    // Query normal
+    const baseQuery = db.select({ count: count() }).from(table).where(where);
+    const totalResult = await baseQuery;
+    total = totalResult[0].count;
   }
 
   const { offset, limit, pagination } = fastPagination({ req, total });

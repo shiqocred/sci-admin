@@ -19,6 +19,8 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import { ProductGrouped } from "../_api";
+import { Badge } from "@/components/ui/badge";
 
 export const column = ({
   metaPage,
@@ -30,7 +32,7 @@ export const column = ({
   handleDelete: (id: string) => Promise<void>;
   handleChangeStatus: (id: string) => Promise<void>;
   handleMove: (id: string, type: "detail" | "edit") => void;
-}): ColumnDef<any>[] => [
+}): ColumnDef<ProductGrouped>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: "id",
@@ -64,7 +66,27 @@ export const column = ({
     },
   },
   {
-    header: () => <div className="text-xs">Product</div>,
+    header: () => <div className="text-xs">SKU</div>,
+    accessorKey: "sku",
+    cell: ({ row }) => {
+      const product = row.original;
+      if (product.default_variant)
+        return <p className="font-semibold">{product.default_variant.sku}</p>;
+
+      if (product.variants)
+        return (
+          <div className="flex flex-col gap-0.5 font-semibold">
+            {product.variants.map((variant) => (
+              <p key={variant.sku}>{variant.sku}</p>
+            ))}
+          </div>
+        );
+
+      return null;
+    },
+  },
+  {
+    header: () => <div className="text-xs text-wrap">Product Name</div>,
     accessorKey: "name",
   },
   {
@@ -88,30 +110,60 @@ export const column = ({
     accessorKey: "stock",
     cell: ({ row }) => {
       const product = row.original;
-      return (
-        <p>
-          {product.stock} in stock for {product.variantCount} variant
-          {product.variantCount > 1 ? "s" : ""}
-        </p>
-      );
+      if (product.default_variant)
+        return (
+          <p>
+            <span className="font-semibold">
+              {parseFloat(
+                product.default_variant.stock ?? "0"
+              ).toLocaleString()}
+            </span>{" "}
+            in stock
+          </p>
+        );
+
+      if (product.variants)
+        return (
+          <div className="flex flex-col gap-0.5">
+            {product.variants.map((variant) => (
+              <p key={variant.sku}>
+                <span className="font-semibold">
+                  {parseFloat(variant.stock ?? "0").toLocaleString()}
+                </span>{" "}
+                in stock for{" "}
+                <span className="font-semibold">{variant.name}</span>
+              </p>
+            ))}
+          </div>
+        );
+
+      return null;
     },
   },
   {
-    header: () => <div className="text-xs">Category</div>,
-    accessorKey: "categoryName",
-  },
-  {
-    header: () => <div className="text-xs">Suplier</div>,
-    accessorKey: "supplierName",
-  },
-  {
-    header: () => <div className="text-xs">Pets</div>,
-    accessorKey: "petCount",
-    cell: ({ row }) => (
-      <p>
-        {row.original.petCount} Pet{row.original.petCount > 1 ? "s" : ""}
-      </p>
-    ),
+    header: () => <div className="text-xs">Available for</div>,
+    accessorKey: "available",
+    cell: ({ row }) => {
+      const product = row.original;
+      if (product.available.length === 3)
+        return (
+          <Badge className="capitalize rounded-full font-normal">
+            All Customer
+          </Badge>
+        );
+
+      return (
+        <div className="flex items-center gap-0.5">
+          {product.available.map((role) => (
+            <Badge key={role} className="capitalize rounded-full font-normal">
+              {role === "BASIC" && "Pet Owner"}
+              {role === "PETSHOP" && "Pet Shop"}
+              {role === "VETERINARIAN" && "Pet Clinic"}
+            </Badge>
+          ))}
+        </div>
+      );
+    },
   },
   {
     id: "actions",

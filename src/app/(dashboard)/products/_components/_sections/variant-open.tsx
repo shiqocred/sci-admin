@@ -14,6 +14,7 @@ export const VariantOpen = ({
   setVariants,
   disabled,
   errors,
+  available,
 }: {
   variant: any;
   idx: number;
@@ -21,8 +22,10 @@ export const VariantOpen = ({
   setVariants: any;
   disabled: boolean;
   errors: any;
+  available: string[];
 }) => {
   const [isAllPrice, setIsAllPrice] = useState<boolean | "indeterminate">(true);
+  console.log(available);
 
   const handleChangeVariant = (
     id: string,
@@ -191,68 +194,76 @@ export const VariantOpen = ({
                 disabled={disabled}
                 isPricing
               />
-              <div className="flex gap-2 h-9 mt-auto items-center">
-                <Label>
-                  <Checkbox
-                    checked={isAllPrice}
-                    onCheckedChange={setIsAllPrice}
-                  />
-                  <span className="text-xs">Apply to all price</span>
-                </Label>
-              </div>
+              {available.length > 0 && (
+                <div className="flex gap-2 h-9 mt-auto items-center">
+                  <Label>
+                    <Checkbox
+                      checked={isAllPrice}
+                      onCheckedChange={setIsAllPrice}
+                    />
+                    <span className="text-xs">Apply to all price</span>
+                  </Label>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <LabelInput
-                label="Basic price"
-                type="number"
-                placeholder="e.g. 10000"
-                value={variant.basicPrice}
-                id="basicPrice"
-                onChange={(e) =>
-                  handleChangeVariant(
-                    variant.id,
-                    "basicPrice",
-                    e.target.value,
-                    true
-                  )
-                }
-                disabled={disabled}
-                isPricing
-              />
-              <LabelInput
-                label="Pet shop price"
-                type="number"
-                placeholder="e.g. 10000"
-                value={variant.petShopPrice}
-                id="petShopPrice"
-                onChange={(e) =>
-                  handleChangeVariant(
-                    variant.id,
-                    "basicPrice",
-                    e.target.value,
-                    true
-                  )
-                }
-                disabled={disabled}
-                isPricing
-              />
-              <LabelInput
-                label="Doctor price"
-                type="number"
-                placeholder="e.g. 10000"
-                value={variant.doctorPrice}
-                id="doctorPrice"
-                onChange={(e) =>
-                  handleChangeVariant(
-                    variant.id,
-                    "basicPrice",
-                    e.target.value,
-                    true
-                  )
-                }
-                disabled={disabled}
-                isPricing
-              />
+              {available.some((i) => i === "basic") && (
+                <LabelInput
+                  label="Pet owner price"
+                  type="number"
+                  placeholder="e.g. 10000"
+                  value={variant.basicPrice}
+                  id="basicPrice"
+                  onChange={(e) =>
+                    handleChangeVariant(
+                      variant.id,
+                      "basicPrice",
+                      e.target.value,
+                      true
+                    )
+                  }
+                  disabled={disabled}
+                  isPricing
+                />
+              )}
+              {available.some((i) => i === "petshop") && (
+                <LabelInput
+                  label="Pet shop price"
+                  type="number"
+                  placeholder="e.g. 10000"
+                  value={variant.petShopPrice}
+                  id="petShopPrice"
+                  onChange={(e) =>
+                    handleChangeVariant(
+                      variant.id,
+                      "petShopPrice",
+                      e.target.value,
+                      true
+                    )
+                  }
+                  disabled={disabled}
+                  isPricing
+                />
+              )}
+              {available.some((i) => i === "veterinarian") && (
+                <LabelInput
+                  label="Pet clinic price"
+                  type="number"
+                  placeholder="e.g. 10000"
+                  value={variant.doctorPrice}
+                  id="doctorPrice"
+                  onChange={(e) =>
+                    handleChangeVariant(
+                      variant.id,
+                      "doctorPrice",
+                      e.target.value,
+                      true
+                    )
+                  }
+                  disabled={disabled}
+                  isPricing
+                />
+              )}
             </div>
           </div>
         </div>

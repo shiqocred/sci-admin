@@ -148,75 +148,77 @@ export const SheetRole = ({
           ) : (
             <div className="h-[calc(100vh-56px+16px)] overflow-y-auto">
               <div className="flex flex-col pb-10">
-                {reviewData?.fileKtp && (
-                  <div className="flex flex-col w-full items-center px-10 justify-center border-b border-white py-5 gap-2 text-sm">
-                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                      <Image
-                        src={reviewData.fileKtp}
-                        fill
-                        sizes={sizesImage}
-                        className="object-cover"
-                        alt="KTP"
-                      />
+                <div className="grid grid-cols-2 gap-4 px-5 mt-10 mb-16">
+                  {reviewData?.fileKtp && (
+                    <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
+                      <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                        <Image
+                          src={reviewData.fileKtp}
+                          fill
+                          sizes={sizesImage}
+                          className="object-cover"
+                          alt="KTP"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setUrlReview(reviewData.fileKtp);
+                          setIsActive("KTP");
+                        }}
+                        className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                      >
+                        <Eye />
+                        KTP
+                      </Button>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setUrlReview(reviewData.fileKtp);
-                        setIsActive("KTP");
-                      }}
-                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                    >
-                      <Eye />
-                      KTP
-                    </Button>
-                  </div>
-                )}
-                {reviewData?.storefront && (
-                  <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
-                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                      <Image
-                        src={reviewData.storefront}
-                        fill
-                        sizes={sizesImage}
-                        className="object-cover"
-                        alt="Pet Shop Building"
-                      />
+                  )}
+                  {reviewData?.storefront && (
+                    <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
+                      <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                        <Image
+                          src={reviewData.storefront}
+                          fill
+                          sizes={sizesImage}
+                          className="object-cover"
+                          alt="Pet Shop Building"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setUrlReview(reviewData.storefront);
+                          setIsActive("Pet Shop Building");
+                        }}
+                        className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                      >
+                        <Eye />
+                        Pet Shop Building
+                      </Button>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setUrlReview(reviewData.storefront);
-                        setIsActive("Pet Shop Building");
-                      }}
-                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                    >
-                      <Eye />
-                      Pet Shop Building
-                    </Button>
-                  </div>
-                )}
-                {reviewData?.fileKta && (
-                  <div className="flex flex-col w-full items-center px-10 justify-center py-5 gap-2 text-sm">
-                    <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
-                      <Image
-                        src={reviewData.fileKta}
-                        fill
-                        sizes={sizesImage}
-                        className="object-cover"
-                        alt="KTA"
-                      />
+                  )}
+                  {reviewData?.fileKta && (
+                    <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
+                      <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
+                        <Image
+                          src={reviewData.fileKta}
+                          fill
+                          sizes={sizesImage}
+                          className="object-cover"
+                          alt="KTA"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setUrlReview(reviewData.fileKta);
+                          setIsActive("KTA");
+                        }}
+                        className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
+                      >
+                        <Eye />
+                        KTA
+                      </Button>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setUrlReview(reviewData.fileKta);
-                        setIsActive("KTA");
-                      }}
-                      className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
-                    >
-                      <Eye />
-                      KTA
-                    </Button>
-                  </div>
-                )}
+                  )}
+                </div>
                 <div className="flex flex-col bg-white">
                   <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
                     <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
@@ -237,6 +239,18 @@ export const SheetRole = ({
                       Full Name
                     </div>
                     <div className="pr-5">{reviewData?.name}</div>
+                  </div>
+                  <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
+                    <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
+                      Current Role
+                    </div>
+                    <div className="pr-5">{reviewData?.role}</div>
+                  </div>
+                  <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
+                    <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
+                      New Role
+                    </div>
+                    <div className="pr-5">{reviewData?.newRole}</div>
                   </div>
                 </div>
                 <div className="w-full h-10 grid grid-cols-2 mt-4">

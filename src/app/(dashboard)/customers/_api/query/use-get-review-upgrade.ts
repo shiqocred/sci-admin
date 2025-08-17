@@ -6,6 +6,7 @@ type Response = {
     fileKta: string;
     storefront: string;
     role: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
+    newRole: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
     name: string | null;
     userId: string;
     nik: string | null;

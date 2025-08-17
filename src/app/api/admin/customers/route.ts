@@ -1,3 +1,4 @@
+import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { db, orders, userRoleDetails, users } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
         role: users.role,
         image: users.image,
         status_role: userRoleDetails.status,
+        newRole: userRoleDetails.newRole,
         orders: count(orders.id).as("orders"),
         amountSpent: sum(orders.totalPrice).as("amountSpent"),
       })
@@ -53,7 +55,7 @@ export async function GET(req: NextRequest) {
       )
       .leftJoin(userRoleDetails, eq(userRoleDetails.userId, users.id))
       .where(and(where, not(eq(users.role, "ADMIN"))))
-      .groupBy(users.id, userRoleDetails.status)
+      .groupBy(users.id, userRoleDetails.status, userRoleDetails.newRole)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)
       .offset(offset);
@@ -76,11 +78,13 @@ export async function GET(req: NextRequest) {
 
     const customersFormatted = customersRes.map((user) => ({
       ...user,
+      image: user.image ? `${r2Public}/${user.image}` : null,
       role: formatRole(user.role),
       status_role: formatStatus(user.status_role),
       isVerified: user.isVerified !== null,
       orders: Number(user.orders),
       amountSpent: Number(user.amountSpent ?? 0),
+      newRole: formatRole(user.newRole),
     }));
 
     return successRes(

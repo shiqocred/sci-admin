@@ -12,12 +12,14 @@ import { MetaPageProps } from "@/lib/pagination";
 
 import { ColumnDef } from "@tanstack/react-table";
 import {
+  ArrowRight,
   BadgeCheck,
   CheckCircle,
   Clock,
   Edit,
   IdCard,
   ImageIcon,
+  Minus,
   MoreHorizontal,
   Trash2,
   XCircle,
@@ -91,29 +93,54 @@ export const column = ({
     accessorKey: "role",
     cell: ({ row }) => {
       const customer = row.original;
+      const status_role = customer.status_role;
+      const role = customer.role;
+      const newRole = customer.newRole;
       return (
         <div className="text-center w-fit font-medium flex gap-2 items-center">
           <p
             className={cn(
               "px-2 py-0.5 rounded-full",
-              customer.role === "Basic"
+              role === "Basic"
                 ? "bg-emerald-100"
-                : customer.role === "Pet Shop"
+                : role === "Pet Shop"
                   ? "bg-violet-100"
                   : "bg-amber-100"
             )}
           >
-            {customer.role}
+            {role}
           </p>
-          {customer.status_role === 1 && (
-            <TooltipText value={"Pending"}>
-              <Clock className="size-3 text-gray-500" />
-            </TooltipText>
-          )}
-          {customer.status_role === 2 && (
-            <TooltipText value={"Rejected"}>
-              <XCircle className="size-3 text-red-500" />
-            </TooltipText>
+          <div className="flex gap-0.5 items-center">
+            {(status_role === 1 || status_role === 2) && (
+              <Minus className="size-3 text-gray-500" />
+            )}
+            {status_role === 1 && (
+              <TooltipText value={"Pending"}>
+                <Clock className="size-3 text-yellow-500" />
+              </TooltipText>
+            )}
+            {status_role === 2 && (
+              <TooltipText value={"Rejected"}>
+                <XCircle className="size-3 text-red-500" />
+              </TooltipText>
+            )}
+            {(status_role === 1 || status_role === 2) && (
+              <ArrowRight className="size-3 text-gray-500" />
+            )}
+          </div>
+          {role !== newRole && (
+            <p
+              className={cn(
+                "px-2 py-0.5 rounded-full",
+                newRole === "Basic"
+                  ? "bg-emerald-100"
+                  : newRole === "Pet Shop"
+                    ? "bg-violet-100"
+                    : "bg-amber-100"
+              )}
+            >
+              {newRole}
+            </p>
           )}
         </div>
       );

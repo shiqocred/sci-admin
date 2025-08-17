@@ -2,6 +2,8 @@ import {
   accounts,
   addresses,
   authenticators,
+  bannerItems,
+  banners,
   carts,
   categories,
   couriers,
@@ -20,11 +22,15 @@ import {
   orders,
   orderStatusEnum,
   pets,
+  productAvailableRoles,
   productCompositions,
   productImages,
   productVariants,
   productToPets,
+  productVariantPrices,
   products,
+  promoItems,
+  promos,
   roleUserEnum,
   sessions,
   shippingHistories,
@@ -42,6 +48,8 @@ export const schema = {
   accounts,
   addresses,
   authenticators,
+  bannerItems,
+  banners,
   carts,
   categories,
   couriers,
@@ -60,11 +68,15 @@ export const schema = {
   orders,
   orderStatusEnum,
   pets,
+  productAvailableRoles,
   productCompositions,
   productImages,
   productVariants,
   productToPets,
+  productVariantPrices,
   products,
+  promoItems,
+  promos,
   roleUserEnum,
   sessions,
   shippingHistories,
@@ -81,6 +93,8 @@ export const schema = {
 export * from "./accounts";
 export * from "./addresses";
 export * from "./authenticators";
+export * from "./banner-items";
+export * from "./banners";
 export * from "./carts";
 export * from "./categories";
 export * from "./courier";
@@ -94,11 +108,15 @@ export * from "./order-draft-shippings";
 export * from "./order-draft";
 export * from "./orders";
 export * from "./pets";
+export * from "./product-available-roles";
 export * from "./product-compositions";
 export * from "./product-images";
 export * from "./product-variants";
 export * from "./product-to-pets";
+export * from "./product-variant-prices";
 export * from "./products";
+export * from "./promo-items";
+export * from "./promos";
 export * from "./sessions";
 export * from "./shipping-histories";
 export * from "./shippings";

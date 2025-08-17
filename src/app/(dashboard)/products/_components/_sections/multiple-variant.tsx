@@ -46,11 +46,13 @@ export const MultipleVariant = ({
   setVariants,
   disabled,
   errors,
+  available,
 }: {
   variants: any;
   setVariants: any;
   disabled: boolean;
   errors: any;
+  available: string[];
 }) => {
   const [variantItem, setVariantItem] = useState(initialValue);
   const transformedErrors = transformErrors(errors ?? {});
@@ -127,6 +129,7 @@ export const MultipleVariant = ({
               setVariants={setVariants}
               disabled={disabled}
               errors={transformedErrors}
+              available={available}
             />
           ) : (
             <Button

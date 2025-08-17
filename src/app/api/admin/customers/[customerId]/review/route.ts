@@ -7,11 +7,11 @@ import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ customerId: string }> }
+  { params }: { params: Promise<{ customerId: string }> } // langsung object saja, sudah resolved
 ) {
   try {
     const isAuth = await auth();
-    if (!isAuth) return errorRes("Unauthorized 1", 401);
+    if (!isAuth) return errorRes("Unauthorized", 401);
 
     const userId = (await params).customerId;
 
@@ -26,6 +26,7 @@ export async function GET(
         name: true,
         fileKta: true,
         noKta: true,
+        newRole: true,
       },
     });
 
@@ -33,14 +34,20 @@ export async function GET(
 
     const reviewFormated = {
       ...review,
-      fileKtp: `${r2Public}/${review.fileKtp}`,
-      storefront: review.storefront ? `${r2Public}/${review.storefront}` : null,
-      fileKta: review.fileKta ? `${r2Public}/${review.fileKta}` : null,
+      fileKtp: review.fileKtp ? `${r2Public}/${review.fileKtp}` : null,
+      storefront:
+        review.newRole === "PETSHOP" && review.storefront
+          ? `${r2Public}/${review.storefront}`
+          : null,
+      fileKta:
+        review.newRole === "VETERINARIAN" && review.fileKta
+          ? `${r2Public}/${review.fileKta}`
+          : null,
     };
 
     return successRes(reviewFormated, "Review upgrade data");
   } catch (error) {
-    console.log("ERROR_GET_REVIEW_UPGRADE", error);
+    console.error("ERROR_GET_REVIEW_UPGRADE", error);
     return errorRes("Internal Error", 500);
   }
 }
@@ -53,8 +60,7 @@ export async function PUT(
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const userId = (await params).customerId;
-
+    const { customerId: userId } = await params;
     const { status, message } = await req.json();
 
     if (status !== "reject" && status !== "approve")
@@ -67,7 +73,7 @@ export async function PUT(
 
       if (!userDetailExist) return errorRes("User not match", 404);
 
-      Promise.all([
+      await Promise.all([
         db
           .update(users)
           .set({ role: userDetailExist.newRole, updatedAt: sql`NOW()` })
@@ -86,6 +92,7 @@ export async function PUT(
       return successRes({ userId }, "User approved to upgrade role");
     }
 
+    // REJECT flow
     if (!message) return errorRes("Message is required", 422);
 
     const detailExist = await db.query.userRoleDetails.findFirst({
@@ -93,6 +100,7 @@ export async function PUT(
       columns: {
         fileKta: true,
         fileKtp: true,
+        newRole: true,
       },
     });
 
@@ -113,12 +121,17 @@ export async function PUT(
       })
       .where(eq(userRoleDetails.userId, userId));
 
-    if (detailExist.fileKtp) await deleteR2(detailExist.fileKtp);
-    if (detailExist.fileKta) await deleteR2(detailExist.fileKta);
+    // Hapus file di R2, pakai try catch supaya error delete tidak menggagalkan proses
+    try {
+      if (detailExist.fileKtp) await deleteR2(detailExist.fileKtp);
+      if (detailExist.fileKta) await deleteR2(detailExist.fileKta);
+    } catch (delError) {
+      console.error("Failed deleting files in R2:", delError);
+    }
 
     return successRes({ userId }, "Document upgrade user role rejected");
   } catch (error) {
-    console.log("ERROR_APPROVE_REVIEW", error);
+    console.error("ERROR_APPROVE_REVIEW", error);
     return errorRes("Internal Error", 500);
   }
 }

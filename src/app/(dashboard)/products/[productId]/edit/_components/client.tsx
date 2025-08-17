@@ -67,6 +67,7 @@ const initialValue = {
   isActive: false,
   categoryId: "",
   supplierId: "",
+  available: [] as string[],
 };
 
 const initialDefaultVariant = {
@@ -129,6 +130,9 @@ export const Client = () => {
       isActive: product ? product.status : false,
       categoryId: product?.category.id ?? "",
       supplierId: product?.supplier.id ?? "",
+      available: product?.available
+        ? product.available.map((i) => i.toLowerCase())
+        : [],
     });
 
     if (product && product?.variants.length > 0) {
@@ -140,10 +144,16 @@ export const Client = () => {
           sku: dataDefaultVariant.sku,
           barcode: dataDefaultVariant.barcode,
           quantity: dataDefaultVariant.stock,
-          normalPrice: dataDefaultVariant.normalPrice,
-          basicPrice: dataDefaultVariant.basicPrice,
-          petShopPrice: dataDefaultVariant.petShopPrice,
-          doctorPrice: dataDefaultVariant.doctorPrice,
+          normalPrice: dataDefaultVariant.price,
+          basicPrice:
+            dataDefaultVariant.pricing.find((i) => i.role === "BASIC")?.price ??
+            "0",
+          petShopPrice:
+            dataDefaultVariant.pricing.find((i) => i.role === "PETSHOP")
+              ?.price ?? "0",
+          doctorPrice:
+            dataDefaultVariant.pricing.find((i) => i.role === "VETERINARIAN")
+              ?.price ?? "0",
           weight: dataDefaultVariant.weight,
         });
       } else {
@@ -152,6 +162,13 @@ export const Client = () => {
         setVariants(
           (dataVariant ?? []).map((item) => ({
             ...item,
+            normalPrice: item.price,
+            basicPrice:
+              item.pricing.find((i) => i.role === "BASIC")?.price ?? "0",
+            petShopPrice:
+              item.pricing.find((i) => i.role === "PETSHOP")?.price ?? "0",
+            doctorPrice:
+              item.pricing.find((i) => i.role === "VETERINARIAN")?.price ?? "0",
             quantity: item.stock,
             isOpen: false,
           }))
@@ -167,6 +184,17 @@ export const Client = () => {
 
   const handleOnChange = (id: string, value: string) => {
     setInput((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectRole = (value: string) => {
+    if (input.available.some((i) => i === value)) {
+      setInput((prev) => ({
+        ...prev,
+        available: prev.available.filter((a) => a !== value),
+      }));
+    } else {
+      setInput((prev) => ({ ...prev, available: [...prev.available, value] }));
+    }
   };
 
   const handleSubmit = async (e: MouseEvent) => {
@@ -186,6 +214,10 @@ export const Client = () => {
     body.append("isActive", input.isActive.toString());
     body.append("categoryId", input.categoryId);
     body.append("supplierId", input.supplierId);
+    body.set(
+      "available",
+      JSON.stringify(input.available.map((role) => role.toUpperCase()))
+    );
 
     // Pet many-to-many
     body.append("petId", JSON.stringify(petIds)); // <-- kirim sebagai array string
@@ -201,9 +233,15 @@ export const Client = () => {
             sku: item.sku,
             stock: item.quantity,
             normalPrice: item.normalPrice,
-            basicPrice: item.basicPrice,
-            petShopPrice: item.petShopPrice,
-            doctorPrice: item.doctorPrice,
+            basicPrice: input.available.some((i) => i === "basic")
+              ? item.basicPrice
+              : null,
+            petShopPrice: input.available.some((i) => i === "petshop")
+              ? item.petShopPrice
+              : null,
+            doctorPrice: input.available.some((i) => i === "veterinarian")
+              ? item.doctorPrice
+              : null,
             weight: item.weight,
             barcode: item.barcode,
           }))
@@ -218,9 +256,15 @@ export const Client = () => {
           sku: defaultVariants.sku,
           stock: defaultVariants.quantity,
           normalPrice: defaultVariants.normalPrice,
-          basicPrice: defaultVariants.basicPrice,
-          petShopPrice: defaultVariants.petShopPrice,
-          doctorPrice: defaultVariants.doctorPrice,
+          basicPrice: input.available.some((i) => i === "basic")
+            ? defaultVariants.basicPrice
+            : null,
+          petShopPrice: input.available.some((i) => i === "petshop")
+            ? defaultVariants.petShopPrice
+            : null,
+          doctorPrice: input.available.some((i) => i === "veterinarian")
+            ? defaultVariants.doctorPrice
+            : null,
           weight: defaultVariants.weight,
           barcode: defaultVariants.barcode,
         })
@@ -329,6 +373,7 @@ export const Client = () => {
             imageOld={imageOld}
             setImageOld={setImageOld}
             errors={errors}
+            handleSelectRole={handleSelectRole}
           />
           <ProductDescription
             input={input}
@@ -357,6 +402,7 @@ export const Client = () => {
               variants={variants}
               disabled={isUpdating}
               errors={errors}
+              available={input.available}
             />
           ) : (
             <SingleVariant
@@ -364,6 +410,7 @@ export const Client = () => {
               setDefaultVariants={setDefaultVariants}
               disabled={isUpdating}
               errors={errors}
+              available={input.available}
             />
           )}
         </div>

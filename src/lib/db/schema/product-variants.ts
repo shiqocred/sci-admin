@@ -22,13 +22,10 @@ export const productVariants = pgTable(
 
     name: text("name").notNull(),
 
-    sku: text("sku").notNull(),
-    barcode: text("barcode"),
+    sku: text("sku").unique().notNull(),
+    barcode: text("barcode").unique().notNull(),
 
-    normalPrice: numeric("normal_price", { precision: 10, scale: 0 }).notNull(),
-    basicPrice: numeric("basic_price", { precision: 10, scale: 0 }),
-    petShopPrice: numeric("pet_shop_price", { precision: 10, scale: 0 }),
-    doctorPrice: numeric("doctor_price", { precision: 10, scale: 0 }),
+    price: numeric("price", { precision: 10, scale: 0 }).notNull(),
 
     stock: numeric("stock", { precision: 8, scale: 0 }),
     weight: numeric("weight", { precision: 8, scale: 0 }),

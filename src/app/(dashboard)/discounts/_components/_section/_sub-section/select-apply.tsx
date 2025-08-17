@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { InputProps } from "../../client";
 import { OptionSelect } from "./_sub-sub-section/option-select";
 import { SelectProduct } from "../discount-core";
+import { ProductTransformed } from "../../../_api";
 
 interface ValueSelect {
   name: string;
@@ -46,14 +47,8 @@ export const SelectApply = ({
   pets,
 }: SelectApplyProps) => {
   const [inputProduct, setInputProduct] = React.useState("");
-  const [productFormatted, setProductFormatted] = React.useState<
-    {
-      id: string;
-      name: string;
-      default_variant: any | null;
-      variants: any[] | null;
-    }[]
-  >();
+  const [productFormatted, setProductFormatted] =
+    React.useState<ProductTransformed[]>();
 
   const handleSelectApply = (item: any) => {
     if (input.selected.includes(item.id)) {
@@ -159,15 +154,13 @@ export const SelectApply = ({
               <div className="max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto gap-2 flex flex-col">
                 {productFormatted &&
                   productFormatted.map((item) => {
-                    if (item.default_variant) {
+                    if (item.defaultVariant) {
                       return (
                         <Button
                           key={item.id}
                           variant={"outline"}
                           className="min-h-9 h-auto w-full text-start rounded font-normal px-3"
-                          onClick={() =>
-                            handleSelectApply(item.default_variant)
-                          }
+                          onClick={() => handleSelectApply(item.defaultVariant)}
                         >
                           <div className="flex-col flex w-full gap-2">
                             <div className="flex item-center justify-between w-full">
@@ -175,33 +168,55 @@ export const SelectApply = ({
                                 {item.name}
                               </p>
                               <p className="w-24 text-center flex-none">
-                                {item.default_variant.stock}
+                                {item.defaultVariant.stock}
                               </p>
                               <p className="w-32 flex-none">
-                                {formatRupiah(item.default_variant.normalPrice)}
+                                {formatRupiah(item.defaultVariant.price)}
                               </p>
                             </div>
                             <Separator />
                             <div className="grid w-full grid-cols-3">
-                              <p>
-                                Basic:{" "}
-                                {formatRupiah(item.default_variant.normalPrice)}
-                              </p>
-                              <p>
-                                Petshop:{" "}
-                                {formatRupiah(
-                                  item.default_variant.petShopPrice
-                                )}
-                              </p>
-                              <p>
-                                Veterinarian:{" "}
-                                {formatRupiah(item.default_variant.doctorPrice)}
-                              </p>
+                              {item.defaultVariant.pricing.some(
+                                (i) => i.role === "BASIC"
+                              ) && (
+                                <p>
+                                  Pet Owner:{" "}
+                                  {formatRupiah(
+                                    item.defaultVariant.pricing.find(
+                                      (i) => i.role === "BASIC"
+                                    )?.price ?? "0"
+                                  )}
+                                </p>
+                              )}
+                              {item.defaultVariant.pricing.some(
+                                (i) => i.role === "PETSHOP"
+                              ) && (
+                                <p>
+                                  Pet Shop:{" "}
+                                  {formatRupiah(
+                                    item.defaultVariant.pricing.find(
+                                      (i) => i.role === "PETSHOP"
+                                    )?.price ?? "0"
+                                  )}
+                                </p>
+                              )}
+                              {item.defaultVariant.pricing.some(
+                                (i) => i.role === "VETERINARIAN"
+                              ) && (
+                                <p>
+                                  Pet Clinic:{" "}
+                                  {formatRupiah(
+                                    item.defaultVariant.pricing.find(
+                                      (i) => i.role === "VETERINARIAN"
+                                    )?.price ?? "0"
+                                  )}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <Check
                             className={cn(
-                              input.selected.includes(item.default_variant.id)
+                              input.selected.includes(item.defaultVariant.id)
                                 ? "opacity-100"
                                 : "opacity-0"
                             )}
@@ -233,22 +248,55 @@ export const SelectApply = ({
                                     {variant.stock}
                                   </p>
                                   <p className="w-32 flex-none">
-                                    {formatRupiah(variant.normalPrice)}
+                                    {formatRupiah(variant.price)}
                                   </p>
                                 </div>
                                 <Separator />
-                                <div className="grid w-full grid-cols-3">
-                                  <p>
-                                    Basic: {formatRupiah(variant.normalPrice)}
-                                  </p>
-                                  <p>
-                                    Petshop:{" "}
-                                    {formatRupiah(variant.petShopPrice)}
-                                  </p>
-                                  <p>
-                                    Veterinarian:{" "}
-                                    {formatRupiah(variant.doctorPrice)}
-                                  </p>
+                                <div
+                                  className={cn(
+                                    "grid w-full",
+                                    variant.pricing.length === 2 &&
+                                      "grid-cols-2",
+                                    variant.pricing.length === 3 &&
+                                      "grid-cols-3"
+                                  )}
+                                >
+                                  {variant.pricing.some(
+                                    (i) => i.role === "BASIC"
+                                  ) && (
+                                    <p>
+                                      Pet Owner:{" "}
+                                      {formatRupiah(
+                                        variant.pricing.find(
+                                          (i) => i.role === "BASIC"
+                                        )?.price ?? "0"
+                                      )}
+                                    </p>
+                                  )}
+                                  {variant.pricing.some(
+                                    (i) => i.role === "PETSHOP"
+                                  ) && (
+                                    <p>
+                                      Pet Shop:{" "}
+                                      {formatRupiah(
+                                        variant.pricing.find(
+                                          (i) => i.role === "PETSHOP"
+                                        )?.price ?? "0"
+                                      )}
+                                    </p>
+                                  )}
+                                  {variant.pricing.some(
+                                    (i) => i.role === "VETERINARIAN"
+                                  ) && (
+                                    <p>
+                                      Pet Clinic:{" "}
+                                      {formatRupiah(
+                                        variant.pricing.find(
+                                          (i) => i.role === "VETERINARIAN"
+                                        )?.price ?? "0"
+                                      )}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                               <Check

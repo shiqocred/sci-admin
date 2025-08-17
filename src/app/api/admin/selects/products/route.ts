@@ -15,15 +15,18 @@ export async function GET() {
         variantName: productVariants.name,
         isDefault: productVariants.isDefault,
         stock: productVariants.stock,
-        normalPrice: productVariants.normalPrice,
-        basicPrice: productVariants.basicPrice,
-        petShopPrice: productVariants.petShopPrice,
-        doctorPrice: productVariants.doctorPrice,
+        price: productVariants.price,
       })
       .from(products)
       .leftJoin(productVariants, eq(products.id, productVariants.productId));
 
-    const result = transformRawToProducts(raw);
+    const variantIds = raw.map((i) => i.variantId) as string[];
+
+    const pricing = await db.query.productVariantPrices.findMany({
+      where: (pp, { inArray }) => inArray(pp.variantId, variantIds),
+    });
+
+    const result = transformProductData(raw, pricing);
     return successRes(result, "Selects list");
   } catch (error) {
     console.error("ERROR_GET_SELECTS", error);
@@ -31,62 +34,62 @@ export async function GET() {
   }
 }
 
-type RawProduct = {
-  productId: string;
-  productName: string;
-  variantId: string | null;
-  variantName: string | null;
-  isDefault: boolean | null;
-  stock: string | null;
-  normalPrice: string | null;
-  basicPrice: string | null;
-  petShopPrice: string | null;
-  doctorPrice: string | null;
+type Pricing = {
+  role: string;
+  price: string;
 };
 
-// ✅ Ekstrak logic untuk kurangi CC
-function transformRawToProducts(raw: RawProduct[]): any[] {
-  const productMap = new Map<string, any>();
+type Variant = {
+  id: string;
+  name: string;
+  stock: string;
+  price: string;
+  pricing: Pricing[];
+};
 
-  for (const item of raw) {
-    if (!productMap.has(item.productId)) {
-      productMap.set(item.productId, {
-        id: item.productId,
-        name: item.productName,
-        default_variant: null,
-        variants: [],
-      });
-    }
+type ProductTransformed = {
+  id: string;
+  name: string;
+  variants: Variant[] | null;
+  defaultVariant: Variant | null;
+};
 
-    if (!item.variantId) continue;
-
-    const variant = {
-      id: item.variantId,
-      name: item.variantName,
-      stock: Number(item.stock),
-      normalPrice: Number(item.normalPrice),
-      basicPrice: Number(item.basicPrice),
-      petShopPrice: Number(item.petShopPrice),
-      doctorPrice: Number(item.doctorPrice),
-    };
-
-    const product = productMap.get(item.productId);
-    if (item.isDefault) {
-      product.default_variant = variant;
-    } else {
-      product.variants.push(variant);
-    }
-  }
-
-  return Array.from(productMap.values()).map((product) => {
-    const hasNoVariants = product.variants.length === 0;
-    const shouldSetNull =
-      (product.default_variant && hasNoVariants) ||
-      (!product.default_variant && hasNoVariants);
-
-    return {
-      ...product,
-      variants: shouldSetNull ? null : product.variants,
-    };
+function transformProductData(
+  productVariants: any[],
+  pricing: any[]
+): ProductTransformed[] {
+  // Grup productVariants berdasarkan productId
+  const grouped: Record<string, any[]> = {};
+  productVariants.forEach((pv) => {
+    if (!grouped[pv.productId]) grouped[pv.productId] = [];
+    grouped[pv.productId].push(pv);
   });
+
+  // Map ke bentuk ProductTransformed
+  const result: ProductTransformed[] = Object.entries(grouped).map(
+    ([productId, variants]) => {
+      const defaultVar = variants.find((v) => v.isDefault) || null;
+      const nonDefaultVars = variants.filter((v) => !v.isDefault);
+
+      const mapVariant = (v: any): Variant => ({
+        id: v.variantId,
+        name: v.variantName,
+        stock: v.stock,
+        price: v.price,
+        pricing: pricing
+          .filter((p) => p.variantId === v.variantId)
+          .map((p) => ({ role: p.role, price: p.price })),
+      });
+
+      return {
+        id: productId,
+        name: variants[0].productName,
+        variants:
+          nonDefaultVars.length > 0 ? nonDefaultVars.map(mapVariant) : null,
+        defaultVariant: defaultVar ? mapVariant(defaultVar) : null,
+      };
+    }
+  );
+
+  return result;
 }

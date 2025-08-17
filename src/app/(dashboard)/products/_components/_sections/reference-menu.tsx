@@ -13,11 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  useGetSelectCategories,
-  useGetSelectPets,
-  useGetSelectSuppliers,
-} from "../../_api";
+import { useGetSelects } from "../../_api";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronDown, CirclePlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +30,7 @@ interface InputProps {
   isActive: boolean;
   categoryId: string;
   supplierId: string;
+  available: string[];
 }
 
 interface ReferenceMenuProps {
@@ -150,25 +147,15 @@ export const ReferenceMenu = ({
     pet: false,
   });
 
-  const { data: categoriesSelect, isPending: isPendingCategories } =
-    useGetSelectCategories();
-  const { data: suppliersSelect, isPending: isPendingSuppliers } =
-    useGetSelectSuppliers();
-  const { data: petsSelect, isPending: isPendingPets } = useGetSelectPets();
-
-  const loadingSelect =
-    isPendingCategories || isPendingSuppliers || isPendingPets;
+  const { data: selects, isPending } = useGetSelects();
 
   // Memoize data lists
   const categoriesList = useMemo(
-    () => categoriesSelect?.data ?? [],
-    [categoriesSelect]
+    () => selects?.data.categories ?? [],
+    [selects]
   );
-  const suppliersList = useMemo(
-    () => suppliersSelect?.data ?? [],
-    [suppliersSelect]
-  );
-  const petsList = useMemo(() => petsSelect?.data ?? [], [petsSelect]);
+  const suppliersList = useMemo(() => selects?.data.suppliers ?? [], [selects]);
+  const petsList = useMemo(() => selects?.data.pets ?? [], [selects]);
 
   // Memoize lookup maps for better performance
   const categoryMap = useMemo(() => {
@@ -215,7 +202,7 @@ export const ReferenceMenu = ({
           setOpenStates((prev) => ({ ...prev, category: open }))
         }
         valueMap={categoryMap}
-        disabled={loadingSelect || loading}
+        disabled={isPending || loading}
         error={errors?.categoryId}
       />
 
@@ -233,7 +220,7 @@ export const ReferenceMenu = ({
           setOpenStates((prev) => ({ ...prev, supplier: open }))
         }
         valueMap={supplierMap}
-        disabled={loadingSelect || loading}
+        disabled={isPending || loading}
         error={errors?.supplierId}
       />
 
@@ -279,7 +266,7 @@ export const ReferenceMenu = ({
                   errors?.petIds && "border-red-500 hover:border-red-500"
                 )}
                 variant="outline"
-                disabled={loadingSelect || loading}
+                disabled={isPending || loading}
               >
                 <CirclePlus className="size-3.5" />
                 Add Pets

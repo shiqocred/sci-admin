@@ -1,4 +1,3 @@
-import { PaginationMeta } from "@/lib/pagination/fastPaginate";
 import { useApiQuery } from "@/lib/query/use-query";
 
 type Variant = {

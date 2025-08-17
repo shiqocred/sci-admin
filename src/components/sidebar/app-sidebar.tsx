@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import {
-  BadgePercent,
   ChartNoAxesGantt,
   Gauge,
   PawPrint,
+  Percent,
   RocketIcon,
   Settings2,
   ShoppingBag,
@@ -39,46 +39,63 @@ const data = {
       title: "Dashboard",
       url: "/",
       icon: Gauge,
+      items: [],
     },
     {
       title: "Orders",
       url: "/orders",
       icon: ShoppingBag,
+      items: [
+        { title: "List", url: "/orders" },
+        { title: "Draft", url: "/orders" },
+        { title: "Review", url: "/orders" },
+      ],
     },
     {
       title: "Customers",
       url: "/customers",
       icon: UserRound,
+      items: [],
     },
     {
       title: "Products",
       url: "/products",
       icon: ChartNoAxesGantt,
+      items: [],
     },
     {
       title: "Categories",
       url: "/categories",
       icon: Tags,
+      items: [],
     },
     {
       title: "Pets",
       url: "/pets",
       icon: PawPrint,
+      items: [],
     },
     {
       title: "Suppliers",
       url: "/suppliers",
       icon: Store,
+      items: [],
     },
     {
-      title: "Discounts",
+      title: "Marketings",
       url: "/discounts",
-      icon: BadgePercent,
+      icon: Percent,
+      items: [
+        { title: "Discounts", url: "/discounts" },
+        { title: "Banners", url: "/banners" },
+        { title: "Promos", url: "/promos" },
+      ],
     },
     {
       title: "Settings",
       url: "/settings",
       icon: Settings2,
+      items: [],
     },
   ],
 };

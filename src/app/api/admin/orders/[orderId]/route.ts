@@ -1,4 +1,4 @@
-import { biteshipAPI, biteshipUrl, r2Public } from "@/config";
+import { r2Public } from "@/config";
 import { createOrder, getTracking } from "@/lib/action";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import {

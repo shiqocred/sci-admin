@@ -5,20 +5,31 @@ import {
   categories,
   db,
   pets,
+  productAvailableRoles,
   productCompositions,
   productImages,
   products,
   productToPets,
+  productVariantPrices,
   productVariants,
   suppliers,
 } from "@/lib/db";
 import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { generateRandomNumber } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
-import { eq, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  inArray,
+  InferSelectModel,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import { NextRequest } from "next/server";
 import slugify from "slugify";
 import { z } from "zod/v4";
+
+type RoleType = InferSelectModel<typeof productAvailableRoles>["role"];
 
 interface ProductData {
   title: string;
@@ -35,6 +46,7 @@ interface ProductData {
   compositions?: CompositionData[];
   defaultVariant?: VariantData;
   variants?: VariantData[];
+  available: string[];
 }
 
 interface CompositionData {
@@ -50,9 +62,9 @@ interface VariantData {
   barcode?: string;
   stock: string;
   normalPrice: string;
-  basicPrice: string;
-  petShopPrice: string;
-  doctorPrice: string;
+  basicPrice?: string | null;
+  petShopPrice?: string | null;
+  doctorPrice?: string | null;
   weight: string;
 }
 
@@ -63,12 +75,6 @@ interface ExistingImageData {
 
 interface ExistingPetData {
   petId: string;
-}
-
-interface ExistingCompositionData {
-  id: string;
-  name: string;
-  value: string;
 }
 
 interface ExistingVariantData {
@@ -85,6 +91,13 @@ interface ExistingVariantData {
   isDefault: boolean | null;
 }
 
+const roleKeyMap: Record<string, keyof VariantData> = {
+  BASIC: "basicPrice",
+  PETSHOP: "petShopPrice",
+  VETERINARIAN: "doctorPrice",
+  ADMIN: "normalPrice", // misal untuk admin
+};
+
 const productSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -97,6 +110,9 @@ const productSchema = z.object({
   categoryId: z.string().optional(),
   supplierId: z.string().optional(),
   petIds: z.array(z.string()).optional(),
+  available: z
+    .array(z.enum(["BASIC", "PETSHOP", "VETERINARIAN"]))
+    .min(1, { message: "Available role is required" }),
   compositions: z
     .array(
       z.object({
@@ -114,9 +130,9 @@ const productSchema = z.object({
       barcode: z.string().optional(),
       stock: z.string(),
       normalPrice: z.string(),
-      basicPrice: z.string(),
-      petShopPrice: z.string(),
-      doctorPrice: z.string(),
+      basicPrice: z.string().nullish(),
+      petShopPrice: z.string().nullish(),
+      doctorPrice: z.string().nullish(),
       weight: z.string(),
     })
     .optional(),
@@ -129,9 +145,9 @@ const productSchema = z.object({
         barcode: z.string().optional(),
         stock: z.string(),
         normalPrice: z.string(),
-        basicPrice: z.string(),
-        petShopPrice: z.string(),
-        doctorPrice: z.string(),
+        basicPrice: z.string().nullish(),
+        petShopPrice: z.string().nullish(),
+        doctorPrice: z.string().nullish(),
         weight: z.string(),
       })
     )
@@ -217,10 +233,7 @@ export async function GET(
         id: productVariants.id,
         name: productVariants.name,
         isDefault: productVariants.isDefault,
-        normalPrice: productVariants.normalPrice,
-        basicPrice: productVariants.basicPrice,
-        petShopPrice: productVariants.petShopPrice,
-        doctorPrice: productVariants.doctorPrice,
+        price: productVariants.price,
         sku: productVariants.sku,
         barcode: productVariants.barcode,
         stock: productVariants.stock,
@@ -229,12 +242,32 @@ export async function GET(
       .from(productVariants)
       .where(eq(productVariants.productId, productId));
 
+    const variantIds = variants.map((i) => i.id);
+
+    const availableRole = await db.query.productAvailableRoles.findMany({
+      columns: {
+        role: true,
+      },
+      where: (ar, { eq }) => eq(ar.productId, productId),
+    });
+    const pricings = await db.query.productVariantPrices.findMany({
+      where: (ar, { inArray }) => inArray(ar.variantId, variantIds),
+    });
+
+    const variantFormatted = variants.map((variant) => ({
+      ...variant,
+      pricing: pricings
+        .filter((p) => p.variantId === variant.id)
+        .map(({ variantId, ...rest }) => rest), // buang variantId
+    }));
+
     const response = {
       ...productFormated,
       images: images.map((item) => `${r2Public}/${item.url}`),
       pets: petsRow,
       compositions,
-      variants,
+      variants: variantFormatted,
+      available: availableRole.map((i) => i.role),
     };
 
     return successRes(response, "Detail Product");
@@ -308,27 +341,26 @@ const imageHandle = async (
   const removedImageId = removedImages.map((item) => item.id);
   const removedImageKey = removedImages.map((item) => item.url);
 
-  removedImageKey.map((key) => deleteR2(key));
+  removedImageKey.forEach((key) => deleteR2(key));
 
   const uploadPromises = images.map(async (image) => {
     const buffer = await convertToWebP(image);
-    const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
+    const key = `images/products/${createId()}-${slugify(title, {
+      lower: true,
+    })}.webp`;
     await uploadToR2({ buffer, key });
     return key;
   });
 
   const uploadedKeys = await Promise.all(uploadPromises);
 
-  return {
-    removedImageId,
-    uploadedKeys,
-  };
+  return { removedImageId, uploadedKeys };
 };
 
 const petHandle = async (tx: any, productId: string, petIds: string[]) => {
   const petsExist: ExistingPetData[] = await tx.query.productToPets.findMany({
     columns: { petId: true },
-    where: (p: any, { eq }: { eq: any }) => eq(p.productId, productId),
+    where: (p: any, { eq }: any) => eq(p.productId, productId),
   });
 
   const existingPetIds = petsExist.map((e) => e.petId);
@@ -341,12 +373,9 @@ const petHandle = async (tx: any, productId: string, petIds: string[]) => {
       .where(inArray(productToPets.petId, removedPetIds));
   }
   if (addedPetIds.length > 0) {
-    await tx.insert(productToPets).values(
-      addedPetIds.map((petId) => ({
-        productId,
-        petId,
-      }))
-    );
+    await tx
+      .insert(productToPets)
+      .values(addedPetIds.map((petId) => ({ productId, petId })));
   }
 };
 
@@ -355,54 +384,41 @@ const compositionHandle = async (
   productId: string,
   compositions: CompositionData[]
 ) => {
-  const compositionExist: ExistingCompositionData[] =
-    await tx.query.productCompositions.findMany({
-      columns: { id: true, name: true, value: true },
-      where: (c: any, { eq }: { eq: any }) => eq(c.productId, productId),
-    });
-
-  const oldCompositionIds = new Set(compositionExist.map((item) => item.id));
-  const newCompositionIds = new Set(compositions.map((item) => item.id));
-
-  const addedComposition = compositions.filter(
-    (item) => !oldCompositionIds.has(item.id)
-  );
-  const deletedComposition = compositionExist.filter(
-    (item) => !newCompositionIds.has(item.id)
-  );
-  const updatedComposition = compositions.filter((newItem) => {
-    const oldItem = compositionExist.find((old) => old.id === newItem.id);
-    return (
-      oldItem &&
-      (oldItem.name !== newItem.name || oldItem.value !== newItem.value)
-    );
+  const compositionExist = await tx.query.productCompositions.findMany({
+    columns: { id: true, name: true, value: true },
+    where: (c: any, { eq }: any) => eq(c.productId, productId),
   });
 
-  if (addedComposition.length > 0) {
-    await tx.insert(productCompositions).values(
-      addedComposition.map((item) => ({
-        ...item,
-        productId,
-      }))
+  const oldIds = new Set(compositionExist.map((c: any) => c.id));
+  const newIds = new Set(compositions.map((c) => c.id));
+
+  const added = compositions.filter((c) => !oldIds.has(c.id));
+  const deleted = compositionExist.filter((c: any) => !newIds.has(c.id));
+  const updated = compositions.filter((c) => {
+    const oldItem = compositionExist.find((o: any) => o.id === c.id);
+    return oldItem && (oldItem.name !== c.name || oldItem.value !== c.value);
+  });
+
+  if (added.length > 0) {
+    await tx
+      .insert(productCompositions)
+      .values(added.map((c) => ({ ...c, productId })));
+  }
+  if (deleted.length > 0) {
+    await tx.delete(productCompositions).where(
+      inArray(
+        productCompositions.id,
+        deleted.map((c: any) => c.id)
+      )
     );
   }
-  if (deletedComposition.length > 0) {
-    const deletedIds = deletedComposition.map((item) => item.id);
-    await tx
-      .delete(productCompositions)
-      .where(inArray(productCompositions.id, deletedIds));
-  }
-  if (updatedComposition.length > 0) {
+  if (updated.length > 0) {
     await Promise.all(
-      updatedComposition.map((item) =>
+      updated.map((c) =>
         tx
           .update(productCompositions)
-          .set({
-            name: item.name,
-            value: item.value,
-            updatedAt: sql`NOW()`,
-          })
-          .where(eq(productCompositions.id, item.id))
+          .set({ name: c.name, value: c.value, updatedAt: sql`NOW()` })
+          .where(eq(productCompositions.id, c.id))
       )
     );
   }
@@ -412,159 +428,114 @@ const handleIsVariant = async (
   tx: any,
   variantExist: ExistingVariantData[],
   variants: VariantData[],
-  productId: string
+  productId: string,
+  availableRoles: RoleType[],
+  isDefaultVariant = false
 ) => {
-  if (variantExist[0]?.isDefault) {
+  const oldIds = new Set(variantExist.map((v) => v.id));
+  const newIds = new Set(variants.map((v) => v.id));
+
+  const added = variants.filter((v) => !oldIds.has(v.id));
+  const deleted = variantExist.filter((v) => !newIds.has(v.id));
+  const updated = variants.filter((v) => {
+    const old = variantExist.find((o) => o.id === v.id);
+    return (
+      old &&
+      (old.name !== v.name ||
+        old.sku !== v.sku ||
+        old.barcode !== (v.barcode ?? null) ||
+        old.weight !== (v.weight ?? null) ||
+        old.stock !== (v.stock ?? null))
+    );
+  });
+
+  // ------------------- Insert new variants -------------------
+  const addedIdMap: Record<string, string> = {}; // mapping old dummy ID → new DB ID
+  for (const v of added) {
+    const newId = createId();
+    addedIdMap[v.id] = newId;
+
+    await tx.insert(productVariants).values({
+      id: newId,
+      productId,
+      name: v.name,
+      sku: v.sku,
+      barcode: v.barcode,
+      weight: v.weight,
+      stock: v.stock,
+      price: v.normalPrice,
+      isDefault: isDefaultVariant,
+    });
+    v.id = newId; // update ID di payload supaya bisa dipakai untuk pricing
+  }
+
+  // ------------------- Delete removed variants -------------------
+  if (deleted.length > 0) {
+    const deletedIds = deleted.map((v) => v.id);
     await tx
       .delete(productVariants)
-      .where(eq(productVariants.productId, productId));
-    if (variants.length > 0) {
-      await tx.insert(productVariants).values(
-        variants.map((v) => ({
-          id: createId(),
-          productId,
-          name: v.name,
-          sku: v.sku,
-          barcode: v.barcode,
-          normalPrice: v.normalPrice,
-          basicPrice: v.basicPrice,
-          petShopPrice: v.petShopPrice,
-          doctorPrice: v.doctorPrice,
-          stock: v.stock,
-          weight: v.weight,
-          isDefault: false,
-        }))
-      );
-    }
-  } else {
-    const oldVariantIds = new Set(variantExist.map((item) => item.id));
-    const newVariantIds = new Set(variants.map((item) => item.id));
+      .where(inArray(productVariants.id, deletedIds));
+    // hapus harga terkait
+    await tx
+      .delete(productVariantPrices)
+      .where(inArray(productVariantPrices.variantId, deletedIds));
+  }
 
-    const addedVariant = variants.filter((item) => !oldVariantIds.has(item.id));
-    const deletedVariant = variantExist.filter(
-      (item) => !newVariantIds.has(item.id)
-    );
-    const updatedVariant = variants.filter((newItem) => {
-      const oldItem = variantExist.find((old) => old.id === newItem.id);
-      if (!oldItem) return false;
+  // ------------------- Update existing variants -------------------
+  for (const v of updated) {
+    await tx
+      .update(productVariants)
+      .set({
+        name: v.name,
+        sku: v.sku,
+        barcode: v.barcode,
+        weight: v.weight,
+        stock: v.stock,
+        price: v.normalPrice,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(productVariants.id, v.id));
+  }
 
-      return (
-        oldItem.name !== newItem.name ||
-        oldItem.sku !== newItem.sku ||
-        oldItem.barcode !== (newItem.barcode ?? null) ||
-        oldItem.normalPrice !== newItem.normalPrice ||
-        oldItem.basicPrice !== (newItem.basicPrice ?? null) ||
-        oldItem.petShopPrice !== (newItem.petShopPrice ?? null) ||
-        oldItem.doctorPrice !== (newItem.doctorPrice ?? null) ||
-        oldItem.stock !== (newItem.stock ?? null) ||
-        oldItem.weight !== (newItem.weight ?? null)
-      );
-    });
-
-    if (addedVariant.length > 0) {
-      await tx.insert(productVariants).values(
-        addedVariant.map((v) => ({
-          id: createId(),
-          productId,
-          name: v.name,
-          sku: v.sku,
-          barcode: v.barcode,
-          normalPrice: v.normalPrice,
-          basicPrice: v.basicPrice,
-          petShopPrice: v.petShopPrice,
-          doctorPrice: v.doctorPrice,
-          stock: v.stock,
-          weight: v.weight,
-          isDefault: false,
-        }))
-      );
-    }
-    if (deletedVariant.length > 0) {
-      const deletedIds = deletedVariant.map((item) => item.id);
-      await tx
-        .delete(productVariants)
-        .where(inArray(productVariants.id, deletedIds));
-    }
-    if (updatedVariant.length > 0) {
-      await Promise.all(
-        updatedVariant.map((item) =>
-          tx
-            .update(productVariants)
-            .set({
-              name: item.name,
-              sku: item.sku,
-              barcode: item.barcode,
-              normalPrice: item.normalPrice,
-              basicPrice: item.basicPrice,
-              petShopPrice: item.petShopPrice,
-              doctorPrice: item.doctorPrice,
-              stock: item.stock,
-              weight: item.weight,
-              updatedAt: sql`NOW()`,
-            })
-            .where(eq(productVariants.id, item.id))
+  // ------------------- Update variant pricing -------------------
+  for (const v of variants) {
+    // Hapus harga role yang sudah tidak ada di availableRoles
+    await tx
+      .delete(productVariantPrices)
+      .where(
+        and(
+          eq(productVariantPrices.variantId, v.id),
+          notInArray(productVariantPrices.role, availableRoles)
         )
       );
-    }
-  }
-};
 
-const handleDefaultVariant = async (
-  tx: any,
-  variantExist: ExistingVariantData[],
-  defaultVariant: VariantData,
-  productId: string
-) => {
-  if (!variantExist[0]?.isDefault) {
-    await tx
-      .delete(productVariants)
-      .where(eq(productVariants.productId, productId));
-    await tx.insert(productVariants).values({
-      id: createId(),
-      productId,
-      name: defaultVariant.name,
-      sku: defaultVariant.sku,
-      barcode: defaultVariant.barcode,
-      normalPrice: defaultVariant.normalPrice,
-      basicPrice: defaultVariant.basicPrice,
-      petShopPrice: defaultVariant.petShopPrice,
-      doctorPrice: defaultVariant.doctorPrice,
-      stock: defaultVariant.stock,
-      weight: defaultVariant.weight,
-      isDefault: true,
-    });
-  } else if (variantExist[0].isDefault) {
-    const oldItem = variantExist[0];
+    // Masukkan/update harga sesuai availableRoles
+    for (const role of availableRoles) {
+      const key = roleKeyMap[role];
+      const price = v[key] ?? 0;
 
-    const isChanged =
-      oldItem.id !== defaultVariant.id ||
-      oldItem.name !== defaultVariant.name ||
-      oldItem.sku !== defaultVariant.sku ||
-      oldItem.barcode !== (defaultVariant.barcode ?? null) ||
-      oldItem.normalPrice !== defaultVariant.normalPrice ||
-      oldItem.basicPrice !== (defaultVariant.basicPrice ?? null) ||
-      oldItem.petShopPrice !== (defaultVariant.petShopPrice ?? null) ||
-      oldItem.doctorPrice !== (defaultVariant.doctorPrice ?? null) ||
-      oldItem.stock !== (defaultVariant.stock ?? null) ||
-      oldItem.weight !== (defaultVariant.weight ?? null);
+      const exists = await tx.query.productVariantPrices.findFirst({
+        where: (p: any, { eq }: any) =>
+          eq(p.variantId, v.id) && eq(p.role, role),
+      });
 
-    if (isChanged) {
-      await tx
-        .update(productVariants)
-        .set({
-          id: defaultVariant.id,
-          name: defaultVariant.name,
-          sku: defaultVariant.sku,
-          barcode: defaultVariant.barcode,
-          normalPrice: defaultVariant.normalPrice,
-          basicPrice: defaultVariant.basicPrice,
-          petShopPrice: defaultVariant.petShopPrice,
-          doctorPrice: defaultVariant.doctorPrice,
-          stock: defaultVariant.stock,
-          weight: defaultVariant.weight,
-          updatedAt: sql`NOW()`,
-        })
-        .where(eq(productVariants.id, oldItem.id));
+      if (exists) {
+        await tx
+          .update(productVariantPrices)
+          .set({ price })
+          .where(
+            and(
+              eq(productVariantPrices.variantId, v.id),
+              eq(productVariantPrices.role, role)
+            )
+          );
+      } else {
+        await tx.insert(productVariantPrices).values({
+          variantId: v.id,
+          role,
+          price,
+        });
+      }
     }
   }
 };
@@ -573,36 +544,44 @@ const handleVariants = async (
   tx: any,
   variants: VariantData[] | undefined,
   defaultVariant: VariantData | undefined,
-  productId: string
+  productId: string,
+  availableRoles: RoleType[]
 ) => {
-  const variantExist: ExistingVariantData[] =
-    await tx.query.productVariants.findMany({
-      columns: {
-        id: true,
-        barcode: true,
-        basicPrice: true,
-        doctorPrice: true,
-        isDefault: true,
-        name: true,
-        normalPrice: true,
-        petShopPrice: true,
-        sku: true,
-        stock: true,
-        weight: true,
-      },
-      where: (v: any, { eq }: { eq: any }) => eq(v.productId, productId),
-    });
+  const variantExist = await tx.query.productVariants.findMany({
+    columns: {
+      id: true,
+      name: true,
+      sku: true,
+      barcode: true,
+      weight: true,
+      stock: true,
+      isDefault: true,
+    },
+    where: (v: any, { eq }: any) => eq(v.productId, productId),
+  });
 
   if (variants && variants.length > 0) {
-    await handleIsVariant(tx, variantExist, variants, productId);
+    await handleIsVariant(
+      tx,
+      variantExist,
+      variants,
+      productId,
+      availableRoles,
+      false
+    );
   } else if (defaultVariant) {
-    await handleDefaultVariant(tx, variantExist, defaultVariant, productId);
-  } else {
-    await tx
-      .delete(productVariants)
-      .where(eq(productVariants.productId, productId));
+    await handleIsVariant(
+      tx,
+      variantExist,
+      [defaultVariant],
+      productId,
+      availableRoles,
+      true
+    );
   }
 };
+
+// ---------------------- PUT Function ----------------------
 
 export async function PUT(
   req: NextRequest,
@@ -627,6 +606,7 @@ export async function PUT(
       isActive: formData.get("isActive") === "true",
       categoryId: formData.get("categoryId"),
       supplierId: formData.get("supplierId"),
+      available: JSON.parse((formData.get("available") as string) || "[]"),
       petIds: JSON.parse((formData.get("petId") as string) || "[]"),
       compositions: JSON.parse(
         (formData.get("compositions") as string) || "[]"
@@ -641,8 +621,7 @@ export async function PUT(
     if (!parsed.success) {
       const errors: Record<string, string> = {};
       parsed.error.issues.forEach((err) => {
-        const path = err.path.join(".");
-        errors[path] = err.message;
+        errors[err.path.join(".")] = err.message;
       });
       return errorRes("Validation failed", 400, errors);
     }
@@ -662,29 +641,22 @@ export async function PUT(
       compositions,
       defaultVariant,
       variants,
+      available,
     }: ProductData = parsed.data;
 
     const productExist = await db.query.products.findFirst({
-      columns: {
-        id: true,
-        name: true,
-        slug: true,
-      },
+      columns: { id: true, name: true, slug: true },
       where: (p, { eq }) => eq(p.id, productId),
     });
-
     if (!productExist) return errorRes("Product not found", 404);
 
-    let slug: string;
-
-    if (productExist.name === title) {
-      slug = productExist.slug;
-    } else if (productExist.name !== title) {
-      const titleFormatted = `${title}-${generateRandomNumber(5)}`;
-      slug = slugify(titleFormatted, { lower: true });
-    }
+    const slug =
+      productExist.name === title
+        ? productExist.slug
+        : slugify(`${title}-${generateRandomNumber(5)}`, { lower: true });
 
     await db.transaction(async (tx) => {
+      // Update product main info
       await tx
         .update(products)
         .set({
@@ -703,50 +675,63 @@ export async function PUT(
         })
         .where(eq(products.id, productId));
 
+      // Handle images
       const { uploadedKeys, removedImageId } = await imageHandle(
         formData,
         productId,
         title
       );
-
-      if (removedImageId.length > 0) {
+      if (removedImageId.length > 0)
         await tx
           .delete(productImages)
           .where(inArray(productImages.id, removedImageId));
-      }
-      if (uploadedKeys.length > 0) {
-        await tx.insert(productImages).values(
-          uploadedKeys.map((url) => ({
-            id: createId(),
-            productId,
-            url,
-          }))
-        );
-      }
+      if (uploadedKeys.length > 0)
+        await tx
+          .insert(productImages)
+          .values(
+            uploadedKeys.map((url) => ({ id: createId(), productId, url }))
+          );
 
-      if (petIds && petIds.length > 0) {
-        await petHandle(tx, productId, petIds);
-      } else {
+      // Handle pets
+      if (petIds?.length) await petHandle(tx, productId, petIds);
+      else
         await tx
           .delete(productToPets)
           .where(eq(productToPets.productId, productId));
-      }
 
-      if (compositions?.length) {
+      // Handle compositions
+      if (compositions?.length)
         await compositionHandle(tx, productId, compositions);
-      } else {
+      else
         await tx
           .delete(productCompositions)
           .where(eq(productCompositions.productId, productId));
+
+      // Handle available roles
+      await tx
+        .delete(productAvailableRoles)
+        .where(eq(productAvailableRoles.productId, productId));
+      if (available?.length) {
+        await tx
+          .insert(productAvailableRoles)
+          .values(
+            available.map((role) => ({ productId, role: role as RoleType }))
+          );
       }
 
-      await handleVariants(tx, variants, defaultVariant, productId);
+      // Handle variants
+      await handleVariants(
+        tx,
+        variants,
+        defaultVariant,
+        productId,
+        available as RoleType[]
+      );
     });
 
     return successRes({ id: productId }, "Product updated", 200);
   } catch (error) {
     console.error("ERROR_UPDATE_PRODUCT:", error);
-
     return errorRes("Internal Error", 500);
   }
 }

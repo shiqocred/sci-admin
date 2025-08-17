@@ -1,27 +1,31 @@
 import { PaginationMeta } from "@/lib/pagination/fastPaginate";
 import { useApiQuery } from "@/lib/query/use-query";
 
-type ProductListItem = {
-  image: string | null;
-  id: string;
-  name: string;
-  slug: string;
-  status: boolean | null;
-  categoryName: string | null;
-  supplierName: string | null;
-  stock: number;
-  variantCount: number;
-  petCount: number;
-};
-
 type OptionItem = {
   id: string;
   name: string;
 };
 
+type Variant = {
+  sku: string;
+  stock: string;
+  name: string;
+};
+
+export type ProductGrouped = {
+  id: string;
+  name: string;
+  slug: string;
+  available: string[];
+  status: boolean;
+  image: string | null;
+  variants: Variant[] | null;
+  default_variant: Variant | null;
+};
+
 type Response = {
   data: {
-    data: ProductListItem[];
+    data: ProductGrouped[];
     selectOptions: {
       categories: OptionItem[];
       suppliers: OptionItem[];

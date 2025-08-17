@@ -33,15 +33,17 @@ type Response = {
       id: string;
       name: string;
       isDefault: boolean;
-      normalPrice: string;
-      basicPrice: string;
-      petShopPrice: string;
-      doctorPrice: string;
+      price: string;
       sku: string;
       barcode: string;
       stock: string;
       weight: string;
+      pricing: {
+        role: string;
+        price: string;
+      }[];
     }[];
+    available: string[];
   };
 };
 
