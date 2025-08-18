@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
 
-export const metadata: Metadata = { title: "Banners" };
+export const metadata: Metadata = { title: "Edit Banners" };
 
 const EditBannerPage = async () => {
   const session = await auth();

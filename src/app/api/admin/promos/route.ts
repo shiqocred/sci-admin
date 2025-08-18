@@ -1,21 +1,14 @@
 import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { convertToWebP } from "@/lib/convert-image";
-import { bannerItems, banners, db, products } from "@/lib/db";
+import { db, promoItems, promos } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { uploadToR2 } from "@/lib/providers";
-import { pronoun } from "@/lib/utils";
+import { generateRandomNumber, pronoun } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
-import { asc, countDistinct, desc, eq, sql } from "drizzle-orm";
+import { asc, countDistinct, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
-
-type BannerType =
-  | "PRODUCTS"
-  | "DETAIL"
-  | "PETS"
-  | "SUPPLIERS"
-  | "PROMOS"
-  | "CATEGORIES";
+import slugify from "slugify";
 
 function combineDateTime(date: string | null, time?: string | null) {
   if (!date || !time) return null;
@@ -24,9 +17,8 @@ function combineDateTime(date: string | null, time?: string | null) {
 }
 
 const sortFieldMap: Record<string, any> = {
-  name: banners.name,
-  type: banners.type,
-  created: banners.createdAt,
+  name: promos.name,
+  created: promos.createdAt,
 };
 
 function statusFormat(item: any) {
@@ -40,29 +32,6 @@ function statusFormat(item: any) {
 
   return "expired";
 }
-function applyFormatted(item: any) {
-  const typeMap: Record<string, string> = {
-    PETS: "Pet",
-    PRODUCTS: "Product",
-    PROMOS: "Promo",
-    SUPPLIERS: "Supplier",
-    CATEGORIES: "Categor",
-  };
-
-  if (typeMap[item.type]) {
-    let suffix;
-
-    if (item.type === "CATEGORIES") {
-      suffix = item.totalMount > 1 ? "ies" : "y";
-    } else {
-      suffix = pronoun(item.totalMount);
-    }
-
-    return `${item.totalMount.toLocaleString()} ${typeMap[item.type]}${suffix}`;
-  }
-
-  return `Detail ${item.detail}`;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -73,45 +42,42 @@ export async function GET(req: NextRequest) {
     const order = req.nextUrl.searchParams.get("order") ?? "desc";
 
     const { where, offset, limit, pagination } = await getTotalAndPagination(
-      banners,
+      promos,
       q,
-      [banners.name],
+      [promos.name],
       req
     );
 
-    const bannersRes = await db
+    const promosRes = await db
       .select({
-        id: banners.id,
-        name: banners.name,
-        image: banners.image,
-        type: banners.type,
-        startAt: banners.startAt,
-        endAt: banners.endAt,
-        totalMount: countDistinct(bannerItems.id).as("totalMount"),
-        detail: sql`MIN(${products.name})`.as("detail"), // ambil nama pertama
+        id: promos.id,
+        name: promos.name,
+        image: promos.image,
+        startAt: promos.startAt,
+        endAt: promos.endAt,
+        totalMount: countDistinct(promoItems.productId).as("totalMount"),
       })
-      .from(banners)
-      .leftJoin(bannerItems, eq(bannerItems.bannerId, banners.id))
-      .leftJoin(products, eq(products.id, bannerItems.productId))
+      .from(promos)
+      .leftJoin(promoItems, eq(promoItems.promoId, promos.id))
       .where(where)
-      .groupBy(banners.id)
+      .groupBy(promos.id)
       .orderBy(
         order === "desc" ? desc(sortFieldMap[sort]) : asc(sortFieldMap[sort])
       )
       .limit(limit)
       .offset(offset);
 
-    const bannersResFormated = bannersRes.map((item) => ({
+    const promosResFormated = promosRes.map((item) => ({
       id: item.id,
       name: item.name,
       image: item.image ? `${r2Public}/${item.image}` : null,
       status: statusFormat(item),
-      apply: applyFormatted(item),
+      totalMount: `${item.totalMount} Product${pronoun(item.totalMount)}`,
     }));
 
-    return successRes({ data: bannersResFormated, pagination }, "Banner list");
+    return successRes({ data: promosResFormated, pagination }, "Promos list");
   } catch (error) {
-    console.error("ERROR_GET_BANNERS", error);
+    console.error("ERROR_GET_PROMOS", error);
     return errorRes("Internal Error", 500);
   }
 }
@@ -122,7 +88,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.formData();
     const name = body.get("name") as string;
-    const type = body.get("type") as BannerType;
     const apply = body.getAll("apply") as string[];
     const image = body.get("image") as File | null;
 
@@ -137,37 +102,35 @@ export async function POST(req: NextRequest) {
       body.get("end_time") as string | null
     );
 
-    const bannerId = createId();
-    const key = `images/banners/${bannerId}-${Date.now()}`;
+    const slug = `${slugify(name, { lower: true })}-${generateRandomNumber()}`;
+
+    const promoId = createId();
+    const key = `images/promos/${promoId}-${Date.now()}`;
 
     await uploadToR2({
       buffer: await convertToWebP(image),
       key,
     });
 
-    await db.insert(banners).values({
-      id: bannerId,
+    await db.insert(promos).values({
+      id: promoId,
       name,
       image: key,
       startAt: start!,
       endAt: end,
-      type,
+      slug,
     });
 
-    const bannerData = apply.map((id) => ({
-      bannerId,
-      productId: ["PRODUCTS", "DETAIL"].includes(type) ? id : null,
-      petId: type === "PETS" ? id : null,
-      supplierId: type === "SUPPLIERS" ? id : null,
-      promoId: type === "PROMOS" ? id : null,
-      categoryId: type === "CATEGORIES" ? id : null,
+    const promoData = apply.map((productId) => ({
+      promoId,
+      productId,
     }));
 
-    await db.insert(bannerItems).values(bannerData);
+    await db.insert(promoItems).values(promoData);
 
-    return successRes({ id: bannerId }, "Banner successfully created");
+    return successRes({ id: promoId }, "Promo successfully created");
   } catch (error) {
-    console.error("ERROR_CREATE_BANNER:", error);
+    console.error("ERROR_CREATE_PROMO:", error);
     return errorRes("Internal Error", 500);
   }
 }

@@ -25,7 +25,6 @@ export const ProductCore = ({
   setImagesProduct,
   imageOld,
   setImageOld,
-  handleSelectRole,
   errors,
 }: {
   input: any;
@@ -34,7 +33,6 @@ export const ProductCore = ({
   setImagesProduct: React.Dispatch<React.SetStateAction<File[] | null>>;
   imageOld?: string[];
   setImageOld?: React.Dispatch<React.SetStateAction<string[]>>;
-  handleSelectRole: (value: string) => void;
   errors: any;
 }) => {
   return (
@@ -58,88 +56,6 @@ export const ProductCore = ({
           imageOld={imageOld}
           setImageOld={(e: any) => setImageOld?.(e)}
         />
-      </div>
-      <div className="flex flex-col gap-1.5 w-full">
-        <Label>Available For</Label>
-        <div className="grid grid-cols-4 gap-4">
-          <div className="flex items-center h-9 text-xs border text-center w-full rounded-md col-span-3 font-medium">
-            {input.available.length > 0 ? (
-              input.available.map((item: any) => (
-                <div
-                  key={item}
-                  className="w-full border-l h-full first:border-0 flex items-center justify-center capitalize"
-                >
-                  {item === "basic" && "Pet Owner"}
-                  {item === "petshop" && "Pet Shop"}
-                  {item === "veterinarian" && "Pet Clinic"}
-                </div>
-              ))
-            ) : (
-              <div className="flex items-center gap-2 w-full justify-center">
-                <AlertCircle className="size-3.5" />
-                <p>No Role Selected</p>
-              </div>
-            )}
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                className={cn(
-                  "w-full justify-between bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 group overflow-hidden",
-                  errors?.role && "border-red-500 hover:border-red-500"
-                )}
-                variant={"outline"}
-              >
-                Browse Role
-                <ChevronDown />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="min-w-[var(--radix-popover-trigger-width)] p-0 w-auto"
-              align="end"
-            >
-              <Command>
-                <CommandList>
-                  <CommandGroup>
-                    <CommandItem onSelect={() => handleSelectRole("basic")}>
-                      Pet Owner
-                      <CheckIcon
-                        className={cn(
-                          "hidden ml-auto",
-                          input.available.some((i: any) => i === "basic") &&
-                            "flex"
-                        )}
-                      />
-                    </CommandItem>
-                    <CommandItem onSelect={() => handleSelectRole("petshop")}>
-                      Pet Shop
-                      <CheckIcon
-                        className={cn(
-                          "hidden ml-auto",
-                          input.available.some((i: any) => i === "petshop") &&
-                            "flex"
-                        )}
-                      />
-                    </CommandItem>
-                    <CommandItem
-                      onSelect={() => handleSelectRole("veterinarian")}
-                    >
-                      Pet Clinic
-                      <CheckIcon
-                        className={cn(
-                          "hidden ml-auto",
-                          input.available.some(
-                            (i: any) => i === "veterinarian"
-                          ) && "flex"
-                        )}
-                      />
-                    </CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
       </div>
     </div>
   );

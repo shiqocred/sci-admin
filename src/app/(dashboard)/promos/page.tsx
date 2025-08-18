@@ -5,26 +5,22 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
 
-export const metadata: Metadata = { title: "Create Banners" };
+export const metadata: Metadata = { title: "Promos" };
 
-const CreateBannerPage = async () => {
+const PromosPage = async () => {
   const session = await auth();
   if (!session) {
-    const path = "/banners";
+    const path = "/promos";
     redirect(`/login?redirect=${encodeURIComponent(path)}`);
   }
 
   return (
     <ContainerPage
-      breadcrumbs={[
-        { label: "Home", url: "/" },
-        { label: "Banners", url: "/banners" },
-        { label: "Create" },
-      ]}
+      breadcrumbs={[{ label: "Home", url: "/" }, { label: "Promos" }]}
     >
       <Client />
     </ContainerPage>
   );
 };
 
-export default CreateBannerPage;
+export default PromosPage;

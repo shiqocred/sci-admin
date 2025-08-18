@@ -29,7 +29,6 @@ interface ItemProps {
   role: number;
   eligibilityType: "user" | "role" | null;
   productsVariant: number;
-  isActive: boolean | null;
 }
 
 const discountSchema = z.object({
@@ -110,7 +109,6 @@ export async function GET(req: NextRequest) {
         value: discounts.value,
         startAt: discounts.startAt,
         endAt: discounts.endAt,
-        isActive: discounts.isActive,
         eligibilityType: discounts.eligibilityType,
         categories: count(discountCategories.discountId),
         suppliers: count(discountSuppliers.discountId),
@@ -149,16 +147,14 @@ export async function GET(req: NextRequest) {
     };
 
     const statusFormat = (item: ItemProps) => {
-      const { isActive, startAt, endAt } = item;
       const now = Date.now();
-      const start = new Date(startAt).getTime();
-      const end = endAt ? new Date(endAt).getTime() : null;
+      const start = new Date(item.startAt).getTime();
+      const end = item.endAt ? new Date(item.endAt).getTime() : null;
 
-      if (isActive === true) return "active";
-      if (isActive === false) return "expired";
-
+      if (end && end < start) return "expired";
       if (now < start) return "scheduled";
-      if (end === null || now <= end) return "active";
+      if (!end || now <= end) return "active";
+
       return "expired";
     };
 

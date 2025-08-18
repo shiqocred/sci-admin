@@ -1,31 +1,30 @@
 import { invalidateQuery, useMutate } from "@/lib/query";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-type Body = FormData;
+type Body = {
+  status: boolean;
+};
 
 type Params = {
   id: string;
 };
 
-export const useUpdateBanner = () => {
+export const useUpdatePromoStatus = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const mutation = useMutate<Body, Params>({
-    endpoint: "/admin/banners/:id",
+    endpoint: "/admin/promos/:id/status",
     method: "put",
     onSuccess: async ({ data }) => {
       toast.success(data.message);
       await invalidateQuery(queryClient, [
-        ["banners-list"],
-        ["banner-detail", data.data.id],
+        ["promos-list"],
+        ["promo-detail", data.data.id],
       ]);
-      router.push("/banners");
     },
     onError: {
-      title: "UPDATE_BANNER",
+      title: "UPDATE_PROMO_STATUS",
     },
   });
 

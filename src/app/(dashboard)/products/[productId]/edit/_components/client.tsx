@@ -28,6 +28,7 @@ import {
   SingleVariant,
   MultipleVariant,
   ReferenceMenu,
+  ProductAction,
 } from "../../../_components/_sections";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -373,7 +374,6 @@ export const Client = () => {
             imageOld={imageOld}
             setImageOld={setImageOld}
             errors={errors}
-            handleSelectRole={handleSelectRole}
           />
           <ProductDescription
             input={input}
@@ -424,37 +424,13 @@ export const Client = () => {
               setInput={setInput}
               errors={errors}
             />
-            <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
-              <div className="flex flex-col gap-1.5 w-full">
-                <Label>Status</Label>
-                <Select
-                  value={input.isActive ? "publish" : "draft"}
-                  onValueChange={(e) =>
-                    setInput((prev) => ({
-                      ...prev,
-                      isActive: e === "publish",
-                    }))
-                  }
-                >
-                  <SelectTrigger className="bg-transparent border-gray-300 shadow-none hover:bg-gray-100 hover:border-gray-400 w-full">
-                    <SelectValue placeholder="Select status..." />
-                  </SelectTrigger>
-                  <SelectContent
-                    className="min-w-[var(--radix-popover-trigger-width)] p-0"
-                    align="end"
-                  >
-                    <SelectGroup>
-                      <SelectItem value="publish">Publish</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleSubmit}>
-                <Save />
-                Update
-              </Button>
-            </div>
+            <ProductAction
+              input={input}
+              setInput={setInput}
+              errors={errors}
+              handleSubmit={handleSubmit}
+              handleSelectRole={handleSelectRole}
+            />
           </div>
         </div>
       </div>

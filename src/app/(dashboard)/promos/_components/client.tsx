@@ -1,47 +1,27 @@
 "use client";
 
-import React, { MouseEvent, useEffect, useMemo, useState } from "react";
-import { useGetDiscounts } from "../_api/query/use-get-discounts";
+import React, { useEffect, useMemo } from "react";
+import { parseAsString, useQueryStates } from "nuqs";
+import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  BadgePercent,
-  ChevronRight,
-  Download,
-  Plus,
-  RefreshCcw,
-  Share,
-  XCircle,
-} from "lucide-react";
-import { TooltipText } from "@/providers/tooltip-provider";
-import { SortTable } from "@/components/sort-table";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
+import { SortTable } from "@/components/sort-table";
+import { DataTable } from "@/components/data-table";
+import { Separator } from "@/components/ui/separator";
+import { TooltipText } from "@/providers/tooltip-provider";
+
+import { cn } from "@/lib/utils";
 import { column } from "./columns";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
-import { parseAsString, useQueryStates } from "nuqs";
-import Link from "next/link";
-import { useDeleteDiscount, useUpdateDiscountStatus } from "../_api";
 import { useConfirm } from "@/hooks/use-confirm";
 
-export interface InputProps {
-  voucher: string;
-  percentage: string;
-  fixed: string;
-  selected: string[];
-  role: string[];
-  userId: string[];
-  purchase: string;
-  quantity: string;
-  use: string;
-  startTime: string;
-  endTime: string;
-}
+import { useDeletePromo, useGetPromos, useUpdatePromoStatus } from "../_api";
+import Link from "next/link";
 
-const filterField = [{ name: "Voucher", value: "voucher" }];
+const filterField = [{ name: "Name", value: "name" }];
 
 export const Client = () => {
   const [{ sort, order }, setQuery] = useQueryStates({
@@ -50,72 +30,62 @@ export const Client = () => {
   });
 
   const [DeleteDialog, confirmDelete] = useConfirm(
-    `Delete Selected Voucher?`,
+    "Delete Selected Promo?",
     "This action cannot be undone",
     "destructive"
   );
 
   const [DeactivateDialog, confirmDeactivate] = useConfirm(
-    `Deactivate Selected Voucher?`,
-    "This discount will expire now.",
+    `Deactivate Selected Promo?`,
+    "This promo will deactive now.",
     "destructive"
   );
 
   const [ActivateDialog, confirmActivate] = useConfirm(
-    `Activate Selected Voucher?`,
-    "This discount will become active now and will have no end date.",
+    `Activate Selected Promo?`,
+    "This promo will become active now and will have no end date.",
     "default"
   );
 
-  const { mutate: deleteDiscount, isPending: isDeleting } = useDeleteDiscount();
-  const { mutate: updateDiscountStatus, isPending: isUpdatingStatus } =
-    useUpdateDiscountStatus();
+  const { mutate: deletePromo, isPending: isDeleting } = useDeletePromo();
+  const { mutate: updatePromo, isPending: isUpdating } = useUpdatePromoStatus();
 
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
-  const { data, refetch, isRefetching, isSuccess, isPending } = useGetDiscounts(
-    {
-      q: searchValue,
-      p: page,
-      limit,
-      sort,
-      order,
-    }
-  );
+  const { data, refetch, isRefetching, isSuccess, isPending } = useGetPromos({
+    q: searchValue,
+    p: page,
+    limit,
+    sort,
+    order,
+  });
 
-  const loading = isRefetching || isPending || isDeleting || isUpdatingStatus;
+  const loading = isDeleting || isRefetching || isPending || isUpdating;
 
-  const customersList = useMemo(() => {
+  const promosList = useMemo(() => {
     return data?.data?.data ?? [];
   }, [data]);
 
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async (e: MouseEvent, name: string) => {
-    await navigator.clipboard.writeText(name);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000); // 2 detik kembali ke Clipboard
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDelete();
+    if (!ok) return;
+    deletePromo({ params: { id } });
   };
+
   const handleUpdateStatus = async (
     status: "active" | "expired" | "scheduled",
     id: string
   ) => {
     const ok =
-      status === "expired" || status === "scheduled"
+      status === "expired"
         ? await confirmActivate()
         : await confirmDeactivate();
     if (!ok) return;
-    updateDiscountStatus({
-      body: { status: status === "expired" || status === "scheduled" },
+    updatePromo({
+      body: { status: status === "expired" },
       params: { id },
     });
-  };
-
-  const handleDelete = async (id: string) => {
-    const ok = await confirmDelete();
-    if (!ok) return;
-    deleteDiscount({ params: { id } });
   };
 
   useEffect(() => {
@@ -123,14 +93,13 @@ export const Client = () => {
       setPagination(data.data.pagination);
     }
   }, [isSuccess, data]);
-
   return (
     <div className="w-full flex flex-col gap-6">
       <DeleteDialog />
       <DeactivateDialog />
       <ActivateDialog />
-      <div className="w-full flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Discounts</h1>
+      <div className="w-full flex items-center gap-4 justify-between">
+        <h1 className="text-xl font-semibold">Promos</h1>
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">
@@ -138,7 +107,7 @@ export const Client = () => {
             <div className="relative flex items-center group">
               <Input
                 className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search discount..."
+                placeholder="Search promo..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -203,22 +172,19 @@ export const Client = () => {
               disabled={loading}
               asChild
             >
-              <Link href={"/discounts/create"}>
+              <Link href={"/promos/create"}>
                 <Plus className="size-3" />
-                Add Discount
+                Add Promo
               </Link>
             </Button>
           </div>
         </div>
         <DataTable
-          data={customersList}
+          data={promosList}
           columns={column({
             metaPage,
-            handleUpdateStatus,
             handleDelete,
-            copied,
-            handleCopy,
-            disabled: loading,
+            handleUpdateStatus,
           })}
         />
         <Pagination

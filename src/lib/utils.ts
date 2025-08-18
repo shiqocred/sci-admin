@@ -49,7 +49,7 @@ export const pronoun = (num: string | number) => {
   const value =
     typeof num === "string" ? parseFloat(num.replace(/[^\d.-]/g, "")) : num;
 
-  if (!value || isNaN(value)) return "Rp 0";
+  if (!value || isNaN(value)) return "";
   return value > 1 ? "s" : "";
 };
 

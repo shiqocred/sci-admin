@@ -9,23 +9,23 @@ type Params = {
   id: string;
 };
 
-export const useUpdateBanner = () => {
+export const useUpdatePromo = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
   const mutation = useMutate<Body, Params>({
-    endpoint: "/admin/banners/:id",
+    endpoint: "/admin/promos/:id",
     method: "put",
     onSuccess: async ({ data }) => {
       toast.success(data.message);
       await invalidateQuery(queryClient, [
-        ["banners-list"],
-        ["banner-detail", data.data.id],
+        ["promos-list"],
+        ["promo-detail", data.data.id],
       ]);
-      router.push("/banners");
+      router.push("/promos");
     },
     onError: {
-      title: "UPDATE_BANNER",
+      title: "UPDATE_PROMO",
     },
   });
 

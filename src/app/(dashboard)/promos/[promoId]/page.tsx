@@ -5,12 +5,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
 
-export const metadata: Metadata = { title: "Create Banners" };
+export const metadata: Metadata = { title: "Edit Promo" };
 
-const CreateBannerPage = async () => {
+const EditPromoPage = async () => {
   const session = await auth();
   if (!session) {
-    const path = "/banners";
+    const path = "/promos";
     redirect(`/login?redirect=${encodeURIComponent(path)}`);
   }
 
@@ -18,8 +18,8 @@ const CreateBannerPage = async () => {
     <ContainerPage
       breadcrumbs={[
         { label: "Home", url: "/" },
-        { label: "Banners", url: "/banners" },
-        { label: "Create" },
+        { label: "Promos", url: "/promos" },
+        { label: "Edit" },
       ]}
     >
       <Client />
@@ -27,4 +27,4 @@ const CreateBannerPage = async () => {
   );
 };
 
-export default CreateBannerPage;
+export default EditPromoPage;

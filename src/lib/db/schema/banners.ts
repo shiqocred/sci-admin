@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 import { bannerTypeEnum } from "./enums";
 
@@ -11,7 +11,6 @@ export const banners = pgTable("banner", {
   type: bannerTypeEnum("type").notNull(),
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at"),
-  status: boolean("status"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -2,7 +2,7 @@ import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { convertToWebP } from "@/lib/convert-image";
 import { bannerItems, banners, db } from "@/lib/db";
-import { uploadToR2 } from "@/lib/providers";
+import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { format } from "date-fns";
 import { and, eq, notInArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
@@ -63,16 +63,15 @@ export async function GET(
     };
 
     const statusFormat = () => {
-      const { status, startAt, endAt } = bannerRes;
+      const { startAt, endAt } = bannerRes;
       const now = Date.now();
       const start = new Date(startAt).getTime();
       const end = endAt ? new Date(endAt).getTime() : null;
 
-      if (status === true) return "active";
-      if (status === false) return "expired";
-
+      if (end && end < start) return "expired";
       if (now < start) return "scheduled";
-      if (end === null || now <= end) return "active";
+      if (!end || now <= end) return "active";
+
       return "expired";
     };
 
@@ -134,13 +133,20 @@ function mapBannerItem(type: BannerType, bannerId: string, id: string) {
   };
 }
 
-async function uploadBannerImage(image: File | null, bannerId: string) {
+async function uploadBannerImage(
+  imageOld: string,
+  image: File | null,
+  bannerId: string
+) {
   if (!image) return undefined;
-  const imageKey = `images/banners-${bannerId}-${Date.now()}`;
-  await uploadToR2({
-    buffer: await convertToWebP(image),
-    key: imageKey,
-  });
+  const imageKey = `images/banners/${bannerId}-${Date.now()}`;
+  await Promise.all([
+    deleteR2(imageOld),
+    uploadToR2({
+      buffer: await convertToWebP(image),
+      key: imageKey,
+    }),
+  ]);
   return imageKey;
 }
 
@@ -181,7 +187,7 @@ export async function PUT(
     const { bannerId } = await params;
 
     const existingBanner = await db.query.banners.findFirst({
-      columns: { type: true },
+      columns: { type: true, image: true },
       where: (b, { eq }) => eq(b.id, bannerId),
     });
     if (!existingBanner) throw errorRes("Banner not found", 404);
@@ -201,7 +207,11 @@ export async function PUT(
       body.get("end_time") as string | null
     );
 
-    const imageKey = await uploadBannerImage(image, bannerId);
+    const imageKey = await uploadBannerImage(
+      existingBanner.image,
+      image,
+      bannerId
+    );
 
     await db
       .update(banners)

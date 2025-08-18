@@ -4,3 +4,4 @@ export * from "./product-description";
 export * from "./single-variant";
 export * from "./variant-open";
 export * from "./reference-menu";
+export * from "./product-action";

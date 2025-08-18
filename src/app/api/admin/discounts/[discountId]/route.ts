@@ -141,16 +141,15 @@ export async function GET(
     }
 
     const statusFormat = () => {
-      const { isActive, startAt, endAt } = discountRes;
+      const { startAt, endAt } = discountRes;
       const now = Date.now();
       const start = new Date(startAt).getTime();
       const end = endAt ? new Date(endAt).getTime() : null;
 
-      if (isActive === true) return "active";
-      if (isActive === false) return "expired";
-
+      if (end && end < start) return "expired";
       if (now < start) return "scheduled";
-      if (end === null || now <= end) return "active";
+      if (!end || now <= end) return "active";
+
       return "expired";
     };
 

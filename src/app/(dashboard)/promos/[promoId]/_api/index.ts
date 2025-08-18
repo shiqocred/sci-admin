@@ -1,3 +1,3 @@
-export * from "./query/use-get-banner";
+export * from "./query/use-get-promo";
 
 export * from "./mutation/use-update-banner";

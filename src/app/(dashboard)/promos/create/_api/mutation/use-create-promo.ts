@@ -5,27 +5,20 @@ import { toast } from "sonner";
 
 type Body = FormData;
 
-type Params = {
-  id: string;
-};
-
-export const useUpdateBanner = () => {
+export const useCreatePromo = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const mutation = useMutate<Body, Params>({
-    endpoint: "/admin/banners/:id",
-    method: "put",
+  const mutation = useMutate<Body>({
+    endpoint: "/admin/promos",
+    method: "post",
     onSuccess: async ({ data }) => {
       toast.success(data.message);
-      await invalidateQuery(queryClient, [
-        ["banners-list"],
-        ["banner-detail", data.data.id],
-      ]);
-      router.push("/banners");
+      await invalidateQuery(queryClient, [["promos-list"]]);
+      router.push("/promos");
     },
     onError: {
-      title: "UPDATE_BANNER",
+      title: "CREATE_PROMO",
     },
   });
 

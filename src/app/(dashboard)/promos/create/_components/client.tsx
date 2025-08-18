@@ -1,0 +1,77 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { ChevronRight, Coins, Send } from "lucide-react";
+import React, { MouseEvent, useState } from "react";
+import { useCreatePromo } from "../_api";
+import Link from "next/link";
+import { PromoCore } from "../../_components/section/promo-core";
+import { PromoActive } from "../../_components/section/promo-active";
+
+export const Client = () => {
+  const [input, setInput] = useState({
+    name: "",
+    selected: [] as string[],
+    image: null as File | null,
+    startDate: new Date() as Date | undefined,
+    startTime: "08:00",
+    endDate: undefined as Date | undefined,
+    endTime: "08:00",
+    isEnd: false as CheckedState | undefined,
+  });
+
+  const { mutate: createPromo } = useCreatePromo();
+
+  const handleCreatePromo = (e: MouseEvent) => {
+    e.preventDefault();
+    const body = new FormData();
+    body.append("name", input.name);
+    input.selected.map((item) => body.append("apply", item));
+    if (input.image) {
+      body.append("image", input.image);
+    }
+    if (input.startDate) {
+      body.append("start_date", input.startDate.toString());
+      body.append("start_time", input.startTime);
+    }
+    if (input.isEnd && input.endDate) {
+      body.append("end_date", input.endDate.toString());
+      body.append("end_time", input.endTime);
+    }
+    createPromo({ body });
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-6">
+      <div className="w-full flex items-center gap-2">
+        <Button
+          size={"icon"}
+          variant={"secondary"}
+          className="size-7 hover:bg-gray-200"
+          asChild
+        >
+          <Link href="/promos">
+            <Coins className="size-5" />
+          </Link>
+        </Button>
+        <ChevronRight className="size-4 text-gray-500" />
+        <h1 className="text-xl font-semibold">Add Promo</h1>
+      </div>
+      <div className="w-full grid gap-6 grid-cols-7">
+        <div className="col-span-4 w-full">
+          <PromoCore input={input} setInput={setInput} />
+        </div>
+        <div className="col-span-3 w-full">
+          <div className="flex flex-col gap-4 w-full">
+            <PromoActive input={input} setInput={setInput} />
+            <Button onClick={handleCreatePromo}>
+              <Send />
+              Create Promo
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
