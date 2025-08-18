@@ -31,7 +31,13 @@ async function main() {
           defaultValue: null,
         }),
         phoneNumber: f.default({
-          defaultValue: null,
+          defaultValue: "+62 88888888888",
+        }),
+        emailVerified: f.default({
+          defaultValue: new Date(),
+        }),
+        isDeleted: f.default({
+          defaultValue: false,
         }),
       },
       count: 1,
@@ -44,19 +50,31 @@ async function main() {
         role: f.default({
           defaultValue: "BASIC",
         }),
-        status: f.default({
+        newRole: f.default({
+          defaultValue: "BASIC",
+        }),
+        fileKtp: f.default({
           defaultValue: null,
         }),
         fileKta: f.default({
           defaultValue: null,
         }),
-        fileKtp: f.default({
+        storefront: f.default({
+          defaultValue: null,
+        }),
+        nik: f.default({
+          defaultValue: null,
+        }),
+        noKta: f.default({
           defaultValue: null,
         }),
         name: f.default({
           defaultValue: null,
         }),
-        nik: f.default({
+        message: f.default({
+          defaultValue: null,
+        }),
+        status: f.default({
           defaultValue: null,
         }),
       },
