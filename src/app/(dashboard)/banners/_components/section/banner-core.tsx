@@ -105,7 +105,6 @@ export const BannerCore = ({
                 | "categories"
                 | "suppliers"
                 | "pets"
-                | "products"
                 | "promos",
             }))
           }
@@ -116,7 +115,6 @@ export const BannerCore = ({
           <SelectContent>
             <SelectGroup>
               <SelectItem value="detail">Product Detail</SelectItem>
-              <SelectItem value="products">Products List</SelectItem>
               <SelectItem value="pets">Pets List</SelectItem>
               <SelectItem value="suppliers">Suppliers List</SelectItem>
               <SelectItem value="categories">Categories List</SelectItem>
@@ -169,7 +167,7 @@ export const BannerCore = ({
                   item={item}
                 />
               ))}
-          {(input.apply === "products" || input.apply === "detail") &&
+          {input.apply === "detail" &&
             products
               .filter((item) => input.selected.includes(item.id))
               .map((item) => (

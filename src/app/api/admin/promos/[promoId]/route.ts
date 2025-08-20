@@ -123,7 +123,7 @@ export async function PUT(
 
     const newSlug = async () => {
       if (existingPromo.name === name) return existingPromo.slug;
-      const slug = `${slugify(name, { lower: true })}/${generateRandomNumber()}`;
+      const slug = `${slugify(name, { lower: true })}-${generateRandomNumber()}`;
 
       return slug;
     };

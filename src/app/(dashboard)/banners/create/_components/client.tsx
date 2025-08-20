@@ -17,7 +17,6 @@ export const Client = () => {
       | "categories"
       | "suppliers"
       | "pets"
-      | "products"
       | "promos",
     selected: [] as string[],
     image: null as File | null,

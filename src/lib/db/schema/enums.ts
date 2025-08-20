@@ -83,9 +83,9 @@ export const shippingStatusEnum = pgEnum("shipping_status", [
 export const durationTypeEnum = pgEnum("duration_type", ["HOUR", "DAY"]);
 export const bannerTypeEnum = pgEnum("banner_type", [
   "DETAIL",
-  "PRODUCTS",
   "PETS",
   "PROMOS",
   "SUPPLIERS",
   "CATEGORIES",
 ]);
+export const typeIdEnum = pgEnum("type_id_enum", ["NIK", "NIB", "NPWP"]);

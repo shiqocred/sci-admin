@@ -1,17 +1,20 @@
 import { useApiQuery } from "@/lib/query/use-query";
 
+export type ReviewProps = {
+  personalIdFile: string | null;
+  storefrontFile: string | null;
+  veterinarianIdFile: string | null;
+  role: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
+  userId: string;
+  newRole: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
+  personalIdType: "NIK" | "NIB" | "NPWP";
+  personalId: string | null;
+  veterinarianId: string | null;
+  fullName: string | null;
+};
+
 type Response = {
-  data: {
-    fileKtp: string;
-    fileKta: string;
-    storefront: string;
-    role: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
-    newRole: "BASIC" | "PETSHOP" | "VETERINARIAN" | "ADMIN";
-    name: string | null;
-    userId: string;
-    nik: string | null;
-    noKta: string | null;
-  };
+  data: ReviewProps;
 };
 
 export const useGetReviewUpgrade = ({ id }: { id: string }) => {

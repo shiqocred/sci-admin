@@ -204,7 +204,7 @@ export const SelectApply = ({
                                 (i) => i.role === "VETERINARIAN"
                               ) && (
                                 <p>
-                                  Pet Clinic:{" "}
+                                  Vet Clinic:{" "}
                                   {formatRupiah(
                                     item.defaultVariant.pricing.find(
                                       (i) => i.role === "VETERINARIAN"
@@ -289,7 +289,7 @@ export const SelectApply = ({
                                     (i) => i.role === "VETERINARIAN"
                                   ) && (
                                     <p>
-                                      Pet Clinic:{" "}
+                                      Vet Clinic:{" "}
                                       {formatRupiah(
                                         variant.pricing.find(
                                           (i) => i.role === "VETERINARIAN"

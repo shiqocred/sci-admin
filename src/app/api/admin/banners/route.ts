@@ -9,13 +9,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { asc, countDistinct, desc, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-type BannerType =
-  | "PRODUCTS"
-  | "DETAIL"
-  | "PETS"
-  | "SUPPLIERS"
-  | "PROMOS"
-  | "CATEGORIES";
+type BannerType = "DETAIL" | "PETS" | "SUPPLIERS" | "PROMOS" | "CATEGORIES";
 
 function combineDateTime(date: string | null, time?: string | null) {
   if (!date || !time) return null;

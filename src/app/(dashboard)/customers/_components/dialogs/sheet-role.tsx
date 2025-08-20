@@ -67,6 +67,7 @@ export const SheetRole = ({
           setIsActive("");
           setInput("");
           setIsReject(false);
+          setUrlReview("");
         },
       }
     );
@@ -81,6 +82,7 @@ export const SheetRole = ({
           setInput("");
           setIsReject(false);
           setIsActive("");
+          setUrlReview("");
         },
       }
     );
@@ -106,7 +108,12 @@ export const SheetRole = ({
             <div className="flex items-center absolute top-4 gap-2">
               <div className=" text-sm font-semibold flex items-center gap-2 px-3 h-7 bg-gray-200 rounded-full">
                 <EyeIcon className="size-4" />
-                Review {isActive}
+                Review{" "}
+                {isActive === "KTP"
+                  ? reviewData?.personalIdType === "NIK"
+                    ? "KTP"
+                    : reviewData?.personalIdType
+                  : isActive}
               </div>
               <TooltipText value="Close Preview">
                 <Button
@@ -149,11 +156,11 @@ export const SheetRole = ({
             <div className="h-[calc(100vh-56px+16px)] overflow-y-auto">
               <div className="flex flex-col pb-10">
                 <div className="grid grid-cols-2 gap-4 px-5 mt-10 mb-16">
-                  {reviewData?.fileKtp && (
+                  {reviewData?.personalIdFile && (
                     <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
                       <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
                         <Image
-                          src={reviewData.fileKtp}
+                          src={reviewData.personalIdFile}
                           fill
                           sizes={sizesImage}
                           className="object-cover"
@@ -162,21 +169,25 @@ export const SheetRole = ({
                       </div>
                       <Button
                         onClick={() => {
-                          setUrlReview(reviewData.fileKtp);
+                          setUrlReview(
+                            reviewData.personalIdFile ?? "/images/logo-sci.png"
+                          );
                           setIsActive("KTP");
                         }}
                         className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
                       >
                         <Eye />
-                        KTP
+                        {reviewData?.personalIdType === "NIK"
+                          ? "KTP"
+                          : reviewData?.personalIdType}
                       </Button>
                     </div>
                   )}
-                  {reviewData?.storefront && (
+                  {reviewData?.storefrontFile && (
                     <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
                       <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
                         <Image
-                          src={reviewData.storefront}
+                          src={reviewData.storefrontFile}
                           fill
                           sizes={sizesImage}
                           className="object-cover"
@@ -185,7 +196,9 @@ export const SheetRole = ({
                       </div>
                       <Button
                         onClick={() => {
-                          setUrlReview(reviewData.storefront);
+                          setUrlReview(
+                            reviewData.storefrontFile ?? "/images/logo-sci.png"
+                          );
                           setIsActive("Pet Shop Building");
                         }}
                         className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
@@ -195,11 +208,11 @@ export const SheetRole = ({
                       </Button>
                     </div>
                   )}
-                  {reviewData?.fileKta && (
+                  {reviewData?.veterinarianIdFile && (
                     <div className="flex flex-col w-full items-center justify-center gap-2 text-sm">
                       <div className="relative aspect-[107/68] w-full overflow-hidden rounded-lg shadow">
                         <Image
-                          src={reviewData.fileKta}
+                          src={reviewData.veterinarianIdFile}
                           fill
                           sizes={sizesImage}
                           className="object-cover"
@@ -208,7 +221,10 @@ export const SheetRole = ({
                       </div>
                       <Button
                         onClick={() => {
-                          setUrlReview(reviewData.fileKta);
+                          setUrlReview(
+                            reviewData.veterinarianIdFile ??
+                              "/images/logo-sci.png"
+                          );
                           setIsActive("KTA");
                         }}
                         className="h-7 rounded-full bg-white text-black font-semibold text-xs hover:bg-white hover:text-black/50"
@@ -222,23 +238,23 @@ export const SheetRole = ({
                 <div className="flex flex-col bg-white">
                   <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
                     <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
-                      NIK
+                      {reviewData?.personalIdType}
                     </div>
-                    <div className="pr-5">{reviewData?.nik}</div>
+                    <div className="pr-5">{reviewData?.personalId}</div>
                   </div>
-                  {reviewData?.noKta && (
+                  {reviewData?.veterinarianId && (
                     <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
                       <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
                         No KTA
                       </div>
-                      <div className="pr-5">{reviewData?.noKta}</div>
+                      <div className="pr-5">{reviewData?.veterinarianId}</div>
                     </div>
                   )}
                   <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
                     <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">
                       Full Name
                     </div>
-                    <div className="pr-5">{reviewData?.name}</div>
+                    <div className="pr-5">{reviewData?.fullName}</div>
                   </div>
                   <div className="min-h-10 py-3 border-b border-gray-100 flex items-center gap-3 text-xs font-medium">
                     <div className="pl-5 text-gray-500 whitespace-nowrap w-24 flex-none">

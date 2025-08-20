@@ -35,8 +35,14 @@ export const orderDraftShippings = pgTable(
     label: text("label").notNull(),
     company: text("company").notNull(),
     type: text("type").notNull(),
-    fastestEstimate: timestamp("fastest_estimate").notNull(),
-    longestEstimate: timestamp("longest_estimate").notNull(),
+    fastestEstimate: numeric("fastest", {
+      precision: 10,
+      scale: 0,
+    }).notNull(),
+    longestEstimate: numeric("longest", {
+      precision: 10,
+      scale: 0,
+    }).notNull(),
     duration: durationTypeEnum("duration").notNull().default("DAY"),
     weight: text("weight").notNull(),
 

@@ -247,7 +247,7 @@ export const VariantOpen = ({
               )}
               {available.some((i) => i === "veterinarian") && (
                 <LabelInput
-                  label="Pet clinic price"
+                  label="Vet clinic price"
                   type="number"
                   placeholder="e.g. 10000"
                   value={variant.doctorPrice}

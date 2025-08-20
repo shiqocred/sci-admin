@@ -84,7 +84,7 @@ export const ProductAction = ({
                     <CommandItem
                       onSelect={() => handleSelectRole("veterinarian")}
                     >
-                      Pet Clinic
+                      Vet Clinic
                       <CheckIcon
                         className={cn(
                           "hidden ml-auto",
@@ -108,7 +108,7 @@ export const ProductAction = ({
                 >
                   {item === "basic" && "Pet Owner"}
                   {item === "petshop" && "Pet Shop"}
-                  {item === "veterinarian" && "Pet Clinic"}
+                  {item === "veterinarian" && "Vet Clinic"}
                 </div>
               ))
             ) : (

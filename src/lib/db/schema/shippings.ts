@@ -28,8 +28,14 @@ export const shippings = pgTable("shippings", {
   courierType: text("courier_type").notNull(),
 
   price: numeric("price", { precision: 12, scale: 0 }).notNull(),
-  fastestEstimate: timestamp("fastest_estimate").notNull(),
-  longestEstimate: timestamp("longest_estimate").notNull(),
+  fastestEstimate: numeric("fastest", {
+    precision: 10,
+    scale: 0,
+  }).notNull(),
+  longestEstimate: numeric("longest", {
+    precision: 10,
+    scale: 0,
+  }).notNull(),
   duration: durationTypeEnum("duration").notNull().default("DAY"),
 
   status: shippingStatusEnum("status").notNull().default("PENDING"),

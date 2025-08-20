@@ -158,7 +158,7 @@ export const column = ({
             <Badge key={role} className="capitalize rounded-full font-normal">
               {role === "BASIC" && "Pet Owner"}
               {role === "PETSHOP" && "Pet Shop"}
-              {role === "VETERINARIAN" && "Pet Clinic"}
+              {role === "VETERINARIAN" && "Vet Clinic"}
             </Badge>
           ))}
         </div>

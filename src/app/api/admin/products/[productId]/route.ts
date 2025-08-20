@@ -515,8 +515,8 @@ const handleIsVariant = async (
       const price = v[key] ?? 0;
 
       const exists = await tx.query.productVariantPrices.findFirst({
-        where: (p: any, { eq }: any) =>
-          eq(p.variantId, v.id) && eq(p.role, role),
+        where: (p: any, { eq, and }: any) =>
+          and(eq(p.variantId, v.id), eq(p.role, role)),
       });
 
       if (exists) {

@@ -150,7 +150,7 @@ export const SingleVariant = ({
             )}
             {available.some((i) => i === "veterinarian") && (
               <LabelInput
-                label="Pet Clinic price"
+                label="Vet Clinic price"
                 type="number"
                 placeholder="e.g. 10000"
                 value={defaultVariants.doctorPrice}

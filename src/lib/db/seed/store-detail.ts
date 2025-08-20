@@ -1,35 +1,33 @@
 import { storeDetail } from "../schema";
-import { seed } from "drizzle-seed";
-import { createId } from "@paralleldrive/cuid2";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { databaseUrl } from "@/config";
 
-async function main() {
-  const db = drizzle(databaseUrl);
-  await seed(db, { storeDetail }).refine((f) => ({
-    storeDetail: {
-      columns: {
-        id: f.default({
-          defaultValue: createId(),
-        }),
-        name: f.default({
-          defaultValue: "PT Sehat Cerah Indonesia",
-        }),
-        phone: f.default({
-          defaultValue: "0217228383",
-        }),
-        address: f.default({
-          defaultValue: "Jakarta",
-        }),
-        latitude: f.default({
-          defaultValue: "-6.175392",
-        }),
-        longitude: f.default({
-          defaultValue: "106.827153",
-        }),
-      },
-      count: 1,
-    },
-  }));
+const db = drizzle(databaseUrl);
+
+// Daftar kurir dengan nama dan value
+const storeDetailData = {
+  name: "PT Sehat Cerah Indonesia",
+  phone: "0217228383",
+  address: "Jakarta",
+  latitude: "-6.175392",
+  longitude: "106.827153",
+};
+
+async function seedStoreDetail() {
+  try {
+    // Hapus dulu data lama (opsional)
+    await db.delete(storeDetail);
+    console.log("✅ Old store detail deleted");
+
+    // Insert baru
+    await db.insert(storeDetail).values(storeDetailData);
+    console.log("✅ Store detail seeded successfully:", storeDetailData);
+  } catch (error) {
+    console.error("❌ Error seeding store detail:", error);
+    process.exit(1);
+  } finally {
+    process.exit(0);
+  }
 }
-main();
+
+seedStoreDetail();

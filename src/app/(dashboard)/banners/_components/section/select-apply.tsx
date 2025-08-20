@@ -36,7 +36,6 @@ export const SelectApply = ({
     if (input.apply === "categories") return "Categories";
     if (input.apply === "suppliers") return "Suppliers";
     if (input.apply === "pets") return "Pets";
-    if (input.apply === "products") return "Products";
     if (input.apply === "promos") return "Promos";
     return "Detail Product";
   };
@@ -87,15 +86,6 @@ export const SelectApply = ({
                   ))}
                 {input.apply === "promos" &&
                   promos.map((item) => (
-                    <OptionSelect
-                      key={item.id}
-                      input={input}
-                      item={item}
-                      handleSelectApply={handleSelectApply}
-                    />
-                  ))}
-                {input.apply === "products" &&
-                  products.map((item) => (
                     <OptionSelect
                       key={item.id}
                       input={input}

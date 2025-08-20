@@ -32,7 +32,7 @@ async function seedCouriers() {
   try {
     // Hapus dulu data lama (opsional)
     await db.delete(couriers);
-    console.log("Old couriers deleted");
+    console.log("✅ Old couriers deleted");
 
     // Insert baru
     await db.insert(couriers).values(courierData);

@@ -40,7 +40,7 @@ export async function PUT(
     if (status) {
       await db
         .update(discounts)
-        .set({ startAt: sql`NOW()` })
+        .set({ startAt: sql`NOW()`, endAt: null })
         .where(eq(discounts.id, discountId));
     } else {
       await db

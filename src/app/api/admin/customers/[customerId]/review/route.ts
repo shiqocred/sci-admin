@@ -19,13 +19,14 @@ export async function GET(
       where: (urd, { eq }) => eq(urd.userId, userId),
       columns: {
         userId: true,
-        nik: true,
+        personalId: true,
         role: true,
-        fileKtp: true,
-        storefront: true,
-        name: true,
-        fileKta: true,
-        noKta: true,
+        personalIdFile: true,
+        storefrontFile: true,
+        fullName: true,
+        veterinarianIdFile: true,
+        veterinarianId: true,
+        personalIdType: true,
         newRole: true,
       },
     });
@@ -34,14 +35,16 @@ export async function GET(
 
     const reviewFormated = {
       ...review,
-      fileKtp: review.fileKtp ? `${r2Public}/${review.fileKtp}` : null,
-      storefront:
-        review.newRole === "PETSHOP" && review.storefront
-          ? `${r2Public}/${review.storefront}`
+      personalIdFile: review.personalIdFile
+        ? `${r2Public}/${review.personalIdFile}`
+        : null,
+      storefrontFile:
+        review.newRole === "PETSHOP" && review.storefrontFile
+          ? `${r2Public}/${review.storefrontFile}`
           : null,
-      fileKta:
-        review.newRole === "VETERINARIAN" && review.fileKta
-          ? `${r2Public}/${review.fileKta}`
+      veterinarianIdFile:
+        review.newRole === "VETERINARIAN" && review.veterinarianIdFile
+          ? `${r2Public}/${review.veterinarianIdFile}`
           : null,
     };
 
@@ -98,8 +101,8 @@ export async function PUT(
     const detailExist = await db.query.userRoleDetails.findFirst({
       where: (u, { eq }) => eq(u.userId, userId),
       columns: {
-        fileKta: true,
-        fileKtp: true,
+        veterinarianIdFile: true,
+        personalIdFile: true,
         newRole: true,
       },
     });
@@ -110,12 +113,12 @@ export async function PUT(
       .update(userRoleDetails)
       .set({
         status: "REJECTED",
-        fileKta: null,
-        fileKtp: null,
-        storefront: null,
-        nik: null,
-        noKta: null,
-        name: null,
+        veterinarianIdFile: null,
+        personalId: null,
+        storefrontFile: null,
+        personalIdFile: null,
+        veterinarianId: null,
+        fullName: null,
         message,
         updatedAt: sql`NOW()`,
       })
@@ -123,8 +126,10 @@ export async function PUT(
 
     // Hapus file di R2, pakai try catch supaya error delete tidak menggagalkan proses
     try {
-      if (detailExist.fileKtp) await deleteR2(detailExist.fileKtp);
-      if (detailExist.fileKta) await deleteR2(detailExist.fileKta);
+      if (detailExist.personalIdFile)
+        await deleteR2(detailExist.personalIdFile);
+      if (detailExist.veterinarianIdFile)
+        await deleteR2(detailExist.veterinarianIdFile);
     } catch (delError) {
       console.error("Failed deleting files in R2:", delError);
     }

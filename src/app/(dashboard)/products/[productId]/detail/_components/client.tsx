@@ -259,7 +259,7 @@ export const Client = () => {
                               {role.toLowerCase() === "basic" && "Pet Owner"}
                               {role.toLowerCase() === "petshop" && "Pet Shop"}
                               {role.toLowerCase() === "veterinarian" &&
-                                "Pet Clinic"}
+                                "Vet Clinic"}
                             </Badge>
                           ))}
                     </div>
@@ -344,7 +344,7 @@ export const Client = () => {
                     {product.available.some((i) => i === "VETERINARIAN") && (
                       <div className="w-full flex items-center">
                         <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
-                          <p>Pet Clinic</p>
+                          <p>Vet Clinic</p>
                         </div>
                         <div className="w-full py-3 px-6 capitalize">
                           {formatRupiah(
@@ -454,7 +454,7 @@ export const Client = () => {
                             ) && (
                               <div className="px-6 flex h-full items-center">
                                 <span className="text-gray-700 uppercase tracking-wider gap-1">
-                                  Pet Clinic:
+                                  Vet Clinic:
                                 </span>
                                 <span className="text-gray-900">
                                   {formatRupiah(
