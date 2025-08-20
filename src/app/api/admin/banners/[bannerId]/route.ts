@@ -7,13 +7,7 @@ import { format } from "date-fns";
 import { and, eq, notInArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-type BannerType =
-  | "PRODUCTS"
-  | "DETAIL"
-  | "PETS"
-  | "SUPPLIERS"
-  | "PROMOS"
-  | "CATEGORIES";
+type BannerType = "DETAIL" | "PETS" | "SUPPLIERS" | "PROMOS" | "CATEGORIES";
 
 function combineDateTime(date: string | null, time?: string | null) {
   if (!date || !time) return null;
@@ -104,10 +98,9 @@ function getBannerItemIdSelector(type: BannerType) {
     SUPPLIERS: (bi) => bi.supplierId,
     PROMOS: (bi) => bi.promoId,
     CATEGORIES: (bi) => bi.categoryId,
-    PRODUCTS: (bi) => bi.productId,
     DETAIL: (bi) => bi.productId,
   };
-  return selectorMap[type] ?? selectorMap.PRODUCTS;
+  return selectorMap[type] ?? selectorMap.DETAIL;
 }
 
 function getBannerItemColumn(type: BannerType) {
@@ -116,10 +109,9 @@ function getBannerItemColumn(type: BannerType) {
     SUPPLIERS: bannerItems.supplierId,
     PROMOS: bannerItems.promoId,
     CATEGORIES: bannerItems.categoryId,
-    PRODUCTS: bannerItems.productId,
     DETAIL: bannerItems.productId,
   };
-  return columnMap[type] ?? columnMap.PRODUCTS;
+  return columnMap[type] ?? columnMap.DETAIL;
 }
 
 function mapBannerItem(type: BannerType, bannerId: string, id: string) {
