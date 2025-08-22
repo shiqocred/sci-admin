@@ -36,6 +36,7 @@ export const Selected = ({
   pets,
   selectProducts,
 }: SelectedProps) => {
+  console.log(selectProducts?.data, input.selected);
   return (
     <div className="flex flex-col border rounded-md divide-y overflow-hidden">
       {apply === "categories" &&
@@ -104,24 +105,32 @@ export const Selected = ({
 function filterSelectedProducts(products: any[], selected: string[]) {
   return products
     .map((product) => {
+      // normalize: accept either camelCase (defaultVariant) or snake_case (default_variant)
+      const sourceDefault =
+        product.default_variant ?? product.defaultVariant ?? null;
+
       const matchedDefault =
-        product.default_variant && selected.includes(product.default_variant.id)
-          ? product.default_variant
+        sourceDefault && selected.includes(sourceDefault.id)
+          ? sourceDefault
           : null;
 
-      const matchedVariants =
-        product.variants?.filter((variant: any) =>
-          selected.includes(variant.id)
-        ) ?? [];
+      const matchedVariants = (product.variants || []).filter((variant: any) =>
+        selected.includes(variant.id)
+      );
 
-      // kalau tidak ada default maupun variant yang match, skip
+      // skip when neither default nor variants match
       if (!matchedDefault && matchedVariants.length === 0) return null;
 
-      return {
+      // Return with snake_case key so the rest of the component (which reads default_variant)
+      // continues to work. Also mirror to camelCase for downstream consumers if any.
+      const normalized = {
         ...product,
         default_variant: matchedDefault,
+        defaultVariant: matchedDefault, // optional mirror
         variants: matchedVariants.length > 0 ? matchedVariants : null,
       };
+
+      return normalized;
     })
-    .filter(Boolean); // buang yang null
+    .filter((x: any) => Boolean(x));
 }

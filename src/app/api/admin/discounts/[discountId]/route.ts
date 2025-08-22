@@ -35,7 +35,8 @@ const discountSchema = z.object({
   }),
   eligibility: z
     .array(z.string().min(1, { message: "Selected eligibility is required" }))
-    .min(1, { message: "Selected eligibility is required" }),
+    .min(1, { message: "Selected eligibility is required" })
+    .nullish(),
   minimumType: z.enum(["nothing", "quantity", "amount"], {
     message:
       "Type minimum is unavailable, valid type value 'nothing' or 'quantity' or 'amount'",
@@ -277,7 +278,7 @@ export async function PUT(
         await tx
           .delete(discountToRoles)
           .where(eq(discountToRoles.discountId, discountId));
-        if (eligibility.length > 0) {
+        if (eligibility && eligibility.length > 0) {
           await tx.insert(discountToRoles).values(
             eligibility.map((role) => ({
               discountId,
@@ -289,7 +290,7 @@ export async function PUT(
         await tx
           .delete(discountUsers)
           .where(eq(discountUsers.discountId, discountId));
-        if (eligibility.length > 0) {
+        if (eligibility && eligibility.length > 0) {
           await tx.insert(discountUsers).values(
             eligibility.map((userId) => ({
               discountId,

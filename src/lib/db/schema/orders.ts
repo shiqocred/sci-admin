@@ -26,6 +26,10 @@ export const orders = pgTable("orders", {
     precision: 12,
     scale: 0,
   }).notNull(),
+  totalDiscount: numeric("total_discount", {
+    precision: 12,
+    scale: 0,
+  }),
   totalPrice: numeric("total_price", { precision: 12, scale: 0 }).notNull(),
   note: text("note"),
 
