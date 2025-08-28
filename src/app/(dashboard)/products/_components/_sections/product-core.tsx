@@ -42,6 +42,7 @@ export const ProductCore = ({
           label="Title"
           placeholder="e.g. Obat Kutu Kucing"
           id="title"
+          classLabel="required"
           className={cn(errors?.title && "border-red-500 hover:border-red-500")}
           value={input.title}
           onChange={(e) => handleOnChange(e.target.id, e.target.value)}
@@ -50,7 +51,7 @@ export const ProductCore = ({
         <MessageInputError error={errors?.title} />
       </div>
       <div className="flex flex-col gap-1.5 w-full">
-        <Label>Images</Label>
+        <Label className="required">Images</Label>
         <FileUpload
           onChange={(e) => setImagesProduct(e as File[])}
           imageOld={imageOld}

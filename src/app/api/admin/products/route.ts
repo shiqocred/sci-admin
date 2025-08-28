@@ -170,9 +170,6 @@ const sortField = (s: string) => {
       WHERE ${productVariants.productId} = ${products.id}
     )`;
   if (s === "status") return products.status;
-  if (s === "categoryName") return categories.name;
-  if (s === "supplierName") return suppliers.name;
-  if (s === "petCount") return sql`COUNT(DISTINCT ${pets.id})`;
   return products.createdAt; // default
 };
 

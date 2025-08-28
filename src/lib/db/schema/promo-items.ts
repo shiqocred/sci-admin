@@ -3,7 +3,7 @@ import { products } from "./products";
 import { promos } from "./promos";
 
 export const promoItems = pgTable(
-  "promo-item",
+  "promo_item",
   {
     productId: text("product_id")
       .notNull()

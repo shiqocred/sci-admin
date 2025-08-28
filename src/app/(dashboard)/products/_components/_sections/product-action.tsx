@@ -22,24 +22,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useParams } from "next/navigation";
 
 export const ProductAction = ({
   errors,
   input,
+  disabled,
   handleSelectRole,
   setInput,
   handleSubmit,
 }: {
   errors: any;
   input: any;
+  disabled: boolean;
   handleSelectRole: (v: string) => void;
   setInput: Dispatch<SetStateAction<any>>;
   handleSubmit: (e: MouseEvent) => void;
 }) => {
+  const { productId } = useParams();
   return (
     <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-4">
       <div className="flex flex-col gap-1.5 w-full">
-        <Label>Available For</Label>
+        <Label className="required">Available For</Label>
         <div className="flex flex-col gap-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -145,9 +149,9 @@ export const ProductAction = ({
           </SelectContent>
         </Select>
       </div>
-      <Button onClick={handleSubmit}>
+      <Button onClick={handleSubmit} disabled={disabled}>
         <Save />
-        Create
+        {productId ? "Update" : "Create"}
       </Button>
     </div>
   );

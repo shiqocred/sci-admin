@@ -10,15 +10,14 @@ import {
 import { MetaPageProps } from "@/lib/pagination";
 import { cn, formatRupiah, pronoun } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, ReceiptText, Truck, X } from "lucide-react";
+import { MoreHorizontal, ReceiptText, X } from "lucide-react";
 import { OrderResponse } from "../_api";
+import Link from "next/link";
 
 export const column = ({
   metaPage,
-  handleMove,
 }: {
   metaPage: MetaPageProps;
-  handleMove: (id: string, type: "detail" | "edit") => void;
 }): ColumnDef<OrderResponse>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -92,33 +91,11 @@ export const column = ({
               Actions
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-xs"
-              // onSelect={() => handleChangeStatus(order.id)}
-            >
-              <Truck className="size-3.5" />
-              Set ready to ship
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-xs"
-              onSelect={() => handleMove(order.id, "detail")}
-            >
-              <ReceiptText className="size-3.5" />
-              Detail
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-xs"
-              onSelect={() => handleMove(order.id, "edit")}
-            >
-              <Edit className="size-3.5" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-xs"
-              onSelect={() => handleMove(order.id, "edit")}
-            >
-              <X className="size-3.5" />
-              Cancel
+            <DropdownMenuItem className="text-xs" asChild>
+              <Link href={`/orders/${order.id}`}>
+                <ReceiptText className="size-3.5" />
+                Detail
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { userRoleDetails, users } from "../schema";
 import { seed } from "drizzle-seed";
 import { hash } from "argon2";

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { storeDetail } from "../schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { databaseUrl } from "@/config";

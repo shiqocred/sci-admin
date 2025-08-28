@@ -92,6 +92,7 @@ export const VariantOpen = ({
             <LabelInput
               label="Variant name"
               placeholder="e.g. 30L"
+              classLabel="required"
               value={variant.name}
               onChange={(e) =>
                 handleChangeVariant(variant.id, "name", e.target.value)
@@ -119,6 +120,7 @@ export const VariantOpen = ({
                 label="SKU"
                 placeholder="e.g. FOURCIDE-EMV"
                 value={variant.sku}
+                classLabel="required"
                 onChange={(e) =>
                   handleChangeVariant(variant.id, "sku", e.target.value)
                 }
@@ -138,6 +140,7 @@ export const VariantOpen = ({
                 label="Barcode"
                 placeholder="e.g. r93edi067"
                 value={variant.barcode}
+                classLabel="required"
                 onChange={(e) =>
                   handleChangeVariant(variant.id, "barcode", e.target.value)
                 }

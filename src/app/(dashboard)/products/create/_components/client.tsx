@@ -278,6 +278,22 @@ export const Client = () => {
               errors={errors}
               handleSubmit={handleSubmit}
               handleSelectRole={handleSelectRole}
+              disabled={
+                !input.title ||
+                input.available.length === 0 ||
+                !input.description ||
+                !input.categoryId ||
+                !input.supplierId ||
+                !imagesProduct ||
+                imagesProduct.length === 0 ||
+                petIds.length === 0 ||
+                compositions.length === 0 ||
+                (isVariant
+                  ? variants.length === 0 ||
+                    variants.filter((i) => !i.name || !i.barcode || !i.sku)
+                      .length > 0
+                  : !defaultVariants.barcode || !defaultVariants.sku)
+              }
             />
           </div>
         </div>

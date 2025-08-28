@@ -28,8 +28,9 @@ export const products = pgTable(
     supplierId: text("supplier_id").references(() => suppliers.id, {
       onDelete: "set null",
     }),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+    deletedAt: timestamp("deleted_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow(),
   },
   (table) => [uniqueIndex("products_slug_idx").on(table.slug)]
 );

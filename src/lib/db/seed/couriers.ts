@@ -1,4 +1,4 @@
-// scripts/seed-couriers.ts
+import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { databaseUrl } from "@/config";
 import { couriers } from "../schema";

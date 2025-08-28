@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port=3001",
     "lint": "next lint",
-    "seed": "bun x --import tsx --env-file .env ./src/lib/db/seed/index.ts",
+    "seed": "bun run ./src/lib/db/seed/index.ts",
     "push": "bun x drizzle-kit push"
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "cookies-next": "^6.0.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.2",
     "drizzle-seed": "^0.3.1",
     "google-auth-library": "^10.1.0",

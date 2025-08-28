@@ -98,6 +98,20 @@ const roleKeyMap: Record<string, keyof VariantData> = {
   ADMIN: "normalPrice", // misal untuk admin
 };
 
+// ----- Variant Schema -----
+const variantSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  sku: z.string(),
+  barcode: z.string().optional(),
+  stock: z.string(),
+  normalPrice: z.string(),
+  basicPrice: z.string().nullish(),
+  petShopPrice: z.string().nullish(),
+  doctorPrice: z.string().nullish(),
+  weight: z.string(),
+});
+
 const productSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
@@ -122,37 +136,20 @@ const productSchema = z.object({
       })
     )
     .optional(),
-  defaultVariant: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      sku: z.string(),
-      barcode: z.string().optional(),
-      stock: z.string(),
-      normalPrice: z.string(),
-      basicPrice: z.string().nullish(),
-      petShopPrice: z.string().nullish(),
-      doctorPrice: z.string().nullish(),
-      weight: z.string(),
-    })
-    .optional(),
-  variants: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        sku: z.string(),
-        barcode: z.string().optional(),
-        stock: z.string(),
-        normalPrice: z.string(),
-        basicPrice: z.string().nullish(),
-        petShopPrice: z.string().nullish(),
-        doctorPrice: z.string().nullish(),
-        weight: z.string(),
-      })
-    )
-    .optional(),
+  defaultVariant: variantSchema.optional(),
+  variants: z.array(variantSchema).optional(),
 });
+// Helper function to parse JSON fields from FormData
+function parseJSONField<T>(formData: FormData, key: string, fallback: T): T {
+  const val = formData.get(key);
+  if (val === null || val === undefined) return fallback;
+  try {
+    return JSON.parse(val as string);
+  } catch (e) {
+    console.log(e);
+    return fallback;
+  }
+}
 
 export async function GET(
   req: NextRequest,
@@ -424,38 +421,30 @@ const compositionHandle = async (
   }
 };
 
-const handleIsVariant = async (
+// Helper function to check if variant fields have changed
+function isVariantChanged(old: ExistingVariantData, v: VariantData): boolean {
+  return (
+    old.name !== v.name ||
+    old.sku !== v.sku ||
+    old.barcode !== (v.barcode ?? null) ||
+    old.weight !== (v.weight ?? null) ||
+    old.stock !== (v.stock ?? null)
+  );
+}
+
+// --- Extracted helpers for variant handling ---
+async function insertNewVariants(
   tx: any,
-  variantExist: ExistingVariantData[],
-  variants: VariantData[],
+  added: VariantData[],
   productId: string,
-  availableRoles: RoleType[],
-  isDefaultVariant = false
-) => {
-  const oldIds = new Set(variantExist.map((v) => v.id));
-  const newIds = new Set(variants.map((v) => v.id));
-
-  const added = variants.filter((v) => !oldIds.has(v.id));
-  const deleted = variantExist.filter((v) => !newIds.has(v.id));
-  const updated = variants.filter((v) => {
-    const old = variantExist.find((o) => o.id === v.id);
-    return (
-      old &&
-      (old.name !== v.name ||
-        old.sku !== v.sku ||
-        old.barcode !== (v.barcode ?? null) ||
-        old.weight !== (v.weight ?? null) ||
-        old.stock !== (v.stock ?? null))
-    );
-  });
-
-  // ------------------- Insert new variants -------------------
-  const addedIdMap: Record<string, string> = {}; // mapping old dummy ID → new DB ID
+  isDefaultVariant: boolean
+): Promise<VariantData[]> {
+  const addedIdMap: Record<string, string> = {};
+  const addedVariants: any[] = [];
   for (const v of added) {
     const newId = createId();
     addedIdMap[v.id] = newId;
-
-    await tx.insert(productVariants).values({
+    addedVariants.push({
       id: newId,
       productId,
       name: v.name,
@@ -468,69 +457,80 @@ const handleIsVariant = async (
     });
     v.id = newId; // update ID di payload supaya bisa dipakai untuk pricing
   }
+  if (addedVariants.length > 0) {
+    await tx.insert(productVariants).values(addedVariants);
+  }
+  return added;
+}
 
-  // ------------------- Delete removed variants -------------------
+async function deleteRemovedVariants(tx: any, deleted: ExistingVariantData[]) {
   if (deleted.length > 0) {
     const deletedIds = deleted.map((v) => v.id);
     await tx
       .delete(productVariants)
       .where(inArray(productVariants.id, deletedIds));
-    // hapus harga terkait
     await tx
       .delete(productVariantPrices)
       .where(inArray(productVariantPrices.variantId, deletedIds));
   }
+}
 
-  // ------------------- Update existing variants -------------------
-  for (const v of updated) {
-    await tx
-      .update(productVariants)
-      .set({
-        name: v.name,
-        sku: v.sku,
-        barcode: v.barcode,
-        weight: v.weight,
-        stock: v.stock,
-        price: v.normalPrice,
-        updatedAt: sql`NOW()`,
-      })
-      .where(eq(productVariants.id, v.id));
+async function updateExistingVariants(tx: any, updated: VariantData[]) {
+  if (updated.length > 0) {
+    await Promise.all(
+      updated.map((v) =>
+        tx
+          .update(productVariants)
+          .set({
+            name: v.name,
+            sku: v.sku,
+            barcode: v.barcode,
+            weight: v.weight,
+            stock: v.stock,
+            price: v.normalPrice,
+            updatedAt: sql`NOW()`,
+          })
+          .where(eq(productVariants.id, v.id))
+      )
+    );
   }
+}
 
-  // ------------------- Update variant pricing -------------------
-  for (const v of variants) {
-    // Hapus harga role yang sudah tidak ada di availableRoles
-    await tx
-      .delete(productVariantPrices)
-      .where(
-        and(
-          eq(productVariantPrices.variantId, v.id),
-          notInArray(productVariantPrices.role, availableRoles)
+async function syncVariantPricing(
+  tx: any,
+  variants: VariantData[],
+  availableRoles: RoleType[],
+  priceMap: Record<string, { id: string; price: string | number }>
+) {
+  // Remove prices for roles that are no longer available
+  await Promise.all(
+    variants.map((v) =>
+      tx
+        .delete(productVariantPrices)
+        .where(
+          and(
+            eq(productVariantPrices.variantId, v.id),
+            notInArray(productVariantPrices.role, availableRoles)
+          )
         )
-      );
+    )
+  );
 
-    // Masukkan/update harga sesuai availableRoles
+  // Prepare batch insert and update for prices
+  const pricesToInsert: any[] = [];
+  const pricesToUpdate: { id: string; price: string | number }[] = [];
+  for (const v of variants) {
     for (const role of availableRoles) {
       const key = roleKeyMap[role];
       const price = v[key] ?? 0;
-
-      const exists = await tx.query.productVariantPrices.findFirst({
-        where: (p: any, { eq, and }: any) =>
-          and(eq(p.variantId, v.id), eq(p.role, role)),
-      });
-
-      if (exists) {
-        await tx
-          .update(productVariantPrices)
-          .set({ price })
-          .where(
-            and(
-              eq(productVariantPrices.variantId, v.id),
-              eq(productVariantPrices.role, role)
-            )
-          );
+      const mapKey = `${v.id}_${role}`;
+      const existPrice = priceMap[mapKey];
+      if (existPrice) {
+        if (existPrice.price != price) {
+          pricesToUpdate.push({ id: existPrice.id, price });
+        }
       } else {
-        await tx.insert(productVariantPrices).values({
+        pricesToInsert.push({
           variantId: v.id,
           role,
           price,
@@ -538,6 +538,59 @@ const handleIsVariant = async (
       }
     }
   }
+  if (pricesToInsert.length > 0) {
+    await tx.insert(productVariantPrices).values(pricesToInsert);
+  }
+  if (pricesToUpdate.length > 0) {
+    await Promise.all(
+      pricesToUpdate.map((p) =>
+        tx
+          .update(productVariantPrices)
+          .set({ price: p.price })
+          .where(eq(productVariantPrices.variantId, p.id))
+      )
+    );
+  }
+}
+
+const handleIsVariant = async (
+  tx: any,
+  variantExist: ExistingVariantData[],
+  variants: VariantData[],
+  productId: string,
+  availableRoles: RoleType[],
+  isDefaultVariant = false
+) => {
+  // Fetch all prices for existing variants, keyed by variantId+role
+  const variantIds = variantExist.map((v) => v.id);
+  const allPrices = variantIds.length
+    ? await tx.query.productVariantPrices.findMany({
+        where: (ar: any, { inArray }: any) => inArray(ar.variantId, variantIds),
+      })
+    : [];
+  const priceMap: Record<string, { id: string; price: string | number }> = {};
+  for (const p of allPrices) {
+    priceMap[`${p.variantId}_${p.role}`] = { id: p.id, price: p.price };
+  }
+
+  const oldIds = new Set(variantExist.map((v) => v.id));
+  const newIds = new Set(variants.map((v) => v.id));
+
+  const added = variants.filter((v) => !oldIds.has(v.id));
+  const deleted = variantExist.filter((v) => !newIds.has(v.id));
+  const updated = variants.filter((v) => {
+    const old = variantExist.find((o) => o.id === v.id);
+    return old && isVariantChanged(old, v);
+  });
+
+  // Insert new variants
+  await insertNewVariants(tx, added, productId, isDefaultVariant);
+  // Delete removed variants
+  await deleteRemovedVariants(tx, deleted);
+  // Update existing variants
+  await updateExistingVariants(tx, updated);
+  // Sync variant pricing
+  await syncVariantPricing(tx, variants, availableRoles, priceMap);
 };
 
 const handleVariants = async (
@@ -560,23 +613,21 @@ const handleVariants = async (
     where: (v: any, { eq }: any) => eq(v.productId, productId),
   });
 
-  if (variants && variants.length > 0) {
+  const inputVariants =
+    variants?.length && variants.length > 0
+      ? variants
+      : defaultVariant
+        ? [defaultVariant]
+        : [];
+
+  if (inputVariants.length > 0) {
     await handleIsVariant(
       tx,
       variantExist,
-      variants,
+      inputVariants,
       productId,
       availableRoles,
-      false
-    );
-  } else if (defaultVariant) {
-    await handleIsVariant(
-      tx,
-      variantExist,
-      [defaultVariant],
-      productId,
-      availableRoles,
-      true
+      !(variants?.length && variants.length > 0)
     );
   }
 };
@@ -594,7 +645,7 @@ export async function PUT(
     const formData = await req.formData();
     const { productId } = await params;
 
-    const rawDefaultVariant = formData.get("defaultVariant");
+    // Use parseJSONField for all JSON fields
     const payload: any = {
       title: formData.get("title"),
       description: formData.get("description"),
@@ -606,15 +657,11 @@ export async function PUT(
       isActive: formData.get("isActive") === "true",
       categoryId: formData.get("categoryId"),
       supplierId: formData.get("supplierId"),
-      available: JSON.parse((formData.get("available") as string) || "[]"),
-      petIds: JSON.parse((formData.get("petId") as string) || "[]"),
-      compositions: JSON.parse(
-        (formData.get("compositions") as string) || "[]"
-      ),
-      defaultVariant: rawDefaultVariant
-        ? JSON.parse(rawDefaultVariant as string)
-        : undefined,
-      variants: JSON.parse((formData.get("variants") as string) || "[]"),
+      available: parseJSONField(formData, "available", []),
+      petIds: parseJSONField(formData, "petId", []),
+      compositions: parseJSONField(formData, "compositions", []),
+      defaultVariant: parseJSONField(formData, "defaultVariant", undefined),
+      variants: parseJSONField(formData, "variants", []),
     };
 
     const parsed = productSchema.safeParse(payload);

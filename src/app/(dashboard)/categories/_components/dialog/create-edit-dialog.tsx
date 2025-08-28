@@ -17,6 +17,7 @@ import {
   useUpdateCategory,
 } from "../../_api";
 import { FileUpload } from "@/components/ui/file-upload";
+import { MessageInputError } from "@/components/message-input-error";
 
 const initialValue = {
   name: "",
@@ -35,6 +36,7 @@ export const CreateEditDialog = ({
   categoryId: string;
 }) => {
   const [input, setInput] = useState(initialValue);
+  const [errors, setErrors] = useState({ name: "" });
   const [randomCode, setRandomCode] = useState(generateRandomNumber());
   const [isGenerating, setIsGenerating] = useState(false); // trigger dari luar
 
@@ -69,6 +71,9 @@ export const CreateEditDialog = ({
             setIsGenerating(true);
             onOpenChange();
           },
+          onError: (err) => {
+            setErrors((err.response?.data as any).errors);
+          },
         }
       );
     }
@@ -79,6 +84,9 @@ export const CreateEditDialog = ({
         onSuccess: () => {
           setIsGenerating(true);
           onOpenChange();
+        },
+        onError: (err) => {
+          setErrors((err.response?.data as any).errors);
         },
       }
     );
@@ -117,6 +125,7 @@ export const CreateEditDialog = ({
   useEffect(() => {
     if (!open) {
       setInput(initialValue);
+      setErrors({ name: "" });
     }
   }, [open]);
   return (
@@ -137,30 +146,38 @@ export const CreateEditDialog = ({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              <FileUpload
-                multiple={false}
-                imageOld={input.imageOld}
-                setImageOld={(e: any) =>
-                  setInput((prev) => ({ ...prev, imageOld: e }))
-                }
-                onChange={(e) =>
-                  setInput((prev) => ({ ...prev, image: e as File }))
-                }
-              />
-              <LabelInput
-                label="Name"
-                id="name"
-                value={input.name}
-                onChange={handleChange}
-                placeholder="e.g. Example Slug"
-              />
+              <div className="flex flex-col gap-1.5">
+                <FileUpload
+                  multiple={false}
+                  imageOld={input.imageOld}
+                  setImageOld={(e: any) =>
+                    setInput((prev) => ({ ...prev, imageOld: e }))
+                  }
+                  onChange={(e) =>
+                    setInput((prev) => ({ ...prev, image: e as File }))
+                  }
+                />
+                <p className="ml-2 before:content-['*'] text-xs text-gray-500">
+                  Recomendation Ratio 1:1
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <LabelInput
+                  label="Name"
+                  id="name"
+                  value={input.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Obat Jamur"
+                />
+                <MessageInputError error={errors.name} />
+              </div>
               <LabelInput
                 label="Slug"
                 id="slug"
                 value={input.slug}
                 disabled
                 className="disabled:opacity-100 disabled:pointer-events-auto"
-                placeholder="e.g. example-slug-63473"
+                placeholder="e.g. obat-jamur-63473"
               />
             </div>
           )}

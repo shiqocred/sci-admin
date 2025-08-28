@@ -2,12 +2,21 @@ import { LabelInput } from "@/components/label-input";
 import { MessageInputError } from "@/components/message-input-error";
 import { RichInput } from "@/components/rich-editor";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, generateRandomNumber } from "@/lib/utils";
-import { Plus, Trash2 } from "lucide-react";
-import React, { FormEvent, useRef } from "react";
+import { Plus, Trash2, X } from "lucide-react";
+import React, { FormEvent, useState } from "react";
 import { toast } from "sonner";
 
 export const ProductDescription = ({
@@ -37,7 +46,7 @@ export const ProductDescription = ({
   >;
   errors: any;
 }) => {
-  const inputCompositionRef = useRef<HTMLInputElement | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleRemoveComposition = (id: string) => {
     setCompositions((prev: any) => prev.filter((c: any) => c.id !== id));
@@ -70,15 +79,13 @@ export const ProductDescription = ({
       { id: generateRandomNumber(3), ...compositionItem },
     ]);
     setCompositionItem({ name: "", value: "" });
-    if (inputCompositionRef.current) {
-      inputCompositionRef.current.focus();
-    }
+    setIsOpen(false);
   };
 
   return (
     <div className="px-3 py-5 bg-gray-50 border w-full rounded-lg border-gray-200 flex flex-col gap-3">
       <div className="flex flex-col gap-1.5 w-full">
-        <Label>Description</Label>
+        <Label className="required">Description</Label>
         <div className="flex flex-col w-full gap-1.5">
           <Textarea
             placeholder="e.g. FOURCIDE EMV is a combination..."
@@ -166,22 +173,24 @@ export const ProductDescription = ({
         <MessageInputError error={errors?.registrationNumber} />
       </div>
       <div className="flex flex-col gap-1.5 w-full">
-        <Label>Composition</Label>
+        <Label className="required">Composition</Label>
         <div
           className={cn(
             "border p-3 flex flex-col w-full rounded-md gap-2",
             errors?.compositions && "border-red-500"
           )}
         >
-          <div className="flex items-center gap-2 border-b pb-1">
-            <div className="w-full">
-              <Label className="text-xs text-gray-500">Name</Label>
+          {compositions.length > 0 && (
+            <div className="flex items-center gap-2 border-b pb-1">
+              <div className="w-full">
+                <Label className="text-xs text-gray-500">Name</Label>
+              </div>
+              <div className="w-full">
+                <Label className="text-xs text-gray-500">Value</Label>
+              </div>
+              <div className="w-9 flex-none" />
             </div>
-            <div className="w-full">
-              <Label className="text-xs text-gray-500">Value</Label>
-            </div>
-            <div className="w-9 flex-none" />
-          </div>
+          )}
           {compositions.map((item: any) => (
             <div key={item.id} className="flex items-center gap-2">
               <Input
@@ -205,45 +214,77 @@ export const ProductDescription = ({
               </Button>
             </div>
           ))}
-          <form
-            onSubmit={handleAddComposition}
-            className="flex items-center gap-2"
-          >
-            <Input
-              ref={inputCompositionRef}
-              placeholder="e.g. Vitamin A"
-              className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
-              value={compositionItem.name}
-              onChange={(e) =>
-                setCompositionItem((prev) => ({
-                  ...prev,
-                  name: e.target.value,
-                }))
-              }
-              disabled={disabled}
-            />
-            <Input
-              placeholder="e.g. 1000 IU"
-              className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
-              value={compositionItem.value}
-              onChange={(e) =>
-                setCompositionItem((prev) => ({
-                  ...prev,
-                  value: e.target.value,
-                }))
-              }
-              disabled={disabled}
-            />
-            <Button
-              className="hover:bg-gray-200"
-              variant={"ghost"}
-              size={"icon"}
-              type="submit"
-              disabled={disabled}
-            >
-              <Plus />
-            </Button>
-          </form>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus />
+                Add New
+              </Button>
+            </DialogTrigger>
+            <DialogContent showCloseButton={false}>
+              <DialogHeader>
+                <DialogTitle>Add Composition</DialogTitle>
+                <DialogDescription />
+              </DialogHeader>
+              <form
+                onSubmit={handleAddComposition}
+                className="flex flex-col w-full items-center gap-2"
+              >
+                <div className="flex flex-col gap-1.5 w-full">
+                  <Label className="required">Name</Label>
+                  <Input
+                    placeholder="e.g. Vitamin A"
+                    className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+                    value={compositionItem.name}
+                    onChange={(e) =>
+                      setCompositionItem((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    disabled={disabled}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 w-full">
+                  <Label className="required">Value</Label>
+                  <Input
+                    placeholder="e.g. 1000 IU"
+                    className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+                    value={compositionItem.value}
+                    onChange={(e) =>
+                      setCompositionItem((prev) => ({
+                        ...prev,
+                        value: e.target.value,
+                      }))
+                    }
+                    disabled={disabled}
+                  />
+                </div>
+                <DialogFooter className="grid-cols-3 grid w-full mt-3">
+                  <Button
+                    className="col-span-1 flex-auto"
+                    variant={"outline"}
+                    type="button"
+                  >
+                    <X />
+                    Cancel
+                  </Button>
+                  <Button
+                    className="col-span-2 flex-auto"
+                    type="submit"
+                    disabled={
+                      disabled ||
+                      !compositionItem.name ||
+                      !compositionItem.value
+                    }
+                  >
+                    <Plus />
+                    Add Composition
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
         <MessageInputError error={errors?.compositions} />
       </div>

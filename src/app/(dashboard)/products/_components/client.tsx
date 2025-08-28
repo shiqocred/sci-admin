@@ -22,11 +22,8 @@ import { ProductFilter } from "./product-filter";
 
 const filterField = [
   { name: "Name", value: "name" },
-  { name: "Stoct", value: "stock" },
+  { name: "Stok", value: "stock" },
   { name: "Status", value: "status" },
-  { name: "Category", value: "categoryName" },
-  { name: "Supplier", value: "supplierName" },
-  { name: "Pets", value: "petCount" },
 ];
 
 export const Client = () => {
@@ -122,7 +119,7 @@ export const Client = () => {
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Products</h1>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md overflow-hidden border">
+          {/* <div className="flex rounded-md overflow-hidden border">
             <Button
               className="size-8 flex-none rounded-none"
               variant={"ghost"}
@@ -143,7 +140,7 @@ export const Client = () => {
             >
               <Download className="size-3.5" />
             </Button>
-          </div>
+          </div> */}
           <Button
             className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
             asChild

@@ -57,6 +57,7 @@ export const SingleVariant = ({
               label="SKU"
               placeholder="e.g. FOURCIDE-EMV"
               value={defaultVariants.sku}
+              classLabel="required"
               id="sku"
               className={cn(
                 errors?.["defaultVariant.sku"] &&
@@ -72,6 +73,7 @@ export const SingleVariant = ({
               label="Barcode"
               placeholder="e.g. r93edi067"
               value={defaultVariants.barcode}
+              classLabel="required"
               id="barcode"
               className={cn(
                 errors?.["defaultVariant.barcode"] &&

@@ -1,26 +1,27 @@
-import { createId } from '@paralleldrive/cuid2';
-import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { orders } from './orders';
-import { users } from './users';
+import { createId } from "@paralleldrive/cuid2";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { orders } from "./orders";
+import { users } from "./users";
 
-export const testimonies = pgTable('testimonies', {
-  id: text('id')
+export const testimonies = pgTable("testimonies", {
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
 
-  orderId: text('order_id')
+  orderId: text("order_id")
     .notNull()
     .unique()
-    .references(() => orders.id, { onDelete: 'cascade' }),
+    .references(() => orders.id, { onDelete: "cascade" }),
 
-  userId: text('user_id')
+  userId: text("user_id")
     .notNull()
     .references(() => users.id, {
-      onDelete: 'cascade',
+      onDelete: "cascade",
     }),
 
-  rating: integer('rating').notNull(),
-  message: text('message'),
+  rating: integer("rating").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
 
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });

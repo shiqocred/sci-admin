@@ -4,31 +4,20 @@ import { DataTable } from "@/components/data-table";
 import { SortTable } from "@/components/sort-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { useSearchQuery } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { TooltipText } from "@/providers/tooltip-provider";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
-import Link from "next/link";
+import { RefreshCcw, XCircle } from "lucide-react";
 import { parseAsString, useQueryStates } from "nuqs";
 import React, { useEffect, useMemo } from "react";
 import { column } from "./columns";
 import { useGetOrders } from "../_api";
 import { usePagination } from "@/lib/pagination";
 import Pagination from "@/components/pagination";
-import { useRouter } from "next/navigation";
 
-const filterField = [
-  { name: "Name", value: "name" },
-  { name: "Stoct", value: "stock" },
-  { name: "Status", value: "status" },
-  { name: "Category", value: "categoryName" },
-  { name: "Supplier", value: "supplierName" },
-  { name: "Pets", value: "petCount" },
-];
+const filterField = [{ name: "Order Id", value: "id" }];
 
 export const Client = () => {
-  const router = useRouter();
   const [{ sort, order }, setQuery] = useQueryStates({
     sort: parseAsString.withDefault("created"),
     order: parseAsString.withDefault("desc"),
@@ -46,10 +35,6 @@ export const Client = () => {
 
   const ordersList = useMemo(() => data?.data.data, [data]);
 
-  const handleMove = (id: string, type: "detail" | "edit") => {
-    router.push(`/orders/${id}/${type === "detail" ? "detail" : "edit"}`);
-  };
-
   useEffect(() => {
     if (data && isSuccess) {
       setPagination(data.data.pagination);
@@ -60,7 +45,7 @@ export const Client = () => {
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Orders</h1>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md overflow-hidden border">
+          {/* <div className="flex rounded-md overflow-hidden border">
             <Button
               className="size-8 flex-none rounded-none"
               variant={"ghost"}
@@ -81,8 +66,8 @@ export const Client = () => {
             >
               <Download className="size-3.5" />
             </Button>
-          </div>
-          <Button
+          </div> */}
+          {/* <Button
             className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
             asChild
             //   disabled={loading}
@@ -91,7 +76,7 @@ export const Client = () => {
               <Plus className="size-3" />
               Add Order
             </Link>
-          </Button>
+          </Button> */}
         </div>
       </div>
       <div className="flex w-full flex-col gap-3">
@@ -100,7 +85,7 @@ export const Client = () => {
             <div className="relative flex items-center group">
               <Input
                 className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search product..."
+                placeholder="Search order..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -137,10 +122,7 @@ export const Client = () => {
             />
           </div>
         </div>
-        <DataTable
-          data={ordersList ?? []}
-          columns={column({ metaPage, handleMove })}
-        />
+        <DataTable data={ordersList ?? []} columns={column({ metaPage })} />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}
           setPagination={setPage}

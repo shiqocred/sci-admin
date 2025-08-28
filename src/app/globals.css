@@ -137,4 +137,7 @@ input[type="number"] {
   body {
     @apply bg-background text-foreground;
   }
+  .required {
+    @apply after:-ml-1 after:text-red-500 after:content-['*'];
+  }
 }

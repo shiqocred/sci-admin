@@ -47,8 +47,7 @@ const data = {
       icon: ShoppingBag,
       items: [
         { title: "List", url: "/orders" },
-        { title: "Draft", url: "/orders" },
-        { title: "Review", url: "/orders" },
+        { title: "Review", url: "/reviews" },
       ],
     },
     {
@@ -89,6 +88,7 @@ const data = {
         { title: "Discounts", url: "/discounts" },
         { title: "Banners", url: "/banners" },
         { title: "Promos", url: "/promos" },
+        { title: "Free Shipping", url: "/free-shippings" },
       ],
     },
     {

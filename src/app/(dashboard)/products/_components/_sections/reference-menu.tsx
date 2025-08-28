@@ -74,7 +74,7 @@ const PopoverSelect = ({
   error,
 }: PopoverSelectProps) => (
   <div className="flex flex-col gap-1.5 w-full">
-    <Label>{label}</Label>
+    <Label className="required">{label}</Label>
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button
@@ -226,7 +226,7 @@ export const ReferenceMenu = ({
 
       {/* Pet Select */}
       <div className="flex flex-col gap-1.5 w-full">
-        <Label>Pet</Label>
+        <Label className="required">Pet</Label>
         <div
           className={cn(
             "flex flex-col gap-3",
