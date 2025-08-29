@@ -4,15 +4,7 @@ import React, { MouseEvent, useEffect, useMemo, useState } from "react";
 import { useGetDiscounts } from "../_api/query/use-get-discounts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  BadgePercent,
-  ChevronRight,
-  Download,
-  Plus,
-  RefreshCcw,
-  Share,
-  XCircle,
-} from "lucide-react";
+import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";

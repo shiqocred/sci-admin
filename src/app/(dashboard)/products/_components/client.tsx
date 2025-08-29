@@ -2,12 +2,11 @@
 
 import React, { useEffect, useMemo } from "react";
 import { column } from "./columns";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+import { Plus, RefreshCcw, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/data-table";
 import { useChangeStatus, useDeleteProduct, useGetProducts } from "../_api";
 import { parseAsArrayOf, parseAsString, useQueryStates } from "nuqs";

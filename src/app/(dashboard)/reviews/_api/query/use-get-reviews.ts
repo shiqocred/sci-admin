@@ -1,29 +1,22 @@
 import { PaginationMeta } from "@/lib/pagination/fastPaginate";
 import { useApiQuery } from "@/lib/query/use-query";
 
-export type OrderResponse = {
-  date: string;
-  status:
-    | "waiting payment"
-    | "processed"
-    | "shipping"
-    | "delivered"
-    | "expired"
-    | "cancelled";
+export type TestimoniesResponse = {
+  rating: number;
   id: string;
-  total_price: string;
-  total_item: number;
-  user_name: string | null;
+  title: string;
+  status: boolean;
+  user: string | null;
 };
 
 type Response = {
   data: {
-    data: OrderResponse[];
+    data: TestimoniesResponse[];
     pagination: PaginationMeta;
   };
 };
 
-type UseGetOrdersParams = {
+type UseGetReviewParams = {
   q?: string;
   p?: number;
   limit?: number;
@@ -31,16 +24,16 @@ type UseGetOrdersParams = {
   order?: string;
 };
 
-export const useGetOrders = ({
+export const useGetReviews = ({
   q,
   p,
   limit,
   sort,
   order,
-}: UseGetOrdersParams) => {
+}: UseGetReviewParams) => {
   return useApiQuery<Response>({
-    key: ["orders-list", { q, p, limit, sort, order }],
-    endpoint: "/admin/orders",
+    key: ["reviews-list", { q, p, limit, sort, order }],
+    endpoint: "/admin/reviews",
     searchParams: {
       q,
       p,

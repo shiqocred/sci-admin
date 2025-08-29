@@ -1,5 +1,11 @@
 import { createId } from "@paralleldrive/cuid2";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { orders } from "./orders";
 import { users } from "./users";
 
@@ -19,9 +25,10 @@ export const testimonies = pgTable("testimonies", {
       onDelete: "cascade",
     }),
 
-  rating: integer("rating").notNull(),
+  rating: numeric("rating", { precision: 10, scale: 0 }).notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
+  isActive: boolean("is_active").notNull().default(false),
 
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

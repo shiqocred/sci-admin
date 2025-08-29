@@ -357,7 +357,11 @@ export async function POST(
         .where(eq(shippings.id, addressSelected.id));
       await tx
         .update(orders)
-        .set({ status: "SHIPPING" })
+        .set({
+          status: "SHIPPING",
+          shippingAt: sql`NOW()`,
+          updatedAt: sql`NOW()`,
+        })
         .where(eq(orders.id, orderId));
     });
 
@@ -367,129 +371,3 @@ export async function POST(
     return errorRes("Internal Error", 500);
   }
 }
-
-// const a = {
-//   success: true,
-//   message: "Order successfully created",
-//   object: "order",
-//   id: "68977a4b033d76001262dc47",
-//   shipper: {
-//     name: "Sehat Cerah Indonesia",
-//     email: "sci.ecommerce1@gmail.com",
-//     phone: "6287788659059",
-//     organization: "Personal Account",
-//   },
-//   origin: {
-//     contact_name: "PT Sehat Cerah Indonesia",
-//     contact_phone: "0217228383",
-//     coordinate: {
-//       latitude: -0.9723010999999999,
-//       longitude: 116.7132419,
-//     },
-//     address:
-//       "Jl. Negara, Pemaluan, Kec. Sepaku, Kabupaten Penajam Paser Utara, Kalimantan Timur 76147, Indonesia",
-//     note: "-",
-//     postal_code: 76147,
-//     collection_method: "pickup",
-//   },
-//   destination: {
-//     contact_name: "kokoko",
-//     contact_phone: "+62 88888888888",
-//     address:
-//       "Jl. P. Sudirman No.9, Tayu Kulon, Kecamatan Tayu, Kabupaten Pati, Jawa Tengah, Indonesia 59155",
-//     note: "jojojo",
-//     proof_of_delivery: {
-//       use: false,
-//       fee: 0,
-//       note: null,
-//       link: null,
-//     },
-//     cash_on_delivery: {
-//       id: null,
-//       amount: 0,
-//       fee: 0,
-//       amountCurrency: "IDR",
-//       feeCurrency: "IDR",
-//       note: null,
-//       type: null,
-//       status: null,
-//       payment_status: "pending",
-//       payment_method: "cash",
-//     },
-//     coordinate: {
-//       latitude: -6.5376626,
-//       longitude: 111.0452983,
-//     },
-//     postal_code: 59155,
-//   },
-//   stops: [],
-//   courier: {
-//     tracking_id: "vf9wCLZL7nrnpNqjbdRc62na",
-//     waybill_id: "WYB-1754757707554",
-//     company: "jnt",
-//     name: null,
-//     phone: null,
-//     type: "ez",
-//     link: "https://track.biteship.com/vf9wCLZL7nrnpNqjbdRc62na?environment=development",
-//     insurance: {
-//       amount: 0,
-//       fee: 0,
-//       note: "",
-//       amount_currency: "IDR",
-//       fee_currency: "IDR",
-//     },
-//     routing_code: null,
-//   },
-//   delivery: {
-//     datetime: "2025-08-09T23:41+07:00",
-//     note: null,
-//     type: "now",
-//     distance: 1230.3,
-//     distance_unit: "kilometer",
-//   },
-//   reference_id: "dtcquig2e4cpeujlhrem7qcl",
-//   items: [
-//     {
-//       name: "30L",
-//       description: "Goods",
-//       category: "others",
-//       sku: null,
-//       value: 10000,
-//       quantity: 10,
-//       length: 1,
-//       width: 1,
-//       height: 1,
-//       weight: 100,
-//     },
-//     {
-//       name: "50L",
-//       description: "Goods",
-//       category: "others",
-//       sku: null,
-//       value: 10000,
-//       quantity: 1,
-//       length: 1,
-//       width: 1,
-//       height: 1,
-//       weight: 11,
-//     },
-//     {
-//       name: "default",
-//       description: "Goods",
-//       category: "others",
-//       sku: null,
-//       value: 10000,
-//       quantity: 3,
-//       length: 1,
-//       width: 1,
-//       height: 1,
-//       weight: 100,
-//     },
-//   ],
-//   extra: [],
-//   currency: "IDR",
-//   tax_lines: [],
-//   price: 58000,
-//   status: "confirmed",
-//   draft_order_id: null,
-// };

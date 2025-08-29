@@ -1,21 +1,8 @@
 import { LabelInput } from "@/components/label-input";
 import { MessageInputError } from "@/components/message-input-error";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckIcon, ChevronDown } from "lucide-react";
 import React from "react";
 
 export const ProductCore = ({

@@ -8,18 +8,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MetaPageProps } from "@/lib/pagination";
-import { cn, formatRupiah, pronoun } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, ReceiptText, Truck, X } from "lucide-react";
-import { OrderResponse } from "../_api";
+import { Circle, CircleDot, MoreHorizontal, ReceiptText } from "lucide-react";
+import { TestimoniesResponse } from "../_api";
+import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
+import { Badge } from "@/components/ui/badge";
 
 export const column = ({
   metaPage,
-  handleMove,
+  setQuery,
+  handleUpdate,
 }: {
   metaPage: MetaPageProps;
-  handleMove: (id: string, type: "detail" | "edit") => void;
-}): ColumnDef<OrderResponse>[] => [
+  handleUpdate: (id?: string, status?: boolean) => void;
+  setQuery: ({
+    reviewId,
+    dialog,
+  }: {
+    reviewId: string;
+    dialog: boolean;
+  }) => Promise<URLSearchParams>;
+}): ColumnDef<TestimoniesResponse>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: `${metaPage.from}-id`,
@@ -30,49 +40,42 @@ export const column = ({
     ),
   },
   {
-    header: () => <div className="text-xs">OrderId</div>,
-    accessorKey: "id",
-    cell: ({ row }) => <p className="font-semibold">#{row.original.id}</p>,
+    header: () => <div className="text-xs">Title</div>,
+    accessorKey: "title",
   },
   {
-    header: () => <div className="text-xs">Date</div>,
-    accessorKey: "date",
+    header: () => <div className="text-xs">Rating</div>,
+    accessorKey: "rating",
+    cell: ({ row }) => {
+      const testimoni = row.original;
+
+      return (
+        <Rating defaultValue={testimoni.rating} readOnly>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <RatingButton key={index} className="size-4 text-yellow-500" />
+          ))}
+        </Rating>
+      );
+    },
   },
   {
     header: () => <div className="text-xs">Customer</div>,
-    accessorKey: "user_name",
-  },
-  {
-    header: () => <div className="text-xs">Total Price</div>,
-    accessorKey: "total_price",
-    cell: ({ row }) => formatRupiah(row.original.total_price),
+    accessorKey: "user",
   },
   {
     header: () => <div className="text-xs">Status</div>,
     accessorKey: "status",
     cell: ({ row }) => (
-      <div>
-        <p
-          className={cn(
-            "px-3 py-0.5 w-fit rounded-lg font-medium capitalize",
-            row.original.status === "waiting payment" && "bg-yellow-200",
-            row.original.status === "processed" && "bg-blue-200",
-            row.original.status === "shipping" && "bg-yellow-200",
-            row.original.status === "delivered" && "bg-green-200",
-            row.original.status === "cancelled" && "bg-red-200",
-            row.original.status === "expired" && "bg-orange-200"
-          )}
-        >
-          {row.original.status}
-        </p>
-      </div>
+      <Badge
+        className={cn(
+          row.original.status
+            ? "bg-green-200 text-black"
+            : "bg-gray-200 text-black"
+        )}
+      >
+        {row.original.status ? "Publish" : "Unpublish"}
+      </Badge>
     ),
-  },
-  {
-    header: () => <div className="text-xs">Products</div>,
-    accessorKey: "total_item",
-    cell: ({ row }) =>
-      `${(row.original.total_item ?? 0).toLocaleString()} item${pronoun(row.original.total_item)}`,
   },
   {
     id: "actions",
@@ -94,31 +97,17 @@ export const column = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-xs"
-              // onSelect={() => handleChangeStatus(order.id)}
+              onSelect={() => handleUpdate(order.id, !order.status)}
             >
-              <Truck className="size-3.5" />
-              Set ready to ship
+              {order.status ? <Circle /> : <CircleDot />}
+              {order.status ? "Unpublish" : "Publish"}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-xs"
-              onSelect={() => handleMove(order.id, "detail")}
+              onSelect={() => setQuery({ reviewId: order.id, dialog: true })}
             >
               <ReceiptText className="size-3.5" />
               Detail
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-xs"
-              onSelect={() => handleMove(order.id, "edit")}
-            >
-              <Edit className="size-3.5" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-xs"
-              onSelect={() => handleMove(order.id, "edit")}
-            >
-              <X className="size-3.5" />
-              Cancel
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

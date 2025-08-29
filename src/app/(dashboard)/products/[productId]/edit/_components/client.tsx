@@ -3,21 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   ChartNoAxesGantt,
   ChevronRight,
   Eye,
   RefreshCcw,
-  Save,
   Trash2,
 } from "lucide-react";
 import React, { MouseEvent, useEffect, useState } from "react";

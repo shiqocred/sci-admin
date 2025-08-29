@@ -2,25 +2,27 @@ import { invalidateQuery, useMutate } from "@/lib/query";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+type Body = { status: boolean };
+
 type Params = {
-  id: string;
+  reviewId: string;
 };
 
-export const usePayOrder = () => {
+export const useUpdateReview = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutate<undefined, Params>({
-    endpoint: "/admin/orders/:id/pay",
-    method: "post",
+  const mutation = useMutate<Body, Params>({
+    endpoint: "/admin/reviews/:reviewId",
+    method: "put",
     onSuccess: async ({ data }) => {
       toast.success(data.message);
       await invalidateQuery(queryClient, [
-        ["orders-list"],
-        ["order-detail", data.data.id],
+        ["reviews-list"],
+        ["review", data.data.id],
       ]);
     },
     onError: {
-      title: "PAY_ORDER",
+      title: "UPDATE_REVIEW",
     },
   });
 

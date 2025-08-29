@@ -12,7 +12,7 @@ import { z } from "zod/v4";
 type RoleType = InferSelectModel<typeof freeShippingEligibilities>["role"];
 type NonNullRoleType = Exclude<RoleType, null>;
 
-export const updatefreeShippingSchema = z.object({
+const updatefreeShippingSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   applyType: z.enum(["categories", "suppliers", "pets", "products"], {
     message:

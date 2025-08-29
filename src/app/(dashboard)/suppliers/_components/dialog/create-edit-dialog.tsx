@@ -71,6 +71,7 @@ export const CreateEditDialog = ({
             setIsGenerating(true);
             onOpenChange();
           },
+          onError: (err) => setErrors((err.response?.data as any).errors),
         }
       );
     }

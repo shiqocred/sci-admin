@@ -10,7 +10,7 @@ import {
 import { MetaPageProps } from "@/lib/pagination";
 import { cn, formatRupiah, pronoun } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ReceiptText, X } from "lucide-react";
+import { MoreHorizontal, ReceiptText } from "lucide-react";
 import { OrderResponse } from "../_api";
 import Link from "next/link";
 

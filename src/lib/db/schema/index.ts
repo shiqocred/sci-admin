@@ -40,6 +40,7 @@ import {
   shippings,
   storeDetail,
   suppliers,
+  testimoniImage,
   testimoniProduct,
   testimonies,
   userRoleDetails,
@@ -90,6 +91,7 @@ export const schema = {
   shippings,
   storeDetail,
   suppliers,
+  testimoniImage,
   testimoniProduct,
   testimonies,
   userRoleDetails,
@@ -132,6 +134,7 @@ export * from "./shipping-histories";
 export * from "./shippings";
 export * from "./store-detail";
 export * from "./suppliers";
+export * from "./testimoni-images";
 export * from "./testimoni-products";
 export * from "./testimonies";
 export * from "./user-role-details";

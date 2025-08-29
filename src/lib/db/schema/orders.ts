@@ -37,6 +37,7 @@ export const orders = pgTable("orders", {
   cancelledAt: timestamp("cancelled_at"),
   expiredAt: timestamp("expired_at"),
   paidAt: timestamp("paid_at"),
+  deliveredAt: timestamp("delivered_at"),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
