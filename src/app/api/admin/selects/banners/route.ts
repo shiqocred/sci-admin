@@ -29,6 +29,7 @@ export async function GET() {
         id: true,
         name: true,
       },
+      where: (p, { isNull }) => isNull(p.deletedAt),
     });
     const promosRes = await db.query.promos.findMany({
       columns: {

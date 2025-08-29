@@ -18,7 +18,8 @@ export async function PUT(
         id: true,
         status: true,
       },
-      where: (p, { eq }) => eq(p.id, productId),
+      where: (p, { eq, and, isNull }) =>
+        and(eq(p.id, productId), isNull(p.deletedAt)),
     });
 
     if (!existProduct) return errorRes("Product not found", 404);

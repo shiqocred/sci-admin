@@ -2,7 +2,7 @@ import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { categories, db, products } from "@/lib/db";
 import { deleteR2, uploadToR2 } from "@/lib/providers";
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { createId } from "@paralleldrive/cuid2";
 import slugify from "slugify";
@@ -166,7 +166,9 @@ export async function DELETE(
     const productMount = await db
       .select({ count: count() })
       .from(products)
-      .where(eq(products.categoryId, categoryId));
+      .where(
+        and(eq(products.categoryId, categoryId), isNull(products.deletedAt))
+      );
 
     const totalProductMount = productMount[0].count;
 

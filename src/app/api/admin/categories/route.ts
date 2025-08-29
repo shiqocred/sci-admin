@@ -3,7 +3,7 @@ import { categories, db, products } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
 import { uploadToR2 } from "@/lib/providers";
 import { createId } from "@paralleldrive/cuid2";
-import { asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import slugify from "slugify";
 import { z } from "zod/v4";
@@ -47,7 +47,10 @@ export async function GET(req: NextRequest) {
         totalProducts: count(products.id).as("totalProducts"),
       })
       .from(categories)
-      .leftJoin(products, eq(products.categoryId, categories.id))
+      .leftJoin(
+        products,
+        and(eq(products.categoryId, categories.id), isNull(products.deletedAt))
+      )
       .where(where)
       .groupBy(categories.id)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))

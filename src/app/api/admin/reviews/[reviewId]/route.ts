@@ -26,6 +26,7 @@ export async function GET(
       .select({
         name: products.name,
         id: products.id,
+        deletedAt: products.deletedAt,
       })
       .from(testimoniProduct)
       .leftJoin(products, eq(products.id, testimoniProduct.productId))
@@ -51,6 +52,7 @@ export async function GET(
       product: reviewProducts.map((i) => ({
         id: i.id as string,
         name: i.name as string,
+        isDeleted: !!i.deletedAt,
       })),
       user: {
         id: user?.id,

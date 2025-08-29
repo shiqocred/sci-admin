@@ -6,7 +6,7 @@ import { getTotalAndPagination } from "@/lib/db/pagination";
 import { uploadToR2 } from "@/lib/providers";
 import { pronoun } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
-import { asc, countDistinct, desc, eq, sql } from "drizzle-orm";
+import { and, asc, countDistinct, desc, eq, isNull, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 type BannerType = "DETAIL" | "PETS" | "SUPPLIERS" | "PROMOS" | "CATEGORIES";
@@ -86,7 +86,10 @@ export async function GET(req: NextRequest) {
       })
       .from(banners)
       .leftJoin(bannerItems, eq(bannerItems.bannerId, banners.id))
-      .leftJoin(products, eq(products.id, bannerItems.productId))
+      .leftJoin(
+        products,
+        and(eq(products.id, bannerItems.productId), isNull(products.deletedAt))
+      )
       .where(where)
       .groupBy(banners.id)
       .orderBy(

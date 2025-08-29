@@ -19,9 +19,12 @@ import { generateRandomNumber } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
 import {
   and,
+  asc,
+  desc,
   eq,
   inArray,
   InferSelectModel,
+  isNull,
   notInArray,
   sql,
 } from "drizzle-orm";
@@ -69,8 +72,8 @@ interface VariantData {
 }
 
 interface ExistingImageData {
-  id: string;
   url: string;
+  position: string;
 }
 
 interface ExistingPetData {
@@ -180,8 +183,10 @@ export async function GET(
       .from(products)
       .leftJoin(categories, eq(categories.id, products.categoryId))
       .leftJoin(suppliers, eq(suppliers.id, products.supplierId))
-      .where(eq(products.id, productId))
+      .where(and(eq(products.id, productId), isNull(products.deletedAt)))
       .limit(1);
+
+    if (!product) return errorRes("Product not found", 404);
 
     const productFormated = {
       ...product,
@@ -293,19 +298,29 @@ export async function DELETE(
 
     if (!existProduct) return errorRes("Product not found", 404);
 
-    const iamgeList = await db.query.productImages.findMany({
+    const imageList = await db.query.productImages.findMany({
       columns: {
         url: true,
       },
+      orderBy: desc(productImages.position),
       where: (p, { eq }) => eq(p.productId, productId),
     });
 
-    await db.delete(products).where(eq(products.id, productId));
+    await db
+      .update(products)
+      .set({ deletedAt: sql`NOW()`, updatedAt: sql`NOW()` })
+      .where(eq(products.id, productId));
 
-    if (iamgeList.length > 0) {
-      for (const image of iamgeList) {
-        await deleteR2(image.url);
+    if (imageList.length > 0) {
+      const listImages = imageList
+        .slice(0, imageList.length - 1)
+        .map((i) => i.url);
+      for (const image of listImages) {
+        await deleteR2(image);
       }
+      await db
+        .delete(productImages)
+        .where(inArray(productImages.url, listImages));
     }
 
     return successRes(null, "Product successfully deleted");
@@ -322,7 +337,8 @@ const imageHandle = async (
 ) => {
   const imagesExist: ExistingImageData[] =
     await db.query.productImages.findMany({
-      columns: { id: true, url: true },
+      columns: { url: true, position: true },
+      orderBy: asc(productImages.position),
       where: (i, { eq }) => eq(i.productId, productId),
     });
 
@@ -335,23 +351,27 @@ const imageHandle = async (
   const removedImages = imagesExist.filter(
     (item) => !imageOldFormatted.includes(item.url)
   );
-  const removedImageId = removedImages.map((item) => item.id);
+  const removedImageUrls = removedImages.map((item) => item.url);
   const removedImageKey = removedImages.map((item) => item.url);
 
   removedImageKey.forEach((key) => deleteR2(key));
 
   const uploadPromises = images.map(async (image) => {
     const buffer = await convertToWebP(image);
-    const key = `images/products/${createId()}-${slugify(title, {
+    const key = `images/products/${slugify(title, {
       lower: true,
-    })}.webp`;
+    })}/${createId()}.webp`;
     await uploadToR2({ buffer, key });
     return key;
   });
 
   const uploadedKeys = await Promise.all(uploadPromises);
 
-  return { removedImageId, uploadedKeys };
+  return {
+    removedImageUrls,
+    uploadedKeys,
+    lastPosition: Number(imagesExist[imagesExist.length - 1]?.position ?? 0),
+  };
 };
 
 const petHandle = async (tx: any, productId: string, petIds: string[]) => {
@@ -693,7 +713,8 @@ export async function PUT(
 
     const productExist = await db.query.products.findFirst({
       columns: { id: true, name: true, slug: true },
-      where: (p, { eq }) => eq(p.id, productId),
+      where: (p, { eq, and, isNull }) =>
+        and(eq(p.id, productId), isNull(p.deletedAt)),
     });
     if (!productExist) return errorRes("Product not found", 404);
 
@@ -723,21 +744,20 @@ export async function PUT(
         .where(eq(products.id, productId));
 
       // Handle images
-      const { uploadedKeys, removedImageId } = await imageHandle(
-        formData,
-        productId,
-        title
-      );
-      if (removedImageId.length > 0)
+      const { uploadedKeys, removedImageUrls, lastPosition } =
+        await imageHandle(formData, productId, title);
+      if (removedImageUrls.length > 0)
         await tx
           .delete(productImages)
-          .where(inArray(productImages.id, removedImageId));
+          .where(inArray(productImages.url, removedImageUrls));
       if (uploadedKeys.length > 0)
-        await tx
-          .insert(productImages)
-          .values(
-            uploadedKeys.map((url) => ({ id: createId(), productId, url }))
-          );
+        await tx.insert(productImages).values(
+          uploadedKeys.map((url, idx) => ({
+            productId,
+            url,
+            position: (idx + 1 + lastPosition).toString(),
+          }))
+        );
 
       // Handle pets
       if (petIds?.length) await petHandle(tx, productId, petIds);

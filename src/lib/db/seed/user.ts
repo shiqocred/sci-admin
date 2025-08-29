@@ -1,86 +1,66 @@
 import "dotenv/config";
 import { userRoleDetails, users } from "../schema";
-import { seed } from "drizzle-seed";
 import { hash } from "argon2";
 import { createId } from "@paralleldrive/cuid2";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { databaseUrl } from "@/config";
+import { InferSelectModel } from "drizzle-orm";
 
-async function main() {
-  const db = drizzle(databaseUrl);
-  const passHashes = await hash("12345678");
-  const userId = createId();
-  await seed(db, { users, userRoleDetails }).refine((f) => ({
-    users: {
-      columns: {
-        id: f.default({
-          defaultValue: userId,
-        }),
-        email: f.default({
-          defaultValue: "example@mail.com",
-        }),
-        password: f.default({
-          defaultValue: passHashes,
-        }),
-        name: f.default({
-          defaultValue: "sroo",
-        }),
-        role: f.default({
-          defaultValue: "BASIC",
-        }),
-        image: f.default({
-          defaultValue: null,
-        }),
-        phoneNumber: f.default({
-          defaultValue: "+62 88888888888",
-        }),
-        emailVerified: f.default({
-          defaultValue: new Date(),
-        }),
-        isDeleted: f.default({
-          defaultValue: false,
-        }),
+const db = drizzle(databaseUrl);
+
+async function seedUser() {
+  try {
+    const passHashes = await hash("12345678");
+    const userId = createId();
+    const adminId = createId();
+
+    const userData = [
+      {
+        user: {
+          id: userId,
+          name: "user",
+          email: "user@mail.com",
+          password: passHashes,
+          phoneNumber: "+62 8888888888",
+          emailVerified: new Date(),
+          role: "BASIC",
+        } as InferSelectModel<typeof users>,
+        detail: {
+          userId,
+          role: "BASIC",
+          newRole: "BASIC",
+        } as InferSelectModel<typeof userRoleDetails>,
       },
-      count: 1,
-    },
-    userRoleDetails: {
-      columns: {
-        userId: f.default({
-          defaultValue: userId,
-        }),
-        role: f.default({
-          defaultValue: "BASIC",
-        }),
-        newRole: f.default({
-          defaultValue: "BASIC",
-        }),
-        fileKtp: f.default({
-          defaultValue: null,
-        }),
-        fileKta: f.default({
-          defaultValue: null,
-        }),
-        storefront: f.default({
-          defaultValue: null,
-        }),
-        nik: f.default({
-          defaultValue: null,
-        }),
-        noKta: f.default({
-          defaultValue: null,
-        }),
-        name: f.default({
-          defaultValue: null,
-        }),
-        message: f.default({
-          defaultValue: null,
-        }),
-        status: f.default({
-          defaultValue: null,
-        }),
+      {
+        user: {
+          id: adminId,
+          name: "admin",
+          email: "admin@mail.com",
+          password: passHashes,
+          phoneNumber: "+62 8888888888",
+          emailVerified: new Date(),
+          role: "ADMIN",
+        } as InferSelectModel<typeof users>,
+        detail: {
+          userId: adminId,
+          role: "ADMIN",
+          newRole: "ADMIN",
+        } as InferSelectModel<typeof userRoleDetails>,
       },
-      count: 1,
-    },
-  }));
+    ];
+
+    for (const user of userData) {
+      await db.insert(users).values(user.user);
+      await db.insert(userRoleDetails).values(user.detail);
+    }
+
+    console.log("✅ user seeded successfully:", userData);
+  } catch (error) {
+    console.error("❌ Error seeding user:", error);
+    process.exit(1);
+  } finally {
+    process.exit(0);
+  }
 }
-main();
+
+seedUser();

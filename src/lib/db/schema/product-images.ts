@@ -1,21 +1,16 @@
-import { createId } from "@paralleldrive/cuid2";
-import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, numeric, pgTable, text } from "drizzle-orm/pg-core";
 import { products } from "./products";
 
 export const productImages = pgTable(
   "product_images",
   {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => createId()),
     productId: text("product_id")
       .notNull()
       .references(() => products.id, {
         onDelete: "cascade",
       }),
     url: text("url").notNull(),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+    position: numeric("position", { precision: 10, scale: 0 }).notNull(),
   },
   (table) => [index("product_images_product_idx").on(table.productId)]
 );

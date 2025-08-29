@@ -16,7 +16,8 @@ export async function GET() {
         pi.url as image
       FROM products p
       LEFT JOIN product_images pi ON pi.product_id = p.id
-      ORDER BY p.id, pi.created_at ASC
+      WHERE p.deleted_at IS NULL
+      ORDER BY p.id, pi.position ASC
     `);
 
     const response = productsRes.rows.map((product) => ({

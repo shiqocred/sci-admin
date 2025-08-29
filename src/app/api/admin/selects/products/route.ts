@@ -1,6 +1,6 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { db, products, productVariants } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -18,7 +18,8 @@ export async function GET() {
         price: productVariants.price,
       })
       .from(products)
-      .leftJoin(productVariants, eq(products.id, productVariants.productId));
+      .leftJoin(productVariants, eq(products.id, productVariants.productId))
+      .where(isNull(products.deletedAt));
 
     const variantIds = raw.map((i) => i.variantId) as string[];
 

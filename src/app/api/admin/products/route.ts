@@ -25,6 +25,7 @@ import {
   eq,
   inArray,
   InferSelectModel,
+  isNull,
   sql,
 } from "drizzle-orm";
 import { getTotalAndPagination } from "@/lib/db/pagination";
@@ -191,13 +192,16 @@ export async function GET(req: NextRequest) {
     const petIds = req.nextUrl.searchParams.getAll("petId").filter(Boolean);
     const status = req.nextUrl.searchParams.get("status");
 
-    const filters = [];
+    const filters = [isNull(products.deletedAt)];
     if (categoryIds.length)
       filters.push(inArray(products.categoryId, categoryIds));
     if (supplierIds.length)
       filters.push(inArray(products.supplierId, supplierIds));
-    if (status === "true") filters.push(eq(products.status, true));
-    else if (status === "false") filters.push(eq(products.status, false));
+    if (status === "true") {
+      filters.push(eq(products.status, true));
+    } else if (status === "false") {
+      filters.push(eq(products.status, false));
+    }
 
     const baseWhere = filters.length ? and(...filters) : undefined;
     const petFilter = petIds.length
@@ -230,7 +234,7 @@ export async function GET(req: NextRequest) {
       (SELECT ${productImages.url} 
        FROM ${productImages} 
        WHERE ${productImages.productId} = ${products.id} 
-       ORDER BY ${productImages.createdAt} ASC 
+       ORDER BY ${Number(productImages.position)} ASC 
        LIMIT 1)`.as("image"),
         variantSku: productVariants.sku,
         variantStock: productVariants.stock,
@@ -362,7 +366,7 @@ export async function POST(req: NextRequest) {
     // Upload images
     for (const image of images) {
       const buffer = await convertToWebP(image);
-      const key = `images/products/${createId()}-${slugify(title, { lower: true })}.webp`;
+      const key = `images/products/${slugify(title, { lower: true })}/${createId()}.webp`;
       await uploadToR2({ buffer, key });
       uploadedKeys.push(key);
     }
@@ -401,10 +405,10 @@ export async function POST(req: NextRequest) {
       // Insert images
       if (uploadedKeys.length) {
         await tx.insert(productImages).values(
-          uploadedKeys.map((url) => ({
-            id: createId(),
+          uploadedKeys.map((url, idx) => ({
             productId,
             url,
+            position: (idx + 1).toString(),
           }))
         );
       }
