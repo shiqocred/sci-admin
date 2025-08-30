@@ -1,16 +1,16 @@
 import "dotenv/config";
 import { userRoleDetails, users } from "../schema";
-import { hash } from "argon2";
 import { createId } from "@paralleldrive/cuid2";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { databaseUrl } from "@/config";
-import { InferSelectModel } from "drizzle-orm";
+import { InferInsertModel } from "drizzle-orm";
 
 const db = drizzle(databaseUrl);
 
 async function seedUser() {
   try {
-    const passHashes = await hash("12345678");
+    const passHashes = await Bun.password.hash("12345678");
+
     const userId = createId();
     const adminId = createId();
 
@@ -24,12 +24,12 @@ async function seedUser() {
           phoneNumber: "+62 8888888888",
           emailVerified: new Date(),
           role: "BASIC",
-        } as InferSelectModel<typeof users>,
+        } as InferInsertModel<typeof users>,
         detail: {
           userId,
           role: "BASIC",
           newRole: "BASIC",
-        } as InferSelectModel<typeof userRoleDetails>,
+        } as InferInsertModel<typeof userRoleDetails>,
       },
       {
         user: {
@@ -40,12 +40,12 @@ async function seedUser() {
           phoneNumber: "+62 8888888888",
           emailVerified: new Date(),
           role: "ADMIN",
-        } as InferSelectModel<typeof users>,
+        } as InferInsertModel<typeof users>,
         detail: {
           userId: adminId,
           role: "ADMIN",
           newRole: "ADMIN",
-        } as InferSelectModel<typeof userRoleDetails>,
+        } as InferInsertModel<typeof userRoleDetails>,
       },
     ];
 
@@ -58,8 +58,6 @@ async function seedUser() {
   } catch (error) {
     console.error("❌ Error seeding user:", error);
     process.exit(1);
-  } finally {
-    process.exit(0);
   }
 }
 
