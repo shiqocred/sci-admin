@@ -14,7 +14,7 @@ const storeDetailData = {
   longitude: "106.827153",
 };
 
-async function seedStoreDetail() {
+export async function seedStoreDetail() {
   try {
     // Hapus dulu data lama (opsional)
     await db.delete(storeDetail);
@@ -30,5 +30,3 @@ async function seedStoreDetail() {
     process.exit(0);
   }
 }
-
-seedStoreDetail();

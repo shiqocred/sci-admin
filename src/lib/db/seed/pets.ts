@@ -16,7 +16,7 @@ const petsData = [
   },
 ];
 
-async function seedPets() {
+export async function seedPets() {
   try {
     // Insert baru
     await db.insert(pets).values(petsData);
@@ -31,5 +31,3 @@ async function seedPets() {
     process.exit(0);
   }
 }
-
-seedPets();

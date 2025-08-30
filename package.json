@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port=3001",
     "lint": "next lint",
-    "seed": "bun run ./src/lib/db/seed/index.ts",
+    "seed": "bun run --tsconfig=tsconfig.bun.json ./src/lib/db/seed/index.ts",
     "push": "bun x drizzle-kit push"
   },
   "dependencies": {

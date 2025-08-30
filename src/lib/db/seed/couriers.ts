@@ -28,7 +28,7 @@ const courierData = [
   { name: "Lalamove", value: "lalamove", isActive: false },
 ];
 
-async function seedCouriers() {
+export async function seedCouriers() {
   try {
     // Hapus dulu data lama (opsional)
     await db.delete(couriers);
@@ -47,5 +47,3 @@ async function seedCouriers() {
     process.exit(0);
   }
 }
-
-seedCouriers();

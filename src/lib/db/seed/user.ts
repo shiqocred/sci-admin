@@ -7,7 +7,7 @@ import { InferInsertModel } from "drizzle-orm";
 
 const db = drizzle(databaseUrl);
 
-async function seedUser() {
+export async function seedUser() {
   try {
     const passHashes = await Bun.password.hash("12345678");
 
@@ -60,5 +60,3 @@ async function seedUser() {
     process.exit(1);
   }
 }
-
-seedUser();
