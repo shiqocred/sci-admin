@@ -3,6 +3,7 @@ import { numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { orderStatusEnum } from "./enums";
 import { discounts } from "./discounts";
+import { freeShippings } from "./free-shippings";
 
 export const orders = pgTable("orders", {
   id: text("id")
@@ -16,6 +17,10 @@ export const orders = pgTable("orders", {
     }),
 
   discountId: text("discount_id").references(() => discounts.id, {
+    onDelete: "set null",
+  }),
+
+  freeShippingId: text("free_shipping_id").references(() => freeShippings.id, {
     onDelete: "set null",
   }),
 

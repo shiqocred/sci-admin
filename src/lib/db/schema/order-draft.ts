@@ -3,6 +3,7 @@ import { numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { addresses } from "./addresses";
 import { discounts } from "./discounts";
+import { freeShippings } from "./free-shippings";
 
 export const orderDraft = pgTable("order_draft", {
   id: text("id")
@@ -16,6 +17,10 @@ export const orderDraft = pgTable("order_draft", {
     }),
 
   discountId: text("discount_id").references(() => discounts.id, {
+    onDelete: "set null",
+  }),
+
+  freeShippingId: text("free_shipping_id").references(() => freeShippings.id, {
     onDelete: "set null",
   }),
 
