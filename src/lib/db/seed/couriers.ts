@@ -42,8 +42,5 @@ export async function seedCouriers() {
     );
   } catch (error) {
     console.error("❌ Error seeding couriers:", error);
-    process.exit(1);
-  } finally {
-    process.exit(0);
   }
 }

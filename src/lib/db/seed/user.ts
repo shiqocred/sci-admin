@@ -57,6 +57,5 @@ export async function seedUser() {
     console.log("✅ user seeded successfully:", userData);
   } catch (error) {
     console.error("❌ Error seeding user:", error);
-    process.exit(1);
   }
 }

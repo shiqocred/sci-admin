@@ -26,8 +26,5 @@ export async function seedPets() {
     );
   } catch (error) {
     console.error("❌ Error seeding pet:", error);
-    process.exit(1);
-  } finally {
-    process.exit(0);
   }
 }

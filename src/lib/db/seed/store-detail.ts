@@ -25,8 +25,5 @@ export async function seedStoreDetail() {
     console.log("✅ Store detail seeded successfully:", storeDetailData);
   } catch (error) {
     console.error("❌ Error seeding store detail:", error);
-    process.exit(1);
-  } finally {
-    process.exit(0);
   }
 }
