@@ -1,11 +1,6 @@
 import { useSession } from "next-auth/react";
 import React from "react";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "../ui/sidebar";
+import { SidebarMenu, SidebarMenuItem, useSidebar } from "../ui/sidebar";
 import { LogoutButton } from "../logout-button";
 import { cn } from "@/lib/utils";
 import { UserRound } from "lucide-react";

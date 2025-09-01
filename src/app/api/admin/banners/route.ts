@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     );
 
     const bannerId = createId();
-    const key = `images/banners/${bannerId}-${Date.now()}`;
+    const key = `images/banners/${bannerId}-${Date.now()}.webp`;
 
     await uploadToR2({
       buffer: await convertToWebP(image),
