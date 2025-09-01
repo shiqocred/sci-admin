@@ -15,7 +15,10 @@ export async function GET() {
         name: about?.name,
         address: about?.address,
         phone: about?.phone,
+      },
+      service: {
         whatsapp: about?.whatsapp,
+        message: about?.message,
       },
       sosmed: {
         facebook: about?.facebook,
@@ -35,9 +38,9 @@ export async function PUT(req: NextRequest) {
   try {
     if (!(await auth())) return errorRes("Unauthorized", 401);
 
-    const { name, address, phone, whatsapp } = await req.json();
+    const { name, address, phone } = await req.json();
 
-    await db.update(about).set({ name, address, phone, whatsapp });
+    await db.update(about).set({ name, address, phone });
 
     return successRes(null, "Store successfully updated");
   } catch (error) {

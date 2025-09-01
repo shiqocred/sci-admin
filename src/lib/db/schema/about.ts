@@ -10,6 +10,7 @@ export const about = pgTable("about", {
   address: text("address").notNull(),
   phone: text("phone"),
   whatsapp: text("whatsapp"),
+  message: text("message"),
   linkedin: text("linkedin"),
   instagram: text("instagram"),
   facebook: text("facebook"),

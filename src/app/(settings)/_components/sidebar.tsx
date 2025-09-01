@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoutButton } from "@/components/logout-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -62,6 +63,7 @@ export const SidebarSetting = () => {
           </Link>
         </Button>
       ))}
+      <LogoutButton />
     </div>
   );
 };

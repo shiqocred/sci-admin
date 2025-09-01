@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, LoaderIcon, Save } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { RichInput } from "@/components/rich-editor";
 import {
@@ -26,15 +26,33 @@ export const Client = () => {
   const { mutate: updateTerms, isPending: isUpdatingTerms } = useUpdateTerms();
   const { data, isPending, isSuccess } = useGetPolicies();
 
-  const handlePrivacy = () => {
+  const handlePrivacy = (e: FormEvent) => {
+    e.preventDefault();
     updatePrivacy({ body: { value: input.privacy } });
   };
-  const handleReturn = () => {
+  const handleReturn = (e: FormEvent) => {
+    e.preventDefault();
     updateReturn({ body: { value: input.return } });
   };
-  const handleTerms = () => {
+  const handleTerms = (e: FormEvent) => {
+    e.preventDefault();
     updateTerms({ body: { value: input.termOfUse } });
   };
+
+  const isUpdatePrivacy = useMemo(
+    () => data?.data.privacy !== input.privacy,
+    [data, input]
+  );
+
+  const isUpdateRefund = useMemo(
+    () => data?.data.return !== input.return,
+    [data, input]
+  );
+
+  const isUpdateTerms = useMemo(
+    () => data?.data.termOfUse !== input.termOfUse,
+    [data, input]
+  );
 
   useEffect(() => {
     if (data && isSuccess) {
@@ -54,14 +72,17 @@ export const Client = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handlePrivacy} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Privacy Policy</h3>
             <RichInput
               content={input.privacy}
               onChange={(e) => setInput((prev) => ({ ...prev, privacy: e }))}
             />
             <div className="w-full flex justify-end">
-              <Button onClick={handlePrivacy} disabled={isUpdatingPrivacy}>
+              <Button
+                type="submit"
+                disabled={isUpdatingPrivacy || !isUpdatePrivacy}
+              >
                 {isUpdatingPrivacy ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
@@ -70,16 +91,19 @@ export const Client = () => {
                 {isUpdatingPrivacy ? "Saving..." : "Save"}
               </Button>
             </div>
-          </div>
+          </form>
           <Separator />
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleReturn} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Refund Policy</h3>
             <RichInput
               content={input.return}
               onChange={(e) => setInput((prev) => ({ ...prev, return: e }))}
             />
             <div className="w-full flex justify-end">
-              <Button onClick={handleReturn} disabled={isUpdatingReturn}>
+              <Button
+                type="submit"
+                disabled={isUpdatingReturn || !isUpdateRefund}
+              >
                 {isUpdatingReturn ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
@@ -88,16 +112,19 @@ export const Client = () => {
                 {isUpdatingReturn ? "Saving..." : "Save"}
               </Button>
             </div>
-          </div>
+          </form>
           <Separator />
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleTerms} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Term of Use</h3>
             <RichInput
               content={input.termOfUse}
               onChange={(e) => setInput((prev) => ({ ...prev, termOfUse: e }))}
             />
             <div className="w-full flex justify-end">
-              <Button onClick={handleTerms} disabled={isUpdatingTerms}>
+              <Button
+                type="submit"
+                disabled={isUpdatingTerms || !isUpdateTerms}
+              >
                 {isUpdatingTerms ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
@@ -106,7 +133,7 @@ export const Client = () => {
                 {isUpdatingTerms ? "Saving..." : "Save"}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>

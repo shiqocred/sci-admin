@@ -13,10 +13,11 @@ const aboutData = {
   longitude: "106.827153",
   address:
     "Jl. RS Fatmawati No. 39, Komplek Duta Mas Fatmawati Blok A1 No. 30 - 32, Cipete Utara, Kebayoran Baru, Jakarta Selatan, 12150",
-  whatsapp: null,
-  linkedin: null,
-  instagram: null,
-  facebook: null,
+  whatsapp: "088888888888",
+  message: "Hallo SCI",
+  linkedin: "https://www.linkedin.com/company/sehatcerahid",
+  instagram: "https://www.instagram.com/sci_sehatcerahid",
+  facebook: "https://web.facebook.com/sehatcerahindonesia",
 };
 
 export async function seedAbout() {

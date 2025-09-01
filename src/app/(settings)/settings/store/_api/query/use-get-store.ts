@@ -6,7 +6,10 @@ type Response = {
       name: string;
       address: string;
       phone: string | null;
+    };
+    service: {
       whatsapp: string | null;
+      message: string | null;
     };
     sosmed: {
       facebook: string | null;

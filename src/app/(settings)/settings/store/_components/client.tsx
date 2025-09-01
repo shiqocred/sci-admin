@@ -2,10 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, LoaderIcon, Save } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { LabelInput } from "@/components/label-input";
-import { useGetStore, useUpdateSosmed, useUpdateStore } from "../_api";
+import {
+  useGetStore,
+  useUpdateService,
+  useUpdateSosmed,
+  useUpdateStore,
+} from "../_api";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Client = () => {
   const [sosmed, setSosmed] = useState({
@@ -17,25 +24,62 @@ export const Client = () => {
     name: "",
     address: "",
     phone: "",
+  });
+
+  const [service, setService] = useState({
     whatsapp: "",
+    message: "",
   });
 
   const { mutate: updateSosmed, isPending: isUpdatingSosmed } =
     useUpdateSosmed();
+  const { mutate: updateService, isPending: isUpdatingService } =
+    useUpdateService();
   const { mutate: updateStore, isPending: isUpdatingStore } = useUpdateStore();
   const { data, isPending, isSuccess } = useGetStore();
 
-  const handleStore = () => {
+  const handleStore = (e: FormEvent) => {
+    e.preventDefault();
     updateStore({ body: store });
   };
-  const handleSosmed = () => {
+  const handleSosmed = (e: FormEvent) => {
+    e.preventDefault();
     updateSosmed({ body: sosmed });
   };
+  const handleService = (e: FormEvent) => {
+    e.preventDefault();
+    updateService({ body: service });
+  };
+
+  const isUpdateService = useMemo(() => {
+    const serviceData = data?.data.service;
+    return (
+      serviceData?.message !== service.message ||
+      serviceData.whatsapp !== service.whatsapp
+    );
+  }, [data, service]);
+  const isUpdateStore = useMemo(() => {
+    const storeData = data?.data.store;
+    return (
+      storeData?.name !== store.name ||
+      storeData.phone !== store.phone ||
+      storeData.address !== store.address
+    );
+  }, [data, store]);
+  const isUpdateSosmed = useMemo(() => {
+    const sosmedData = data?.data.sosmed;
+    return (
+      sosmedData?.facebook !== sosmed.facebook ||
+      sosmedData.instagram !== sosmed.instagram ||
+      sosmedData.linkedin !== sosmed.linkedin
+    );
+  }, [data, store]);
 
   useEffect(() => {
     if (data && isSuccess) {
       const storeData = data.data.store;
       const sosmedData = data.data.sosmed;
+      const serviceData = data.data.service;
       setSosmed({
         facebook: sosmedData.facebook ?? "",
         linkedin: sosmedData.linkedin ?? "",
@@ -45,7 +89,10 @@ export const Client = () => {
         name: storeData.name ?? "",
         address: storeData.address ?? "",
         phone: storeData.phone ?? "",
-        whatsapp: storeData.whatsapp ?? "",
+      });
+      setService({
+        whatsapp: serviceData.whatsapp ?? "",
+        message: serviceData.message ?? "",
       });
     }
   }, [data, isSuccess]);
@@ -58,7 +105,7 @@ export const Client = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleStore} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Store</h3>
             <LabelInput
               label="Name"
@@ -69,33 +116,29 @@ export const Client = () => {
               }
             />
             <LabelInput
-              label="Address"
-              placeholder="e.g. Jl. RS Fatmawati No. 39..."
-              value={store.address}
+              label="Phone"
+              placeholder="e.g. 0217228383"
+              value={store.phone}
               onChange={(e) =>
-                setStore((prev) => ({ ...prev, address: e.target.value }))
+                setStore((prev) => ({ ...prev, phone: e.target.value }))
               }
             />
-            <div className="flex gap-4 items-center">
-              <LabelInput
-                label="Phone"
-                placeholder="e.g. 0217228383"
-                value={store.phone}
+            <div className="flex flex-col gap-1">
+              <Label>Address</Label>
+              <Textarea
+                placeholder="e.g. Jl. RS Fatmawati No. 39..."
+                value={store.address}
                 onChange={(e) =>
-                  setStore((prev) => ({ ...prev, phone: e.target.value }))
+                  setStore((prev) => ({ ...prev, address: e.target.value }))
                 }
-              />
-              <LabelInput
-                label="WhatsApp"
-                placeholder="e.g. 088888888888"
-                value={store.whatsapp}
-                onChange={(e) =>
-                  setStore((prev) => ({ ...prev, whatsapp: e.target.value }))
-                }
+                className="border-gray-300 focus-visible:border-gray-500 focus-visible:ring-0 min-h-24"
               />
             </div>
             <div className="w-full flex justify-end">
-              <Button onClick={handleStore} disabled={isUpdatingStore}>
+              <Button
+                type="submit"
+                disabled={isUpdatingStore || !isUpdateStore}
+              >
                 {isUpdatingStore ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
@@ -104,9 +147,45 @@ export const Client = () => {
                 {isUpdatingStore ? "Saving..." : "Save"}
               </Button>
             </div>
-          </div>
+          </form>
           <Separator />
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleService} className="flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">Customer Service</h3>
+            <LabelInput
+              label="WhatsApp"
+              placeholder="e.g. 088888888888"
+              value={service.whatsapp}
+              onChange={(e) =>
+                setService((prev) => ({ ...prev, whatsapp: e.target.value }))
+              }
+            />
+            <div className="flex flex-col gap-1">
+              <Label>Initial Message</Label>
+              <Textarea
+                placeholder="e.g. Hello admin..."
+                value={service.message}
+                onChange={(e) =>
+                  setService((prev) => ({ ...prev, message: e.target.value }))
+                }
+                className="border-gray-300 focus-visible:border-gray-500 focus-visible:ring-0 min-h-24"
+              />
+            </div>
+            <div className="w-full flex justify-end">
+              <Button
+                type="submit"
+                disabled={isUpdatingService || !isUpdateService}
+              >
+                {isUpdatingService ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  <Save />
+                )}
+                {isUpdatingService ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </form>
+          <Separator />
+          <form onSubmit={handleSosmed} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Sosmed</h3>
             <LabelInput
               label="Facebook"
@@ -133,7 +212,7 @@ export const Client = () => {
               }
             />
             <div className="w-full flex justify-end">
-              <Button onClick={handleSosmed} disabled={isUpdatingSosmed}>
+              <Button disabled={isUpdatingSosmed || !isUpdateSosmed}>
                 {isUpdatingSosmed ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
@@ -142,7 +221,7 @@ export const Client = () => {
                 {isUpdatingSosmed ? "Saving..." : "Save"}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
