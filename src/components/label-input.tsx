@@ -1,11 +1,23 @@
 "use client";
 
-import { ComponentProps, useEffect, useRef, useState } from "react";
+import {
+  ComponentProps,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Check, ChevronDown, Eye, EyeOff } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverContentNested,
+  PopoverTrigger,
+} from "./ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -25,9 +37,12 @@ export const LabelInput = ({
   isPhone = false,
   isLoading = false,
   isPricing = false,
+  isNested = false,
   className,
   disabled,
   classLabel,
+  dialCode,
+  setDialCode,
   id,
   ...props
 }: ComponentProps<"input"> & {
@@ -36,8 +51,11 @@ export const LabelInput = ({
   isPhone?: boolean;
   isLoading?: boolean;
   isPricing?: boolean;
+  isNested?: boolean;
   classContainer?: string;
   classLabel?: string;
+  dialCode?: string;
+  setDialCode?: Dispatch<SetStateAction<string>>;
 }) => {
   return (
     <div className={cn("flex flex-col w-full gap-1.5", classContainer)}>
@@ -52,6 +70,9 @@ export const LabelInput = ({
         className={className}
         isPricing={isPricing}
         disabled={disabled}
+        dialCode={dialCode}
+        isNested={isNested}
+        setDialCode={setDialCode}
         {...props}
       />
     </div>
@@ -65,15 +86,21 @@ const CustomInput = ({
   disabled,
   isLoading,
   isPricing,
+  isNested,
+  dialCode,
+  setDialCode,
   ...props
 }: ComponentProps<"input"> & {
   isPassword?: boolean;
   isPhone?: boolean;
   isLoading?: boolean;
   isPricing?: boolean;
+  isNested?: boolean;
+  dialCode?: string;
+  setDialCode?: Dispatch<SetStateAction<string>>;
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [dialCode, setDialCode] = useState("+62");
+
   const [isPhoneOpen, setIsPhoneOpen] = useState(false);
   const selectedRef = useRef<HTMLDivElement>(null);
 
@@ -100,7 +127,10 @@ const CustomInput = ({
     return (
       <div className="relative w-full flex items-center">
         <Input
-          className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+          className={cn(
+            "focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs",
+            className
+          )}
           type="number"
           {...props}
           disabled={disabled}
@@ -116,7 +146,10 @@ const CustomInput = ({
     return (
       <div className="relative w-full flex items-center">
         <Input
-          className="focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+          className={cn(
+            "focus-visible:ring-0 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs",
+            className
+          )}
           type={isVisible ? "text" : "password"}
           {...props}
           disabled={disabled}
@@ -129,64 +162,77 @@ const CustomInput = ({
           variant={"ghost"}
           onClick={() => setIsVisible(!isVisible)}
         >
-          {isVisible ? <Eye /> : <EyeOff />}
+          {isVisible ? <EyeOff /> : <Eye />}
         </Button>
       </div>
     );
   }
   if (isPhone) {
+    const valueDial = () => {
+      return (
+        <Command>
+          <CommandInput placeholder="Search dial phone..." />
+
+          <CommandList className="p-0">
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup className="p-0 px-1">
+              {phoneNumberCode.map((item) => (
+                <CommandItem
+                  key={item.code}
+                  className="flex items-center gap-4 text-xs"
+                  ref={item.dial_code === dialCode ? selectedRef : null}
+                  onSelect={() => {
+                    setDialCode?.(item.dial_code);
+                    setIsPhoneOpen(false);
+                  }}
+                >
+                  <p className=" w-12">{item.dial_code}</p>
+                  <div className="flex items-center gap-4 justify-between w-full">
+                    <div className="flex items-center gap-2 w-full">
+                      <p>{item.emoji}</p>
+                      <p>{item.name}</p>
+                    </div>
+                    <Check
+                      className={cn(
+                        "size-4",
+                        item.dial_code === dialCode ? "flex" : "hidden"
+                      )}
+                    />
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      );
+    };
     return (
       <div className="w-full relative flex items-center rounded-md overflow-hidden">
         <Input
-          className="focus-visible:ring-0 pl-20 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs"
+          className={cn(
+            "focus-visible:ring-0 pl-20 border-gray-300 focus-visible:border-gray-500 shadow-none placeholder:text-xs",
+            className
+          )}
           {...props}
           disabled={disabled}
+          type="number"
         />
 
         <div className="absolute left-2 flex items-center justify-center w-16">
           <Popover open={isPhoneOpen} onOpenChange={setIsPhoneOpen}>
             <PopoverTrigger asChild>
-              <Button className=" h-auto w-fit !px-1 !py-0.5 rounded-full gap-1 text-xs shadow-none bg-gray-50 text-black hover:bg-gray-100">
+              <Button className=" h-auto w-fit !px-1 !py-0.5 rounded-full gap-1 text-xs shadow-none  bg-gray-200 text-black hover:border hover:border-gray-500 hover:bg-white">
                 {dialCode}
                 <ChevronDown className="size-3.5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0">
-              <Command>
-                <CommandInput placeholder="Search dial phone..." />
-
-                <CommandList className="p-0">
-                  <CommandEmpty>No results found.</CommandEmpty>
-                  <CommandGroup className="p-0 px-1">
-                    {phoneNumberCode.map((item) => (
-                      <CommandItem
-                        key={item.code}
-                        className="flex items-center gap-4 text-xs"
-                        ref={item.dial_code === dialCode ? selectedRef : null}
-                        onSelect={() => {
-                          setDialCode(item.dial_code);
-                          setIsPhoneOpen(false);
-                        }}
-                      >
-                        <p className=" w-12">{item.dial_code}</p>
-                        <div className="flex items-center gap-4 justify-between w-full">
-                          <div className="flex items-center gap-2 w-full">
-                            <p>{item.emoji}</p>
-                            <p>{item.name}</p>
-                          </div>
-                          <Check
-                            className={cn(
-                              "size-4",
-                              item.dial_code === dialCode ? "flex" : "hidden"
-                            )}
-                          />
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
+            {isNested ? (
+              <PopoverContentNested className="p-0">
+                {valueDial()}
+              </PopoverContentNested>
+            ) : (
+              <PopoverContent className="p-0">{valueDial()}</PopoverContent>
+            )}
           </Popover>
         </div>
       </div>

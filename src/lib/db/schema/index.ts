@@ -14,6 +14,7 @@ import {
   discountToRoles,
   discountUsers,
   discounts,
+  faqs,
   freeShippingApplies,
   freeShippingEligibilities,
   freeShippings,
@@ -25,6 +26,7 @@ import {
   orders,
   orderStatusEnum,
   pets,
+  policies,
   productAvailableRoles,
   productCompositions,
   productImages,
@@ -38,7 +40,7 @@ import {
   sessions,
   shippingHistories,
   shippings,
-  storeDetail,
+  about,
   suppliers,
   testimoniImage,
   testimoniProduct,
@@ -65,6 +67,7 @@ export const schema = {
   discountToRoles,
   discountUsers,
   discounts,
+  faqs,
   freeShippingApplies,
   freeShippingEligibilities,
   freeShippings,
@@ -76,6 +79,7 @@ export const schema = {
   orders,
   orderStatusEnum,
   pets,
+  policies,
   productAvailableRoles,
   productCompositions,
   productImages,
@@ -89,7 +93,7 @@ export const schema = {
   sessions,
   shippingHistories,
   shippings,
-  storeDetail,
+  about,
   suppliers,
   testimoniImage,
   testimoniProduct,
@@ -111,6 +115,7 @@ export * from "./courier";
 export * from "./discount-relations";
 export * from "./discounts";
 export * from "./enums";
+export * from "./faqs";
 export * from "./free-shippings";
 export * from "./free-shipping-relations";
 export * from "./invoice";
@@ -120,6 +125,7 @@ export * from "./order-draft-shippings";
 export * from "./order-draft";
 export * from "./orders";
 export * from "./pets";
+export * from "./policies";
 export * from "./product-available-roles";
 export * from "./product-compositions";
 export * from "./product-images";
@@ -132,7 +138,7 @@ export * from "./promos";
 export * from "./sessions";
 export * from "./shipping-histories";
 export * from "./shippings";
-export * from "./store-detail";
+export * from "./about";
 export * from "./suppliers";
 export * from "./testimoni-images";
 export * from "./testimoni-products";

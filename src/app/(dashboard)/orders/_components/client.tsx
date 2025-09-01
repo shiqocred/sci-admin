@@ -25,7 +25,7 @@ export const Client = () => {
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { data, refetch, isSuccess, isRefetching } = useGetOrders({
+  const { data, isPending, refetch, isSuccess, isRefetching } = useGetOrders({
     q: searchValue,
     p: page,
     order,
@@ -122,7 +122,11 @@ export const Client = () => {
             />
           </div>
         </div>
-        <DataTable data={ordersList ?? []} columns={column({ metaPage })} />
+        <DataTable
+          data={ordersList ?? []}
+          columns={column({ metaPage })}
+          isLoading={isPending || isRefetching}
+        />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}
           setPagination={setPage}

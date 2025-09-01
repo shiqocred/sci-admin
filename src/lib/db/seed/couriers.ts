@@ -36,10 +36,7 @@ export async function seedCouriers() {
 
     // Insert baru
     await db.insert(couriers).values(courierData);
-    console.log(
-      "✅ Couriers seeded successfully:",
-      courierData.map((c) => c.name)
-    );
+    console.log("✅ Couriers seeded successfully");
   } catch (error) {
     console.error("❌ Error seeding couriers:", error);
   }

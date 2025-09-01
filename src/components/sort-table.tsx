@@ -18,12 +18,14 @@ export const SortTable = ({
   setSort,
   data,
   disabled,
+  isCustom,
 }: {
   order: string;
   sort: string;
   setSort: any;
   data: { name: string; value: string }[];
   disabled?: boolean;
+  isCustom?: boolean;
 }) => {
   return (
     <Popover>
@@ -61,22 +63,24 @@ export const SortTable = ({
                   {item.name}
                 </CommandItem>
               ))}
-              <CommandItem
-                onSelect={(e) => setSort({ sort: e })}
-                value="created"
-                className="h-7 text-xs"
-              >
-                <div
-                  className={cn(
-                    "size-3.5 rounded border flex items-center justify-center [&_svg]:opacity-0",
-                    sort === "created" &&
-                      "bg-primary border-primary [&_svg]:opacity-100"
-                  )}
+              {!isCustom && (
+                <CommandItem
+                  onSelect={(e) => setSort({ sort: e })}
+                  value="created"
+                  className="h-7 text-xs"
                 >
-                  <Check className="size-3 text-white" />
-                </div>
-                Created
-              </CommandItem>
+                  <div
+                    className={cn(
+                      "size-3.5 rounded border flex items-center justify-center [&_svg]:opacity-0",
+                      sort === "created" &&
+                        "bg-primary border-primary [&_svg]:opacity-100"
+                    )}
+                  >
+                    <Check className="size-3 text-white" />
+                  </div>
+                  Created
+                </CommandItem>
+              )}
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>

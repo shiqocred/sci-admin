@@ -19,9 +19,8 @@ export const useUpdateCategory = () => {
       await invalidateQuery(queryClient, [
         ["categories-list"],
         ["categories-select"],
-        ["category-show", { ...data.id }],
+        ["category-show", data.data.id],
       ]);
-      console.log(data.id);
     },
     onError: {
       title: "UPDATE_CATEGORY",

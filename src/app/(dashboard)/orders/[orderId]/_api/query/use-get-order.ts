@@ -1,13 +1,13 @@
 import { useApiQuery } from "@/lib/query/use-query";
 
-type Variant = {
+export type Variant = {
   id: string;
   name: string | null;
   price: string;
   quantity: string;
 };
 
-type ProductOutput = {
+export type ProductOutput = {
   id: string | null;
   name: string | null;
   image: string | null;
@@ -15,66 +15,103 @@ type ProductOutput = {
   variant: Variant[] | null;
 };
 
-type HistoriesExist = {
+export type ShippingStatus =
+  | "CONFIRMED"
+  | "SCHEDULED"
+  | "ALLOCATED"
+  | "PICKING_UP"
+  | "PICKED"
+  | "CANCELLED"
+  | "ON_HOLD"
+  | "DROPPING_OFF"
+  | "RETURN_IN_TRANSIT"
+  | "RETURNED"
+  | "REJECTED"
+  | "DISPOSED"
+  | "COURIER_NOT_FOUND"
+  | "DELIVERED"
+  | "PENDING";
+
+export type HistoriesExistProps = {
   id: string;
   updatedAt: Date | null;
-  status:
-    | "CONFIRMED"
-    | "SCHEDULED"
-    | "ALLOCATED"
-    | "PICKING_UP"
-    | "PICKED"
-    | "CANCELLED"
-    | "ON_HOLD"
-    | "DROPPING_OFF"
-    | "RETURN_IN_TRANSIT"
-    | "RETURNED"
-    | "REJECTED"
-    | "DISPOSED"
-    | "COURIER_NOT_FOUND"
-    | "DELIVERED"
-    | "PENDING";
+  status: ShippingStatus;
   shippingId: string;
   note: string | null;
   serviceType: string | null;
 };
 
+export type PricingProps = {
+  products: string;
+  total: string;
+  amount: string | null;
+  discount: string | null;
+  shipping: string;
+  isFreeShiping: boolean;
+};
+
+export type UserProps = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  total_orders: number;
+};
+
+export type PaymentProps = {
+  status: "CANCELLED" | "PENDING" | "EXPIRED" | "PAID" | null;
+  channel: string | null;
+  method: string | null;
+};
+
+export type CourierProps = {
+  waybill: string | null;
+  name: string | null;
+  company: string | null;
+  type: string | null;
+};
+
+export type ContactProps = {
+  name: string | null;
+  phone: string | null;
+  address: string | null;
+  address_note: string | null;
+  latitude: string | null;
+  longitude: string | null;
+};
+
+export type ShippingProps = {
+  id: string | null;
+  duration: "HOUR" | "DAY" | null;
+  status: ShippingStatus;
+  courier: CourierProps;
+  contact: ContactProps;
+};
+
+export type TimestampProps = {
+  expired: string | null;
+  cancelled: string | null;
+  paid: string | null;
+  shipping: string | null;
+  created: string | null;
+  delivered: string | null;
+};
+
+export type OrderProps = {
+  id: string;
+  status: string;
+  note: string | null;
+  pricing: PricingProps;
+  user: UserProps;
+  payment: PaymentProps;
+  shipping: ShippingProps;
+  timestamp: TimestampProps;
+  products: ProductOutput[];
+  histories: HistoriesExistProps[];
+};
+
 type Response = {
-  data: {
-    id: string;
-    product_price: string;
-    total_price: string;
-    note: string | null;
-    status: string;
-    userId: string;
-    name: string;
-    email: string;
-    image: string | null;
-    toal_orders: string;
-    invoice_status: string;
-    paymentChannel: string | null;
-    paymentMethod: string | null;
-    amount: string;
-    expiredAt: string | null;
-    cancelledAt: string | null;
-    paidAt: string | null;
-    shipping_name: string;
-    shipping_phone: string;
-    shipping_address: string;
-    shipping_address_note: string;
-    shipping_latitude: string;
-    shipping_longitude: string;
-    shipping_id: string | null;
-    shipping_waybill_id: string | null;
-    shipping_courier_name: string;
-    shipping_courierCompany: string;
-    shipping_courierType: string;
-    shipping_price: string;
-    shipping_duration: string;
-    shipping_status: string;
-    products: ProductOutput[];
-    histories: HistoriesExist[];
-  };
+  data: OrderProps;
 };
 
 export const useGetOrder = ({ id }: { id: string }) => {

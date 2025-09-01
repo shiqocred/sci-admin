@@ -93,7 +93,7 @@ const data = {
     },
     {
       title: "Settings",
-      url: "/settings",
+      url: "/settings/store",
       icon: Settings2,
       items: [],
     },

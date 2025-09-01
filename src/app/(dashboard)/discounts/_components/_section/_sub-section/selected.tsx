@@ -36,7 +36,6 @@ export const Selected = ({
   pets,
   selectProducts,
 }: SelectedProps) => {
-  console.log(selectProducts?.data, input.selected);
   return (
     <div className="flex flex-col border rounded-md divide-y overflow-hidden">
       {apply === "categories" &&

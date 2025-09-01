@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
+import { LoaderIcon } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -24,7 +25,10 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-}: Readonly<DataTableProps<TData, TValue>>) {
+  isLoading,
+}: Readonly<DataTableProps<TData, TValue>> & {
+  isLoading?: boolean;
+}) {
   const table = useReactTable({
     data,
     columns,
@@ -69,12 +73,24 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-xs"
-              >
-                No results.
-              </TableCell>
+              {isLoading ? (
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-44 text-center text-xs"
+                >
+                  <div className="flex w-full flex-col items-center justify-center gap-1.5">
+                    <LoaderIcon className="size-4 animate-spin" />
+                    <p className="ml-2 animate-pulse">Loading...</p>
+                  </div>
+                </TableCell>
+              ) : (
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-44 text-center text-xs"
+                >
+                  No results.
+                </TableCell>
+              )}
             </TableRow>
           )}
         </TableBody>

@@ -54,7 +54,7 @@ export async function seedUser() {
       await db.insert(userRoleDetails).values(user.detail);
     }
 
-    console.log("✅ user seeded successfully:", userData);
+    console.log("✅ user seeded successfully");
   } catch (error) {
     console.error("❌ Error seeding user:", error);
   }

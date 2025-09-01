@@ -20,10 +20,7 @@ export async function seedPets() {
   try {
     // Insert baru
     await db.insert(pets).values(petsData);
-    console.log(
-      "✅ Pet seeded successfully:",
-      petsData.map((i) => i)
-    );
+    console.log("✅ Pet seeded successfully");
   } catch (error) {
     console.error("❌ Error seeding pet:", error);
   }

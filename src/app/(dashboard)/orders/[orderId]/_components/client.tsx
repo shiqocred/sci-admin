@@ -12,12 +12,14 @@ import { cn, formatRupiah, pronoun, sizesImage } from "@/lib/utils";
 import Image from "next/image";
 import {
   Check,
+  ChevronRight,
   Clock,
   CreditCard,
   FileCheckIcon,
   Loader2,
   PackageCheck,
   RefreshCcw,
+  ShoppingBag,
   TagIcon,
   Truck,
   UserX2,
@@ -39,6 +41,7 @@ import {
   TimelineContent,
   TimelineDate,
 } from "@/components/ui/timeline";
+import Link from "next/link";
 
 export const Client = () => {
   const { orderId } = useParams();
@@ -91,8 +94,16 @@ export const Client = () => {
       <PayDialog />
       <CancelDialog />
       <SendDialog />
-      <div className="w-full flex items-center gap-4 justify-between">
+      <div className="w-full flex items-center gap-1">
+        <Button size={"icon"} variant={"ghost"} asChild>
+          <Link href={"/orders"}>
+            <ShoppingBag className="size-5" />
+          </Link>
+        </Button>
+        <ChevronRight className="size-5" />
         <h1 className="text-xl font-semibold">Detail Orders</h1>
+        <ChevronRight className="size-5" />
+        <p>#{orderData?.id}</p>
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="grid grid-cols-7 gap-4">
@@ -170,25 +181,41 @@ export const Client = () => {
                   <div className="flex flex-col gap-2 p-3">
                     <div className="flex items-center justify-between">
                       <p>Subtotal</p>
-                      <p>{formatRupiah(orderData?.product_price ?? 0)}</p>
+                      <p>{formatRupiah(orderData?.pricing.products ?? 0)}</p>
                     </div>
+                    {orderData?.pricing.discount && (
+                      <div className="flex items-center justify-between ml-2">
+                        <p>- Discount</p>
+                        <p>
+                          - {formatRupiah(orderData?.pricing.discount ?? 0)}
+                        </p>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <p>Shipping Cost</p>
-                      <p>{formatRupiah(orderData?.shipping_price ?? 0)}</p>
+                      <p>{formatRupiah(orderData?.pricing.shipping ?? 0)}</p>
                     </div>
+                    {orderData?.pricing.isFreeShiping && (
+                      <div className="flex items-center justify-between ml-2">
+                        <p>- Free Shipping</p>
+                        <p>
+                          - {formatRupiah(orderData?.pricing.shipping ?? 0)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <Separator />
                   <div className="flex items-center p-3 justify-between font-semibold">
                     <p>Total Price</p>
-                    <p>{formatRupiah(orderData?.total_price ?? 0)}</p>
+                    <p>{formatRupiah(orderData?.pricing.total ?? 0)}</p>
                   </div>
                 </div>
-                {orderData?.paidAt && (
+                {orderData?.timestamp.paid && (
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col w-full">
                       <h5 className="font-medium">Method</h5>
                       <p>
-                        {(orderData?.paymentMethod ?? "")
+                        {(orderData?.payment.method ?? "")
                           .split("_")
                           .map(
                             (word) =>
@@ -200,69 +227,15 @@ export const Client = () => {
                     </div>
                     <div className="flex flex-col w-full">
                       <h5 className="font-medium">Channel</h5>
-                      <p>{orderData?.paymentChannel}</p>
+                      <p>{orderData?.payment.channel}</p>
                     </div>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-y-4">
                   <div className="flex flex-col w-full">
                     <h5 className="font-medium">Status</h5>
-                    <Badge>{orderData?.invoice_status}</Badge>
+                    <Badge>{orderData?.payment.status}</Badge>
                   </div>
-                  {orderData?.paidAt && (
-                    <div className="flex flex-col w-full">
-                      <h5 className="font-medium">Paid at</h5>
-                      <div className="w-full flex">
-                        <p>
-                          {`${format(new Date(orderData?.paidAt), "PP", {
-                            locale: id,
-                          })} at ${format(
-                            new Date(orderData?.paidAt),
-                            "HH:mm",
-                            {
-                              locale: id,
-                            }
-                          )}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {orderData?.expiredAt && (
-                    <div className="flex flex-col w-full">
-                      <h5 className="font-medium">Expired at</h5>
-                      <div className="w-full flex">
-                        <p>
-                          {`${format(new Date(orderData?.expiredAt), "PP", {
-                            locale: id,
-                          })} at ${format(
-                            new Date(orderData?.expiredAt),
-                            "HH:mm",
-                            {
-                              locale: id,
-                            }
-                          )}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {orderData?.cancelledAt && (
-                    <div className="flex flex-col w-full">
-                      <h5 className="font-medium">Canceled at</h5>
-                      <div className="w-full flex">
-                        <p>
-                          {`${format(new Date(orderData?.cancelledAt), "PP", {
-                            locale: id,
-                          })} at ${format(
-                            new Date(orderData?.cancelledAt),
-                            "HH:mm",
-                            {
-                              locale: id,
-                            }
-                          )}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-4 border rounded-lg bg-gray-50 p-5 w-full text-sm">
@@ -270,29 +243,31 @@ export const Client = () => {
                 <div className="flex flex-col w-full">
                   <h5 className="font-medium">Contact</h5>
                   <div className="w-full flex gap-2">
-                    <p>{orderData?.shipping_name}</p>
+                    <p>{orderData?.shipping.contact.name}</p>
                     <p>|</p>
-                    <p>{orderData?.shipping_phone}</p>
+                    <p>{orderData?.shipping.contact.phone}</p>
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
                   <h5 className="font-medium">Address</h5>
-                  <div className="w-full flex flex-col">
-                    <p>
-                      {orderData?.shipping_address_note},{" "}
-                      {orderData?.shipping_address}
-                    </p>
-                  </div>
+                  <Link
+                    href={`https://www.google.com/maps?q=${orderData?.shipping.contact.latitude},${orderData?.shipping.contact.longitude}`}
+                    target="_blank"
+                    className="hover:underline"
+                  >
+                    {orderData?.shipping.contact.address_note},{" "}
+                    {orderData?.shipping.contact.address}
+                  </Link>
                 </div>
                 <div className="grid grid-cols-2">
                   <div className="flex flex-col gap-2 w-full">
                     <h5 className="font-medium">Courier</h5>
                     <div className="w-full flex">
                       <p>
-                        {orderData?.shipping_courier_name}{" "}
+                        {orderData?.shipping.courier.name}{" "}
                         <span className="text-xs text-gray-600">
-                          ({orderData?.shipping_courierCompany}{" "}
-                          {orderData?.shipping_courierType})
+                          ({orderData?.shipping.courier.company}{" "}
+                          {orderData?.shipping.courier.type})
                         </span>
                       </p>
                     </div>
@@ -300,14 +275,14 @@ export const Client = () => {
                   <div className="flex flex-col gap-2 w-full">
                     <h5 className="font-medium">Estimate</h5>
                     <div className="w-full flex">
-                      <p>{orderData?.shipping_duration}</p>
+                      <p>{orderData?.shipping.duration}</p>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <h5 className="font-medium">Waybill</h5>
                   <div className="w-full flex">
-                    <p>{orderData?.shipping_waybill_id ?? "-"}</p>
+                    <p>{orderData?.shipping.courier.waybill ?? "-"}</p>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
@@ -315,22 +290,22 @@ export const Client = () => {
                   <div className="w-full flex">
                     <Badge
                       className={cn(
-                        orderData?.shipping_status !== "PENDING" &&
+                        orderData?.shipping.status !== "PENDING" &&
                           "text-black",
-                        (orderData?.shipping_status === "CONFIRMED" ||
-                          orderData?.shipping_status === "PICKING_UP" ||
-                          orderData?.shipping_status === "ALLOCATED") &&
+                        (orderData?.shipping.status === "CONFIRMED" ||
+                          orderData?.shipping.status === "PICKING_UP" ||
+                          orderData?.shipping.status === "ALLOCATED") &&
                           "!bg-blue-300",
-                        (orderData?.shipping_status === "PICKED" ||
-                          orderData?.shipping_status === "DROPPING_OFF") &&
+                        (orderData?.shipping.status === "PICKED" ||
+                          orderData?.shipping.status === "DROPPING_OFF") &&
                           "!bg-yellow-300",
-                        orderData?.shipping_status === "DELIVERED" &&
+                        orderData?.shipping.status === "DELIVERED" &&
                           "!bg-green-300",
-                        orderData?.shipping_status === "CANCELLED" &&
+                        orderData?.shipping.status === "CANCELLED" &&
                           "!bg-red-300"
                       )}
                     >
-                      {orderData?.shipping_status}
+                      {orderData?.shipping.status}
                     </Badge>
                   </div>
                 </div>
@@ -415,8 +390,8 @@ export const Client = () => {
                 <h3 className="font-semibold">Order Information</h3>
                 <div className="flex flex-col gap-0.5 w-full ">
                   <h5 className="font-medium">Customer Note</h5>
-                  <p className="text-gray-500 underline underline-offset-2">
-                    {orderData?.note ?? "none"}
+                  <p className="text-gray-700 underline underline-offset-2">
+                    {orderData?.note ? orderData?.note : "none"}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
@@ -425,27 +400,76 @@ export const Client = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-4 border rounded-lg bg-gray-50 p-5 w-full">
+                <h3 className="font-semibold">Timestamp</h3>
+                {orderData?.timestamp.created && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Order at</p>
+                    <p className="text-gray-700">
+                      {orderData?.timestamp.created}
+                    </p>
+                  </div>
+                )}
+                {orderData?.timestamp.paid && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Paid at</p>
+                    <p className="text-gray-700">{orderData?.timestamp.paid}</p>
+                  </div>
+                )}
+                {orderData?.timestamp.shipping && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Shipping at</p>
+                    <p className="text-gray-700">
+                      {orderData?.timestamp.shipping}
+                    </p>
+                  </div>
+                )}
+                {orderData?.timestamp.delivered && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Delivered at</p>
+                    <p className="text-gray-700">
+                      {orderData?.timestamp.delivered}
+                    </p>
+                  </div>
+                )}
+                {orderData?.timestamp.cancelled && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Cancelled at</p>
+                    <p className="text-gray-700">
+                      {orderData?.timestamp.cancelled}
+                    </p>
+                  </div>
+                )}
+                {orderData?.timestamp.expired && (
+                  <div className="flex flex-col gap-0.5 w-full ">
+                    <p className="font-medium">Expired at</p>
+                    <p className="text-gray-700">
+                      {orderData?.timestamp.expired}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-4 border rounded-lg bg-gray-50 p-5 w-full">
                 <h3 className="font-semibold">Customer</h3>
                 <Button className="h-auto justify-start p-2 gap-2 font-normal text-start bg-gray-50 border-gray-300 border hover:bg-white text-black">
                   <div className="size-10 relative rounded overflow-hidden border flex-none">
                     <Image
                       fill
-                      src={orderData?.image ?? `/images/logo-sci.png`}
+                      src={orderData?.user.image ?? `/images/logo-sci.png`}
                       alt="product"
                       sizes={sizesImage}
                       className="object-cover"
                     />
                   </div>
                   <div className="w-full flex flex-col">
-                    <p className="font-medium">{orderData?.name}</p>
-                    <p className="text-xs">{orderData?.email}</p>
+                    <p className="font-medium">{orderData?.user.name}</p>
+                    <p className="text-xs">{orderData?.user.email}</p>
                   </div>
                 </Button>
                 <div className="flex flex-col w-full">
                   <h5 className="font-medium">Total Orders</h5>
                   <p>
-                    {orderData?.toal_orders} order
-                    {pronoun(orderData?.toal_orders ?? 0)}
+                    {orderData?.user.total_orders} order
+                    {pronoun(orderData?.user.total_orders ?? 0)}
                   </p>
                 </div>
               </div>

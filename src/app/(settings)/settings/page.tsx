@@ -9,7 +9,7 @@ const SettingsPage = async () => {
   if (!session) {
     redirect("/login?redirect=login");
   }
-  redirect("/settings/shipping");
+  redirect("/settings/store");
 };
 
 export default SettingsPage;

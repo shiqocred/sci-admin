@@ -13,6 +13,9 @@ import {
   shippings,
   users,
 } from "@/lib/db";
+import { pronoun } from "@/lib/utils";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import { countDistinct, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -146,7 +149,7 @@ export async function GET(
         name: users.name,
         email: users.email,
         image: users.image,
-        toal_orders:
+        total_orders:
           sql`(SELECT ${countDistinct(orders.id)} FROM ${orders} WHERE ${orders.userId} = ${users.id})`.as(
             "orders"
           ),
@@ -154,9 +157,14 @@ export async function GET(
         paymentChannel: invoices.paymentChannel,
         paymentMethod: invoices.paymentMethod,
         amount: invoices.amount,
-        expiredAt: invoices.expiredAt,
-        cancelledAt: invoices.cancelledAt,
-        paidAt: invoices.paidAt,
+        total_discount: orders.totalDiscount,
+        expiredAt: orders.expiredAt,
+        cancelledAt: orders.cancelledAt,
+        paidAt: orders.paidAt,
+        shippingAt: orders.shippingAt,
+        createdAt: orders.createdAt,
+        deliveredAt: orders.deliveredAt,
+        freeShippingId: orders.freeShippingId,
         shipping_id: shippings.id,
         shipping_name: shippings.name,
         shipping_phone: shippings.phone,
@@ -170,6 +178,8 @@ export async function GET(
         shipping_courierType: shippings.courierType,
         shipping_price: orders.shippingPrice,
         shipping_duration: shippings.duration,
+        shipping_fast: shippings.fastestEstimate,
+        shipping_long: shippings.longestEstimate,
         shipping_status: shippings.status,
       })
       .from(orders)
@@ -218,11 +228,83 @@ export async function GET(
 
     const resultProduct = productRes ? Object.values(productRes) : [];
 
+    const formatShippingDuration = (
+      fastest: string | null,
+      longest: string | null,
+      unit?: string | null
+    ) => {
+      if (!unit) return "";
+      if (fastest === longest)
+        return `${fastest} ${unit.toLowerCase()}${pronoun(Number(fastest))}`;
+      return `${fastest} - ${longest} ${unit.toLowerCase()}${pronoun(Number(longest))}`;
+    };
+
     const response = {
-      ...{
-        ...orderRes,
-        status: formatStatus(orderRes.status),
+      id: orderRes.id,
+      status: formatStatus(orderRes.status),
+      note: orderRes.note,
+      pricing: {
+        products: orderRes.product_price,
+        total: orderRes.total_price,
+        amount: orderRes.amount,
+        discount: orderRes.total_discount,
+        shipping: orderRes.shipping_price,
+        isFreeShiping: !!orderRes.freeShippingId,
+      },
+      user: {
+        id: orderRes.userId,
+        name: orderRes.name,
+        email: orderRes.email,
         image: orderRes.image ? `${r2Public}/${orderRes.image}` : null,
+        total_orders: orderRes.total_orders,
+      },
+      payment: {
+        status: orderRes.invoice_status,
+        channel: orderRes.paymentChannel,
+        method: orderRes.paymentMethod,
+      },
+      timestamp: {
+        expired: orderRes.expiredAt
+          ? format(orderRes.expiredAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+        cancelled: orderRes.cancelledAt
+          ? format(orderRes.cancelledAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+        paid: orderRes.paidAt
+          ? format(orderRes.paidAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+        shipping: orderRes.shippingAt
+          ? format(orderRes.shippingAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+        created: orderRes.createdAt
+          ? format(orderRes.createdAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+        delivered: orderRes.deliveredAt
+          ? format(orderRes.deliveredAt, "PPP 'at' HH:mm", { locale: id })
+          : null,
+      },
+      shipping: {
+        id: orderRes.shipping_id,
+        duration: formatShippingDuration(
+          orderRes.shipping_fast,
+          orderRes.shipping_long,
+          orderRes.shipping_duration
+        ),
+        status: orderRes.shipping_status,
+        courier: {
+          waybill: orderRes.shipping_waybill_id,
+          name: orderRes.shipping_courier_name,
+          company: orderRes.shipping_courierCompany,
+          type: orderRes.shipping_courierType,
+        },
+        contact: {
+          name: orderRes.shipping_name,
+          phone: orderRes.shipping_phone,
+          address: orderRes.shipping_address,
+          address_note: orderRes.shipping_address_note,
+          latitude: orderRes.shipping_latitude,
+          longitude: orderRes.shipping_longitude,
+        },
       },
       products: resultProduct,
       histories: histories.length > 0 ? histories : null,
@@ -245,7 +327,7 @@ export async function POST(
 
     const { orderId } = await params;
 
-    const store = await db.query.storeDetail.findFirst();
+    const store = await db.query.about.findFirst();
 
     const addressSelected = await db.query.shippings.findFirst({
       where: (as, { eq }) => eq(as.orderId, orderId),
@@ -267,8 +349,8 @@ export async function POST(
 
     const requestBody = {
       origin_contact_name: store.name,
-      origin_contact_phone: store.phone,
-      origin_address: store.address,
+      origin_contact_phone: store.whatsapp,
+      origin_address: store.shipping_address,
       origin_coordinate: {
         latitude: store.latitude,
         longitude: store.longitude,
@@ -303,8 +385,6 @@ export async function POST(
       waybill: biteshipRes.courier.waybill_id,
       status: biteshipRes.status,
     };
-
-    console.log(biteshipRes);
 
     const { ok: historiesOk, response: historiesRes } = await getTracking(
       biteship.tracking

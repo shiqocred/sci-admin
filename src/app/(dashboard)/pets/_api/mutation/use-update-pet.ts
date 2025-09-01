@@ -19,9 +19,8 @@ export const useUpdatePet = () => {
       await invalidateQuery(queryClient, [
         ["pets-list"],
         ["pets-select"],
-        ["pet-show", { ...data.id }],
+        ["pet-show", data.data.id],
       ]);
-      console.log(data.id);
     },
     onError: {
       title: "UPDATE_PET",

@@ -2,12 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Headset, ScrollText, Truck } from "lucide-react";
+import {
+  Headset,
+  ScrollText,
+  StoreIcon,
+  Truck,
+  UserRoundCogIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
 const data = [
+  {
+    icon: StoreIcon,
+    name: "Store",
+    href: "/settings/store",
+  },
+  {
+    icon: UserRoundCogIcon,
+    name: "Accounts",
+    href: "/settings/account",
+  },
   {
     icon: Truck,
     name: "Shipping",
@@ -15,8 +31,8 @@ const data = [
   },
   {
     icon: ScrollText,
-    name: "Policy",
-    href: "/settings/policy",
+    name: "Policies",
+    href: "/settings/policies",
   },
   {
     icon: Headset,

@@ -25,7 +25,6 @@ export const VariantOpen = ({
   available: string[];
 }) => {
   const [isAllPrice, setIsAllPrice] = useState<boolean | "indeterminate">(true);
-  console.log(available);
 
   const handleChangeVariant = (
     id: string,

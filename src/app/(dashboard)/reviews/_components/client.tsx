@@ -10,6 +10,7 @@ import { TooltipText } from "@/providers/tooltip-provider";
 import {
   ChartNoAxesGanttIcon,
   ChevronRight,
+  LoaderIcon,
   RefreshCcw,
   Save,
   ShoppingBag,
@@ -70,14 +71,16 @@ export const Client = () => {
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
-  const { data, refetch, isSuccess, isRefetching } = useGetReviews({
+  const { data, isPending, refetch, isSuccess, isRefetching } = useGetReviews({
     q: searchValue,
     p: page,
     order,
     sort,
     limit,
   });
-  const { data: reviewDetail } = useGetShowReview({ reviewId });
+  const { data: reviewDetail, isPending: isPendingDetail } = useGetShowReview({
+    reviewId,
+  });
 
   const [input, setInput] = useState({ status: "publish" });
 
@@ -196,12 +199,13 @@ export const Client = () => {
         <DataTable
           data={ordersList ?? []}
           columns={column({ metaPage, setQuery, handleUpdate })}
+          isLoading={isPending || isRefetching}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}
           setPagination={setPage}
           setLimit={setLimit}
-          //   disabled={loading}
+          disabled={isPending || isRefetching}
         />
       </div>
       <Sheet
@@ -218,6 +222,12 @@ export const Client = () => {
             <SheetTitle>Review Detail</SheetTitle>
             <SheetDescription />
           </SheetHeader>
+          {isPendingDetail && (
+            <div className="px-4 flex flex-col gap-2 justify-center items-center h-[80vh]">
+              <LoaderIcon className="size-4 animate-spin" />
+              <p className="ml-2 animate-pulse text-sm">Loading...</p>
+            </div>
+          )}
           {detailReview && (
             <div className="px-4 flex flex-col gap-4 overflow-y-auto">
               <LabelInput
@@ -296,6 +306,7 @@ export const Client = () => {
                       alt={detailReview.user.name}
                       sizes={sizesImage}
                       className="object-cover"
+                      priority
                     />
                   </div>
                   <div className="flex flex-col">

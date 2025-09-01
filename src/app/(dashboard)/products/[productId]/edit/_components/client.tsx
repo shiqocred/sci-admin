@@ -106,8 +106,6 @@ export const Client = () => {
     productId: productId as string,
   });
 
-  console.log(data, variants);
-
   useEffect(() => {
     const product = data?.data;
 
