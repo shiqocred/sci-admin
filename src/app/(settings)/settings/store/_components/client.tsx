@@ -13,6 +13,7 @@ import {
 } from "../_api";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 export const Client = () => {
   const [sosmed, setSosmed] = useState({
@@ -151,14 +152,25 @@ export const Client = () => {
           <Separator />
           <form onSubmit={handleService} className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Customer Service</h3>
-            <LabelInput
-              label="WhatsApp"
-              placeholder="e.g. 088888888888"
-              value={service.whatsapp}
-              onChange={(e) =>
-                setService((prev) => ({ ...prev, whatsapp: e.target.value }))
-              }
-            />
+            <div className="flex flex-col gap-1">
+              <Label>WhatsApp</Label>
+              <div className="flex items-center flex-row-reverse">
+                <Input
+                  placeholder="e.g. 88888888888"
+                  className="rounded-l-none border-l-0 border-gray-300 focus-visible:border-gray-500 focus-visible:ring-0 peer"
+                  value={service.whatsapp}
+                  onChange={(e) =>
+                    setService((prev) => ({
+                      ...prev,
+                      whatsapp: e.target.value,
+                    }))
+                  }
+                />
+                <div className="text-sm h-9 rounded-l-md border border-gray-300 border-r-0 bg-gray-300 flex items-center justify-center px-3 font-medium peer-focus-visible:border-gray-500">
+                  +62
+                </div>
+              </div>
+            </div>
             <div className="flex flex-col gap-1">
               <Label>Initial Message</Label>
               <Textarea

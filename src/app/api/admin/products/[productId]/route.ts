@@ -590,7 +590,7 @@ const handleIsVariant = async (
     : [];
   const priceMap: Record<string, { id: string; price: string | number }> = {};
   for (const p of allPrices) {
-    priceMap[`${p.variantId}_${p.role}`] = { id: p.id, price: p.price };
+    priceMap[`${p.variantId}_${p.role}`] = { id: p.variantId, price: p.price };
   }
 
   const oldIds = new Set(variantExist.map((v) => v.id));

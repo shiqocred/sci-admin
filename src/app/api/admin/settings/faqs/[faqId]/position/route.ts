@@ -23,13 +23,28 @@ export async function PUT(
 
     if (!faqExist) return errorRes("Faq not found", 404);
 
-    await db
-      .update(faqs)
-      .set({
-        position:
-          direction === "up" ? faqExist.position - 1 : faqExist.position + 1,
-      })
-      .where(eq(faqs.id, faqId));
+    const swapPosition =
+      direction === "up" ? faqExist.position - 1 : faqExist.position + 1;
+
+    await db.transaction(async (tx) => {
+      await Promise.all([
+        tx
+          .update(faqs)
+          .set({
+            position: faqs.position,
+          })
+          .where(eq(faqs.position, swapPosition)),
+        tx
+          .update(faqs)
+          .set({
+            position:
+              direction === "up"
+                ? faqExist.position - 1
+                : faqExist.position + 1,
+          })
+          .where(eq(faqs.id, faqId)),
+      ]);
+    });
 
     return successRes({ id: faqId }, "Faq position successfully updated");
   } catch (error) {

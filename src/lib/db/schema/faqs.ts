@@ -10,7 +10,7 @@ export const faqs = pgTable(
 
     question: text("question").notNull(),
     answer: text("answer").notNull(),
-    position: integer("position").notNull().unique(),
+    position: integer("position").notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
