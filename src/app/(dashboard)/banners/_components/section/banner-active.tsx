@@ -22,9 +22,7 @@ export const BannerActive = ({
 }) => {
   return (
     <div className="bg-gray-50 border-gray-200 border p-5 rounded-lg flex flex-col gap-4">
-      <Label className="flex flex-col items-start gap-1.5">
-        <p>Active dates</p>
-      </Label>
+      <Label className="required">Active dates</Label>
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col col-span-2 gap-1.5">
           <Label>Start Date</Label>

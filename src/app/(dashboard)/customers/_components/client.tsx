@@ -154,6 +154,7 @@ export const Client = () => {
         <DataTable
           data={customersList}
           columns={column({ metaPage, setQuery })}
+          isLoading={isPending}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}

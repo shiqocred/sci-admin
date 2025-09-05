@@ -18,6 +18,7 @@ import {
   DiscountSummary,
 } from "../../_components/_section";
 import { InputProps } from "../../_components/client";
+import { format } from "date-fns";
 
 const minimumFormatted = (minimumReq: string, input: InputProps) => {
   if (minimumReq === "amount") return input.purchase;
@@ -86,8 +87,8 @@ export const Client = () => {
     purchase: "0",
     quantity: "0",
     use: "0",
-    startTime: "08:00",
-    endTime: "08:00",
+    startTime: format(new Date(), "HH:mm") ?? "08:00",
+    endTime: format(new Date(), "HH:mm") ?? "08:00",
   });
 
   const { mutate: createDiscount } = useCreateDiscount();

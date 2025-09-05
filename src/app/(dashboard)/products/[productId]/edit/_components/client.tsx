@@ -8,6 +8,7 @@ import {
   ChartNoAxesGantt,
   ChevronRight,
   Eye,
+  Loader,
   RefreshCcw,
   Trash2,
 } from "lucide-react";
@@ -102,7 +103,7 @@ export const Client = () => {
 
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
 
-  const { data, refetch, isRefetching } = useGetShowProduct({
+  const { data, refetch, isRefetching, isPending } = useGetShowProduct({
     productId: productId as string,
   });
 
@@ -353,92 +354,99 @@ export const Client = () => {
           </TooltipText>
         </div>
       </div>
-      <div className="w-full grid grid-cols-3 gap-6">
-        <div className="col-span-2 w-full flex flex-col gap-4">
-          <ProductCore
-            input={input}
-            handleOnChange={handleOnChange}
-            disabled={isUpdating}
-            setImagesProduct={setImagesProduct}
-            imageOld={imageOld}
-            setImageOld={setImageOld}
-            errors={errors}
-          />
-          <ProductDescription
-            input={input}
-            handleOnChange={handleOnChange}
-            compositions={compositions}
-            setCompositions={setCompositions}
-            disabled={isUpdating}
-            compositionItem={compositionItem}
-            setCompositionItem={setCompositionItem}
-            errors={errors}
-          />
+      {isPending ? (
+        <div className="w-full flex flex-col items-center justify-center mx-auto gap-2 h-[50vh] text-sm">
+          <Loader className="size-5 animate-spin" />
+          <p className="text-sm ml-2 animate-pulse">Memuat...</p>
+        </div>
+      ) : (
+        <div className="w-full grid grid-cols-3 gap-6">
+          <div className="col-span-2 w-full flex flex-col gap-4">
+            <ProductCore
+              input={input}
+              handleOnChange={handleOnChange}
+              disabled={isUpdating}
+              setImagesProduct={setImagesProduct}
+              imageOld={imageOld}
+              setImageOld={setImageOld}
+              errors={errors}
+            />
+            <ProductDescription
+              input={input}
+              handleOnChange={handleOnChange}
+              compositions={compositions}
+              setCompositions={setCompositions}
+              disabled={isUpdating}
+              compositionItem={compositionItem}
+              setCompositionItem={setCompositionItem}
+              errors={errors}
+            />
 
-          <div className="w-full flex items-center gap-2 px-3 py-5 bg-gradient-to-br from-gray-100 to-gray-200 border rounded-lg border-gray-300">
-            <Label>
-              <Checkbox
-                className="border-gray-400"
-                checked={isVariant}
-                onCheckedChange={setIsVariant}
+            <div className="w-full flex items-center gap-2 px-3 py-5 bg-gradient-to-br from-gray-100 to-gray-200 border rounded-lg border-gray-300">
+              <Label>
+                <Checkbox
+                  className="border-gray-400"
+                  checked={isVariant}
+                  onCheckedChange={setIsVariant}
+                />
+                <span>Product with variant</span>
+              </Label>
+            </div>
+            {isVariant ? (
+              <MultipleVariant
+                setVariants={setVariants}
+                variants={variants}
+                disabled={isUpdating}
+                errors={errors}
+                available={input.available}
               />
-              <span>Product with variant</span>
-            </Label>
+            ) : (
+              <SingleVariant
+                defaultVariants={defaultVariants}
+                setDefaultVariants={setDefaultVariants}
+                disabled={isUpdating}
+                errors={errors}
+                available={input.available}
+              />
+            )}
           </div>
-          {isVariant ? (
-            <MultipleVariant
-              setVariants={setVariants}
-              variants={variants}
-              disabled={isUpdating}
-              errors={errors}
-              available={input.available}
-            />
-          ) : (
-            <SingleVariant
-              defaultVariants={defaultVariants}
-              setDefaultVariants={setDefaultVariants}
-              disabled={isUpdating}
-              errors={errors}
-              available={input.available}
-            />
-          )}
-        </div>
-        <div className="col-span-1 w-full relative">
-          <div className="flex flex-col gap-3 sticky top-3">
-            <ReferenceMenu
-              loading={loading}
-              setPetIds={setPetIds}
-              petIds={petIds}
-              input={input}
-              setInput={setInput}
-              errors={errors}
-            />
-            <ProductAction
-              input={input}
-              setInput={setInput}
-              errors={errors}
-              handleSubmit={handleSubmit}
-              handleSelectRole={handleSelectRole}
-              disabled={
-                !input.title ||
-                input.available.length === 0 ||
-                !input.description ||
-                !input.categoryId ||
-                !input.supplierId ||
-                ((!imageOld || imageOld.length === 0) &&
-                  (!imagesProduct || imagesProduct.length === 0)) ||
-                petIds.length === 0 ||
-                compositions.length === 0 ||
-                (isVariant
-                  ? variants.length === 0 ||
-                    variants.filter((i) => !i.name || !i.barcode || !i.sku)
-                      .length > 0
-                  : !defaultVariants.barcode || !defaultVariants.sku)
-              }
-            />
+          <div className="col-span-1 w-full relative">
+            <div className="flex flex-col gap-3 sticky top-3">
+              <ReferenceMenu
+                loading={loading}
+                setPetIds={setPetIds}
+                petIds={petIds}
+                input={input}
+                setInput={setInput}
+                errors={errors}
+              />
+              <ProductAction
+                input={input}
+                setInput={setInput}
+                errors={errors}
+                handleSubmit={handleSubmit}
+                handleSelectRole={handleSelectRole}
+                disabled={
+                  !input.title ||
+                  input.available.length === 0 ||
+                  !input.description ||
+                  !input.categoryId ||
+                  !input.supplierId ||
+                  ((!imageOld || imageOld.length === 0) &&
+                    (!imagesProduct || imagesProduct.length === 0)) ||
+                  petIds.length === 0 ||
+                  compositions.length === 0 ||
+                  (isVariant
+                    ? variants.length === 0 ||
+                      variants.filter((i) => !i.name || !i.barcode || !i.sku)
+                        .length > 0
+                    : !defaultVariants.barcode || !defaultVariants.sku)
+                }
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

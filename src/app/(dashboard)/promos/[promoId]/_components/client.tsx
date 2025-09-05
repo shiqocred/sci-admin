@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Coins,
   Loader,
+  Loader2,
   RefreshCcw,
   Send,
   Trash2,
@@ -110,6 +111,17 @@ export const Client = () => {
     );
   };
 
+  const notSubmit =
+    isUpdating ||
+    isUpdatingStatus ||
+    isDeleting ||
+    !input.name ||
+    (!input.image && !input.imageOld) ||
+    input.selected.length === 0 ||
+    !input.startDate ||
+    !input.startTime ||
+    (input.isEnd && (!input.endDate || !input.endTime));
+
   useEffect(() => {
     if (detail) {
       setInput({
@@ -202,9 +214,9 @@ export const Client = () => {
           <div className="col-span-3 w-full">
             <PromoActive input={input} setInput={setInput} />
             <div className="flex flex-col gap-4 w-full">
-              <Button disabled={isLoading} onClick={handleCreatePromo}>
-                <Send />
-                Update Promo
+              <Button disabled={notSubmit} onClick={handleCreatePromo}>
+                {isUpdating ? <Loader2 className="animate-spin" /> : <Send />}
+                Updat{isUpdating ? "ing" : "e"} Promo{isUpdating && "..."}
               </Button>
             </div>
           </div>

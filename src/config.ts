@@ -4,8 +4,6 @@ export const jwtSecret = process.env.JWT_SECRET!;
 export const androidClientId = process.env.ANDROID_GOOGLE_CLIENT_ID!;
 export const iosClientId = process.env.IOS_GOOGLE_CLIENT_ID!;
 
-export const resendSecret = process.env.RESEND_API_KEY!;
-
 export const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 export const apiUrl = `${baseUrl}/api`;
 
@@ -22,3 +20,8 @@ export const apiXenditDev = process.env.NEXT_PUBLIC_API_XENDIT!;
 export const biteshipUrl = process.env.BITESHIP_URL!;
 
 export const biteshipAPI = process.env.NEXT_PUBLIC_API_BITESHIP!;
+
+export const smtpHost = process.env.NEXT_PUBLIC_SMTP_HOST!;
+export const smtpPort = process.env.NEXT_PUBLIC_SMTP_PORT!;
+export const smtpUser = process.env.NEXT_PUBLIC_SMTP_USER!;
+export const smtpPassword = process.env.NEXT_PUBLIC_SMTP_PASSWORD!;

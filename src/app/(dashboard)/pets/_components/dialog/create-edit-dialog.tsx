@@ -169,7 +169,14 @@ export const CreateEditDialog = ({
             >
               Cancel
             </Button>
-            <Button disabled={loading} type="submit">
+            <Button
+              disabled={
+                loading ||
+                !input.name ||
+                (petId ? !input.image && !input.imageOld : !input.image)
+              }
+              type="submit"
+            >
               {petId ? "Update" : "Create"}
             </Button>
           </DialogFooter>

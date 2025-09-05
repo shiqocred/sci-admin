@@ -18,7 +18,8 @@ const UpdateFreeShippingPage = async () => {
     <ContainerPage
       breadcrumbs={[
         { label: "Home", url: "/" },
-        { label: "Edit Free Shipping" },
+        { label: "Free Shipping", url: "/free-shippings" },
+        { label: "Edit" },
       ]}
     >
       <Client />

@@ -14,6 +14,7 @@ import {
   CircleDot,
   Edit,
   ImageIcon,
+  Loader2,
   MoreHorizontal,
   ReceiptText,
   Trash2,
@@ -27,11 +28,13 @@ export const column = ({
   handleDelete,
   handleChangeStatus,
   handleMove,
+  isLoading,
 }: {
   metaPage: MetaPageProps;
   handleDelete: (id: string) => Promise<void>;
   handleChangeStatus: (id: string) => Promise<void>;
   handleMove: (id: string, type: "detail" | "edit") => void;
+  isLoading: boolean;
 }): ColumnDef<ProductGrouped>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -173,9 +176,17 @@ export const column = ({
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={isLoading}
+            >
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <MoreHorizontal />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

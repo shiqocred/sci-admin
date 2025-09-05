@@ -2,12 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { ChevronRight, Coins, Send } from "lucide-react";
+import { ChevronRight, Coins, Loader2, Send } from "lucide-react";
 import React, { MouseEvent, useState } from "react";
 import { useCreatePromo } from "../_api";
 import Link from "next/link";
 import { PromoCore } from "../../_components/section/promo-core";
 import { PromoActive } from "../../_components/section/promo-active";
+import { format } from "date-fns";
 
 export const Client = () => {
   const [input, setInput] = useState({
@@ -15,13 +16,13 @@ export const Client = () => {
     selected: [] as string[],
     image: null as File | null,
     startDate: new Date() as Date | undefined,
-    startTime: "08:00",
+    startTime: format(new Date(), "HH:mm") ?? "08:00",
     endDate: undefined as Date | undefined,
-    endTime: "08:00",
+    endTime: format(new Date(), "HH:mm") ?? "08:00",
     isEnd: false as CheckedState | undefined,
   });
 
-  const { mutate: createPromo } = useCreatePromo();
+  const { mutate: createPromo, isPending: isCreating } = useCreatePromo();
 
   const handleCreatePromo = (e: MouseEvent) => {
     e.preventDefault();
@@ -41,6 +42,15 @@ export const Client = () => {
     }
     createPromo({ body });
   };
+
+  const notSubmit =
+    isCreating ||
+    !input.name ||
+    !input.image ||
+    input.selected.length === 0 ||
+    !input.startDate ||
+    !input.startTime ||
+    (input.isEnd && (!input.endDate || !input.endTime));
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -65,9 +75,9 @@ export const Client = () => {
         <div className="col-span-3 w-full">
           <div className="flex flex-col gap-4 w-full">
             <PromoActive input={input} setInput={setInput} />
-            <Button onClick={handleCreatePromo}>
-              <Send />
-              Create Promo
+            <Button onClick={handleCreatePromo} disabled={notSubmit}>
+              {isCreating ? <Loader2 className="animate-spin" /> : <Send />}
+              Creat{isCreating ? "ing" : "e"} Promo{isCreating && "..."}
             </Button>
           </div>
         </div>

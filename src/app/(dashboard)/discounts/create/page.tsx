@@ -16,7 +16,11 @@ const CreateDiscountsPage = async () => {
 
   return (
     <ContainerPage
-      breadcrumbs={[{ label: "Home", url: "/" }, { label: "Discounts" }]}
+      breadcrumbs={[
+        { label: "Home", url: "/" },
+        { label: "Discounts", url: "/discounts" },
+        { label: "Create" },
+      ]}
     >
       <Client />
     </ContainerPage>

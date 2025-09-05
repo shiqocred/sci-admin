@@ -175,7 +175,13 @@ export const Client = () => {
         </div>
         <DataTable
           data={categoriesList}
-          columns={column({ metaPage, setQuery, handleDelete })}
+          columns={column({
+            metaPage,
+            setQuery,
+            handleDelete,
+            isLoading: isDeleting,
+          })}
+          isLoading={isPending}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}

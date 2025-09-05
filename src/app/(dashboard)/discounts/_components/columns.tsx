@@ -17,6 +17,7 @@ import {
   CircleDot,
   Clipboard,
   Edit,
+  Loader2,
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { cn, formatRupiah } from "@/lib/utils";
 import { MouseEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { DiscountsProps } from "../_api";
 
 export const column = ({
   metaPage,
@@ -34,7 +36,7 @@ export const column = ({
   disabled,
 }: {
   metaPage: MetaPageProps;
-  copied: boolean;
+  copied: string;
   disabled: boolean;
   handleDelete: (id: string) => Promise<void>;
   handleCopy: (e: MouseEvent, name: string) => void;
@@ -42,7 +44,7 @@ export const column = ({
     status: "active" | "expired" | "scheduled",
     id: string
   ) => Promise<void>;
-}): ColumnDef<any>[] => [
+}): ColumnDef<DiscountsProps>[] => [
   {
     header: () => <div className="text-center">No</div>,
     id: "id",
@@ -66,9 +68,9 @@ export const column = ({
             size={"icon"}
             className="size-5 hover:bg-gray-200 disabled:opacity-100"
             onClick={(e) => handleCopy(e, discount.code)}
-            disabled={copied}
+            disabled={copied === discount.code}
           >
-            {copied ? (
+            {copied === discount.code ? (
               <Check className="size-3.5 text-gray-500" />
             ) : (
               <Clipboard className="size-3.5 text-gray-500" />
@@ -127,10 +129,14 @@ export const column = ({
       const discount = row.original;
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild disabled={disabled}>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0" disabled={disabled}>
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              {disabled ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <MoreHorizontal />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

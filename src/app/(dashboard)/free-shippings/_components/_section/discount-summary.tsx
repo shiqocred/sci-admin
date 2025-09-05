@@ -6,6 +6,7 @@ import React, { MouseEvent, useMemo } from "react";
 import { InputProps } from "../client";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Loader2, Send } from "lucide-react";
 
 interface DiscountSummaryProps {
   input: InputProps;
@@ -19,6 +20,7 @@ interface DiscountSummaryProps {
   handleCreate: (e: MouseEvent) => void;
   isDisabled: boolean;
   status?: "active" | "expired" | "scheduled";
+  isSubmitting: boolean;
 }
 
 export const DiscountSummary = ({
@@ -33,6 +35,7 @@ export const DiscountSummary = ({
   dateEnd,
   handleCreate,
   isDisabled,
+  isSubmitting,
 }: DiscountSummaryProps) => {
   const { freeShippingId } = useParams();
 
@@ -158,7 +161,12 @@ export const DiscountSummary = ({
       </div>
 
       <Button onClick={handleCreate} disabled={isDisabled}>
-        {freeShippingId ? "Update" : "Submit"}
+        {isSubmitting ? <Loader2 className="animate-spin" /> : <Send />}
+        {freeShippingId
+          ? "Updat" + isSubmitting
+            ? "ing..."
+            : "e"
+          : "Submit" + isSubmitting && "ting..."}
       </Button>
     </div>
   );

@@ -2,12 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { ChevronRight, ImageIcon, Send } from "lucide-react";
+import { ChevronRight, ImageIcon, Loader2, Send } from "lucide-react";
 import React, { MouseEvent, useState } from "react";
 import { useCreateBanner } from "../_api";
 import Link from "next/link";
 import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
+import { format } from "date-fns";
 
 export const Client = () => {
   const [input, setInput] = useState({
@@ -21,13 +22,13 @@ export const Client = () => {
     selected: [] as string[],
     image: null as File | null,
     startDate: new Date() as Date | undefined,
-    startTime: "08:00",
+    startTime: format(new Date(), "HH:mm") ?? "08:00",
     endDate: undefined as Date | undefined,
-    endTime: "08:00",
+    endTime: format(new Date(), "HH:mm") ?? "08:00",
     isEnd: false as CheckedState | undefined,
   });
 
-  const { mutate: createBanner } = useCreateBanner();
+  const { mutate: createBanner, isPending: isCreating } = useCreateBanner();
 
   const handleCreateBanner = (e: MouseEvent) => {
     e.preventDefault();
@@ -48,6 +49,15 @@ export const Client = () => {
     }
     createBanner({ body });
   };
+
+  const notSubmit =
+    !input.name ||
+    !input.image ||
+    input.selected.length === 0 ||
+    !input.startDate ||
+    !input.startTime ||
+    (input.isEnd && (!input.endDate || !input.endTime)) ||
+    isCreating;
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -72,9 +82,9 @@ export const Client = () => {
         <div className="col-span-3 w-full">
           <div className="flex flex-col gap-4 w-full">
             <BannerActive input={input} setInput={setInput} />
-            <Button onClick={handleCreateBanner}>
-              <Send />
-              Create Banner
+            <Button onClick={handleCreateBanner} disabled={notSubmit}>
+              {isCreating ? <Loader2 className="animate-spin" /> : <Send />}
+              Creat{isCreating ? "ing" : "e"} Banner{isCreating && "..."}
             </Button>
           </div>
         </div>

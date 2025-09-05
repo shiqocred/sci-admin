@@ -4,11 +4,10 @@ import React, { MouseEvent, useEffect, useMemo, useState } from "react";
 import { useGetDiscounts } from "../_api/query/use-get-discounts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+import { Plus, RefreshCcw, XCircle } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
 import { column } from "./columns";
@@ -82,12 +81,13 @@ export const Client = () => {
     return data?.data?.data ?? [];
   }, [data]);
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState("");
 
   const handleCopy = async (e: MouseEvent, name: string) => {
+    e.preventDefault();
     await navigator.clipboard.writeText(name);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000); // 2 detik kembali ke Clipboard
+    setCopied(name);
+    setTimeout(() => setCopied(""), 2000); // 2 detik kembali ke Clipboard
   };
   const handleUpdateStatus = async (
     status: "active" | "expired" | "scheduled",
@@ -166,7 +166,7 @@ export const Client = () => {
               setSort={setQuery}
               data={filterField}
             />
-            <div className="flex rounded-md overflow-hidden border">
+            {/* <div className="flex rounded-md overflow-hidden border">
               <TooltipText value="Export">
                 <Button
                   className="size-8 flex-none rounded-none"
@@ -189,7 +189,7 @@ export const Client = () => {
                   <Download className="size-3.5" />
                 </Button>
               </TooltipText>
-            </div>
+            </div> */}
             <Button
               className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
               disabled={loading}
@@ -210,8 +210,9 @@ export const Client = () => {
             handleDelete,
             copied,
             handleCopy,
-            disabled: loading,
+            disabled: isPending || isDeleting || isUpdatingStatus,
           })}
+          isLoading={isPending}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}

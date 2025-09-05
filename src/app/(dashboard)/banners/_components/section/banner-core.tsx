@@ -74,13 +74,14 @@ export const BannerCore = ({
       <LabelInput
         label="Name"
         placeholder="Type banner name..."
+        classLabel="required"
         value={input.name}
         onChange={(e) =>
           setInput((prev: any) => ({ ...prev, name: e.target.value }))
         }
       />
       <div className="flex flex-col gap-1.5">
-        <Label>Upload Image</Label>
+        <Label className="required">Upload Image</Label>
         <FileUploadBanner
           onChange={(e) =>
             setInput((prev: any) => ({ ...prev, image: e as File }))
@@ -93,7 +94,7 @@ export const BannerCore = ({
         <p className="text-xs text-gray-500">*Recommended ratio 21:10</p>
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label>Type Banner</Label>
+        <Label className="required">Type Banner</Label>
         <Select
           value={input.apply}
           onValueChange={(e) =>

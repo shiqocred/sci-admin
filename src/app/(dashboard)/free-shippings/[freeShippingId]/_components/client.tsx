@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 
 import { checkedFormat, checkedToString, cn } from "@/lib/utils";
-import { ChevronRight, RefreshCcw, Trash2, Truck } from "lucide-react";
+import { ChevronRight, Loader, RefreshCcw, Trash2, Truck } from "lucide-react";
 import Link from "next/link";
 import React, { MouseEvent, useEffect, useState } from "react";
 import { useUpdateFreeShipping, useGetFreeShipping } from "../_api";
@@ -120,7 +120,7 @@ export const Client = () => {
   const { mutate: updateDiscountStatus, isPending: isUpdatingStatus } =
     useUpdateFreeShippingStatus();
 
-  const { data, refetch, isRefetching, isLoading } = useGetFreeShipping({
+  const { data, refetch, isRefetching, isPending } = useGetFreeShipping({
     freeShippingId: freeShippingId as string,
   });
 
@@ -191,7 +191,7 @@ export const Client = () => {
     isUpdating ||
     isDeleting ||
     isUpdatingStatus ||
-    isLoading;
+    isPending;
 
   const handleUpdate = (e: MouseEvent) => {
     e.preventDefault();
@@ -296,61 +296,69 @@ export const Client = () => {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="flex flex-col gap-4 col-span-2">
-          <DiscountCore
-            apply={apply}
-            input={input}
-            setDiscounts={setDiscounts}
-            setInput={setInput}
-            errors={errors}
-          />
-          <DiscountEligibility
-            eligibility={eligibility}
-            input={input}
-            setDiscounts={setDiscounts}
-            setInput={setInput}
-          />
-          <DiscountMinimum
-            minimumReq={minimumReq}
-            input={input}
-            setDiscounts={setDiscounts}
-            setInput={setInput}
-          />
-          <DiscountLimit
-            limitUse={limitUse}
-            limitOnce={limitOnce}
-            input={input}
-            setDiscounts={setDiscounts}
-            setInput={setInput}
-          />
-          <DiscountDate
-            dateEnd={dateEnd}
-            dateStart={dateStart}
-            setDateEnd={setDateEnd}
-            setDateStart={setDateStart}
-            endDate={endDate}
-            input={input}
-            setDiscounts={setDiscounts}
-            setInput={setInput}
-          />
+      {isPending ? (
+        <div className="h-[50vh] w-full flex items-center justify-center flex-col gap-2">
+          <Loader className="size-6 animate-spin" />
+          <p className="animate-pulse ml-2 text-sm">Loading...</p>
         </div>
-        <div className="col-span-1 relative">
-          <DiscountSummary
-            input={input}
-            apply={apply}
-            eligibility={eligibility}
-            minimumReq={minimumReq}
-            limitOnce={limitOnce}
-            dateStart={dateStart}
-            endDate={endDate}
-            dateEnd={dateEnd}
-            handleCreate={handleUpdate}
-            isDisabled={isDisabled}
-            status={data?.data.status}
-          />
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col gap-4 col-span-2">
+            <DiscountCore
+              apply={apply}
+              input={input}
+              setDiscounts={setDiscounts}
+              setInput={setInput}
+              errors={errors}
+            />
+            <DiscountEligibility
+              eligibility={eligibility}
+              input={input}
+              setDiscounts={setDiscounts}
+              setInput={setInput}
+            />
+            <DiscountMinimum
+              minimumReq={minimumReq}
+              input={input}
+              setDiscounts={setDiscounts}
+              setInput={setInput}
+            />
+            <DiscountLimit
+              limitUse={limitUse}
+              limitOnce={limitOnce}
+              input={input}
+              setDiscounts={setDiscounts}
+              setInput={setInput}
+            />
+            <DiscountDate
+              dateEnd={dateEnd}
+              dateStart={dateStart}
+              setDateEnd={setDateEnd}
+              setDateStart={setDateStart}
+              endDate={endDate}
+              input={input}
+              setDiscounts={setDiscounts}
+              setInput={setInput}
+            />
+          </div>
+          <div className="col-span-1 relative">
+            <DiscountSummary
+              input={input}
+              apply={apply}
+              eligibility={eligibility}
+              minimumReq={minimumReq}
+              limitOnce={limitOnce}
+              dateStart={dateStart}
+              endDate={endDate}
+              dateEnd={dateEnd}
+              handleCreate={handleUpdate}
+              isDisabled={isDisabled}
+              isSubmitting={isUpdating}
+              status={data?.data.status}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

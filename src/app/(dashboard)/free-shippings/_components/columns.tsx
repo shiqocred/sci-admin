@@ -11,7 +11,14 @@ import { Button } from "@/components/ui/button";
 import { MetaPageProps } from "@/lib/pagination";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Circle, CircleDot, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  Circle,
+  CircleDot,
+  Edit,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -80,10 +87,14 @@ export const column = ({
       const freeShipping = row.original;
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild disabled={disabled}>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0" disabled={disabled}>
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              {disabled ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <MoreHorizontal />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

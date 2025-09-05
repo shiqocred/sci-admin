@@ -3,14 +3,17 @@ import {
   r2AccessKey,
   r2AccountId,
   r2bucket,
-  resendSecret,
+  smtpHost,
+  smtpPassword,
+  smtpPort,
+  smtpUser,
 } from "@/config";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 export const r2 = new S3Client({
   region: "auto",
@@ -50,4 +53,12 @@ export const deleteR2 = async (key: string) => {
   );
 };
 
-export const resend = new Resend(resendSecret);
+export const transporter = nodemailer.createTransport({
+  host: smtpHost, // SMTP server kamu
+  port: Number(smtpPort), // SSL port
+  secure: Number(smtpPort) === 465, // true untuk port 465, false kalau pakai 587
+  auth: {
+    user: smtpUser, // username
+    pass: smtpPassword, // password
+  },
+});

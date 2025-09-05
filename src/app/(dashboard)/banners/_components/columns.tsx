@@ -16,6 +16,7 @@ import {
   CircleDot,
   Edit,
   ImageIcon,
+  Loader2,
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
@@ -29,10 +30,12 @@ export const column = ({
   metaPage,
   handleDelete,
   handleUpdateStatus,
+  isLoading,
 }: {
   metaPage: MetaPageProps;
   handleDelete: (id: string) => Promise<void>;
   handleUpdateStatus: (status: any, id: string) => void;
+  isLoading: boolean;
 }): ColumnDef<BannerProps>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -102,9 +105,17 @@ export const column = ({
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={isLoading}
+            >
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <MoreHorizontal />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

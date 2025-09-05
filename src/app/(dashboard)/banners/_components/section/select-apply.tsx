@@ -41,7 +41,7 @@ export const SelectApply = ({
   };
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>Target</Label>
+      <Label className="required">Target</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button

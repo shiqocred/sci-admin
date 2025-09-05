@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ImageIcon,
   Loader,
+  Loader2,
   RefreshCcw,
   Send,
   Trash2,
@@ -117,6 +118,19 @@ export const Client = () => {
     );
   };
 
+  const notSubmit =
+    !input.name ||
+    (!input.image && !input.imageOld) ||
+    input.selected.length === 0 ||
+    !input.startDate ||
+    !input.startTime ||
+    (input.isEnd && (!input.endDate || !input.endTime)) ||
+    isUpdating ||
+    isDeleting ||
+    isUpdatingStatus ||
+    isPending ||
+    isRefetching;
+
   useEffect(() => {
     if (detail) {
       setInput({
@@ -197,7 +211,7 @@ export const Client = () => {
         </div>
       </div>
       {isPending ? (
-        <div className="h-[400px] w-full flex items-center justify-center flex-col gap-2">
+        <div className="h-[50vh] w-full flex items-center justify-center flex-col gap-2">
           <Loader className="size-6 animate-spin" />
           <p className="animate-pulse ml-2 text-sm">Loading...</p>
         </div>
@@ -209,9 +223,9 @@ export const Client = () => {
           <div className="col-span-3 w-full">
             <BannerActive input={input} setInput={setInput} />
             <div className="flex flex-col gap-4 w-full">
-              <Button disabled={isLoading} onClick={handleCreateBanner}>
-                <Send />
-                Update Banner
+              <Button disabled={notSubmit} onClick={handleCreateBanner}>
+                {isUpdating ? <Loader2 className="animate-spin" /> : <Send />}
+                Updat{isUpdating ? "ing" : "e"} Banner{isUpdating && "..."}
               </Button>
             </div>
           </div>

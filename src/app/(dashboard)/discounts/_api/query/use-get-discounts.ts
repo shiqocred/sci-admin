@@ -1,19 +1,21 @@
 import { PaginationMeta } from "@/lib/pagination/fastPaginate";
 import { useApiQuery } from "@/lib/query/use-query";
 
+export type DiscountsProps = {
+  id: string;
+  code: string;
+  applyType: "categories" | "suppliers" | "pets" | "products";
+  valueType: "fixed" | "percentage";
+  value: string;
+  eligibilityType: "user" | "role" | null;
+  eligibility: number | null;
+  totalApply: number;
+  status: "active" | "expired" | "scheduled";
+};
+
 type Response = {
   data: {
-    data: {
-      id: string;
-      code: string;
-      applyType: "categories" | "suppliers" | "pets" | "products";
-      valueType: "fixed" | "percentage";
-      value: string;
-      eligibilityType: "user" | "role" | null;
-      eligibility: number | null;
-      totalApply: number;
-      status: string;
-    }[];
+    data: DiscountsProps[];
     pagination: PaginationMeta;
   };
 };

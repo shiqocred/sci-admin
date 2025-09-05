@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { MetaPageProps } from "@/lib/pagination";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, ImageIcon, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, ImageIcon, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { sizesImage } from "@/lib/utils";
 
@@ -19,10 +19,12 @@ export const column = ({
   metaPage,
   setQuery,
   handleDelete,
+  isLoading,
 }: {
   metaPage: MetaPageProps;
   setQuery: any;
   handleDelete: (id: string) => Promise<void>;
+  isLoading: boolean;
 }): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -81,9 +83,17 @@ export const column = ({
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={isLoading}
+            >
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <MoreHorizontal />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

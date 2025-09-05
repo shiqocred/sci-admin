@@ -116,9 +116,9 @@ export const Client = () => {
         </div>
       </div>
       {isDeleting || isPending || !product ? (
-        <div className="w-full flex flex-col items-center justify-center mx-auto gap-2 py-20 text-sm">
-          <Loader className="animate-spin" />
-          <p>Memuat...</p>
+        <div className="w-full flex flex-col items-center justify-center mx-auto gap-2 h-[50vh] text-sm">
+          <Loader className="size-5 animate-spin" />
+          <p className="text-sm ml-2 animate-pulse">Memuat...</p>
         </div>
       ) : (
         <div className="w-full mx-auto gap-6 text-sm">

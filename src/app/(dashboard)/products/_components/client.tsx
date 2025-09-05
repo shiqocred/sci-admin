@@ -206,11 +206,13 @@ export const Client = () => {
         </div>
         <DataTable
           data={productList}
+          isLoading={isPending}
           columns={column({
             metaPage,
             handleDelete,
             handleChangeStatus,
             handleMove,
+            isLoading: isDeleting || isChanging,
           })}
         />
         <Pagination

@@ -4,11 +4,10 @@ import React, { useEffect, useMemo } from "react";
 import { useGetFreeShippings } from "../_api/query/use-get-free-shippings";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+import { Plus, RefreshCcw, XCircle } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/data-table";
 import Pagination from "@/components/pagination";
 import { column } from "./columns";
@@ -157,7 +156,7 @@ export const Client = () => {
               setSort={setQuery}
               data={filterField}
             />
-            <div className="flex rounded-md overflow-hidden border">
+            {/* <div className="flex rounded-md overflow-hidden border">
               <TooltipText value="Export">
                 <Button
                   className="size-8 flex-none rounded-none"
@@ -180,7 +179,7 @@ export const Client = () => {
                   <Download className="size-3.5" />
                 </Button>
               </TooltipText>
-            </div>
+            </div> */}
             <Button
               className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
               disabled={loading}
@@ -199,8 +198,9 @@ export const Client = () => {
             metaPage,
             handleUpdateStatus,
             handleDelete,
-            disabled: loading,
+            disabled: isDeleting || isUpdatingStatus,
           })}
+          isLoading={isPending}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}

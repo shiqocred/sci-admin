@@ -18,6 +18,7 @@ import {
   DiscountSummary,
 } from "../../_components/_section";
 import { InputProps } from "../../_components/client";
+import { format } from "date-fns";
 
 const minimumFormatted = (minimumReq: string, input: InputProps) => {
   if (minimumReq === "amount") return input.purchase;
@@ -61,7 +62,7 @@ export const Client = () => {
   const [dateStart, setDateStart] = React.useState<Date | undefined>(
     new Date()
   );
-  const [dateEnd, setDateEnd] = React.useState<Date | undefined>(new Date());
+  const [dateEnd, setDateEnd] = React.useState<Date | undefined>(undefined);
   const [errors, setErrors] = useState({ name: "", apply: "" });
 
   const [
@@ -84,11 +85,12 @@ export const Client = () => {
     purchase: "0",
     quantity: "0",
     use: "0",
-    startTime: "08:00",
-    endTime: "08:00",
+    startTime: format(new Date(), "HH:mm") ?? "08:00",
+    endTime: format(new Date(), "HH:mm") ?? "08:00",
   });
 
-  const { mutate: createFreeShipping } = useCreateFreeShipping();
+  const { mutate: createFreeShipping, isPending: isCreating } =
+    useCreateFreeShipping();
 
   const isDisabled =
     !input.name ||
@@ -102,7 +104,8 @@ export const Client = () => {
     (checkedFormat(limitUse) &&
       (!input.use || parseFloat(input.quantity) === 0)) ||
     !dateStart ||
-    (checkedFormat(endDate) && !dateEnd);
+    (checkedFormat(endDate) && !dateEnd) ||
+    isCreating;
 
   const handleCreate = (e: MouseEvent) => {
     e.preventDefault();
@@ -195,6 +198,7 @@ export const Client = () => {
             dateEnd={dateEnd}
             handleCreate={handleCreate}
             isDisabled={isDisabled}
+            isSubmitting={isCreating}
           />
         </div>
       </div>

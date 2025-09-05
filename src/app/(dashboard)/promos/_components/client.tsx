@@ -143,7 +143,7 @@ export const Client = () => {
               setSort={setQuery}
               data={filterField}
             />
-            <div className="flex rounded-md overflow-hidden border">
+            {/* <div className="flex rounded-md overflow-hidden border">
               <TooltipText value="Export">
                 <Button
                   className="size-8 flex-none rounded-none"
@@ -166,7 +166,7 @@ export const Client = () => {
                   <Download className="size-3.5" />
                 </Button>
               </TooltipText>
-            </div>
+            </div> */}
             <Button
               className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
               disabled={loading}
@@ -185,7 +185,9 @@ export const Client = () => {
             metaPage,
             handleDelete,
             handleUpdateStatus,
+            isLoading: isDeleting || isUpdating,
           })}
+          isLoading={isPending}
         />
         <Pagination
           pagination={{ ...metaPage, current: page, limit }}
