@@ -27,7 +27,7 @@ import { apiGMaps } from "@/config";
 import { LabelInput } from "@/components/label-input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
-import { cn, sizesImage } from "@/lib/utils";
+import { cn, pronoun, sizesImage } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MessageInputError } from "@/components/message-input-error";
@@ -36,13 +36,24 @@ import Image from "next/image";
 import { Switch } from "@/components/ui/switch";
 import {
   useGetCouriers,
+  useGetExpired,
   useGetLocation,
   useUpdateCouriers,
+  useUpdateExpired,
   useUpdateLocation,
 } from "../_api";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Client = () => {
-  const [input, setInput] = useState({
+  const [expired, setExpired] = useState("");
+  const [location, setLocation] = useState({
     latitude: "",
     longitude: "",
     address: "",
@@ -61,9 +72,12 @@ export const Client = () => {
     useUpdateCouriers();
   const { mutate: updateLocation, isPending: isUpdatingLocation } =
     useUpdateLocation();
+  const { mutate: updateExpired, isPending: isUpdatingExpired } =
+    useUpdateExpired();
 
   const { data: dataCouriers, isPending: isGettingCouriers } = useGetCouriers();
   const { data: dataLocation, isPending: isGettingLocation } = useGetLocation();
+  const { data: dataExpired, isPending: isGettingExpired } = useGetExpired();
 
   const handleUpdateCouriers = (e: MouseEvent) => {
     e.preventDefault();
@@ -78,17 +92,23 @@ export const Client = () => {
     e.preventDefault();
     updateLocation({
       body: {
-        lat: input.latitude,
-        long: input.longitude,
-        address: input.address,
+        lat: location.latitude,
+        long: location.longitude,
+        address: location.address,
       },
+    });
+  };
+  const handleUpdateExpired = (e: MouseEvent) => {
+    e.preventDefault();
+    updateExpired({
+      body: { expired },
     });
   };
 
   useEffect(() => {
     if (dataLocation) {
       const location = dataLocation.data;
-      setInput(
+      setLocation(
         location
           ? {
               latitude: location.lat,
@@ -104,8 +124,43 @@ export const Client = () => {
       setCouriers(dataCouriers.data);
     }
   }, [dataCouriers]);
+  useEffect(() => {
+    if (dataExpired) {
+      setExpired(dataExpired.data ?? "1");
+    }
+  }, [dataExpired]);
   return (
     <div className="w-full flex-col gap-4 flex">
+      <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-semibold">Payment Expired</h3>
+        {isGettingExpired ? (
+          <div className="h-40 flex items-center justify-center flex-col gap-1">
+            <Loader className="size-6 animate-spin -mt-3" />
+            <p className="text-sm ml-2">Loading...</p>
+          </div>
+        ) : (
+          <Select value={expired} onValueChange={setExpired}>
+            <SelectTrigger className="w-full border-gray-300 focus-visible:ring-0 focus-visible:border-gray-500 data-[state=open]:border-gray-500">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup className="max-h-56 overflow-y-auto">
+                {Array.from({ length: 24 }, (_, i) => (
+                  <SelectItem key={i} value={`${i + 1}`}>
+                    {i + 1} Hour{pronoun(i + 1)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        )}
+        <div className="flex items-center justify-end">
+          <Button onClick={handleUpdateExpired} disabled={isUpdatingExpired}>
+            {isUpdatingExpired ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      </div>
+      <Separator />
       <div className="flex flex-col gap-4">
         <h3 className="text-lg font-semibold">Store Address</h3>
         {isGettingLocation ? (
@@ -115,8 +170,8 @@ export const Client = () => {
           </div>
         ) : (
           <MapPicker
-            input={input}
-            setInput={setInput}
+            input={location}
+            setInput={setLocation}
             errors={{ latitude: "", longitude: "" }}
           />
         )}

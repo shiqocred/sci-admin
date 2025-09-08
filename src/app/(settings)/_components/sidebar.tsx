@@ -27,7 +27,7 @@ const data = [
   },
   {
     icon: Truck,
-    name: "Shipping",
+    name: "Shipping & Payment",
     href: "/settings/shipping",
   },
   {

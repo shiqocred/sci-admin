@@ -18,6 +18,7 @@ export const apiGMaps = process.env.NEXT_PUBLIC_API_GMAPS!;
 export const apiXenditDev = process.env.NEXT_PUBLIC_API_XENDIT!;
 
 export const biteshipUrl = process.env.BITESHIP_URL!;
+export const checkoutUrl = process.env.CHECKOUT_XENDIT_URL!;
 
 export const biteshipAPI = process.env.NEXT_PUBLIC_API_BITESHIP!;
 

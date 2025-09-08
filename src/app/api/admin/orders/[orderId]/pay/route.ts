@@ -33,7 +33,7 @@ export async function POST(
 
     await db
       .update(orders)
-      .set({ status: "PACKING" })
+      .set({ status: "PACKING", willExpired: null, paidAt: sql`NOW()` })
       .where(eq(orders.id, orderId));
 
     return successRes({ id: orderId }, "Order successfully paid");

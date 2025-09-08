@@ -335,12 +335,14 @@ export async function POST(
 
     const orderItemsExist = await db
       .select({
-        name: productVariants.name,
+        productName: products.name,
+        variantName: productVariants.name,
         quantity: orderItems.quantity,
         weight: orderItems.weight,
       })
       .from(orderItems)
-      .innerJoin(productVariants, eq(productVariants.id, orderItems.variantId))
+      .leftJoin(productVariants, eq(productVariants.id, orderItems.variantId))
+      .leftJoin(products, eq(products.id, productVariants.productId))
       .where(eq(orderItems.orderId, orderId));
 
     if (!store) return errorRes("Store detail missing, please seed data", 400);
@@ -368,7 +370,7 @@ export async function POST(
       delivery_type: "now",
       reference_id: orderId,
       items: orderItemsExist.map((product) => ({
-        name: product.name,
+        name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
         weight: product.weight,
         quantity: product.quantity,
       })),

@@ -38,6 +38,7 @@ export const orders = pgTable("orders", {
   totalPrice: numeric("total_price", { precision: 12, scale: 0 }).notNull(),
   note: text("note"),
 
+  willExpired: timestamp("will_expired"),
   shippingAt: timestamp("shipping_at"),
   cancelledAt: timestamp("cancelled_at"),
   expiredAt: timestamp("expired_at"),
