@@ -21,7 +21,7 @@ import { ProductFilter } from "./product-filter";
 
 const filterField = [
   { name: "Name", value: "name" },
-  { name: "Stok", value: "stock" },
+  { name: "Stock", value: "stock" },
   { name: "Status", value: "status" },
 ];
 

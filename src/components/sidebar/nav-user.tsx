@@ -5,6 +5,9 @@ import { LogoutButton } from "../logout-button";
 import { cn } from "@/lib/utils";
 import { UserRound } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
+import pkg from "../../../package.json";
+
+const appVersion = pkg.version;
 
 export const NavUser = () => {
   const { data } = useSession();
@@ -14,42 +17,47 @@ export const NavUser = () => {
       <SidebarMenuItem>
         <div
           className={cn(
-            "rounded-md flex flex-col gap-2",
-            open && "p-1 border bg-gray-100 border-gray-300"
+            "rounded-md flex flex-col gap-2 overflow-hidden",
+            open && "border bg-gray-100 border-gray-300"
           )}
         >
-          <div className="flex gap-2 items-center">
-            <TooltipText
-              side="right"
-              className={cn("hidden", !open && "flex")}
-              value={
-                <div className="flex flex-col text-xs">
-                  <h5 className="font-semibold">{data?.user?.name}</h5>
-                  <p>{data?.user?.email}</p>
-                </div>
-              }
-            >
-              <div
-                className={cn(
-                  "size-9 border rounded-md flex items-center justify-center",
-                  !open && "size-8"
-                )}
+          <div className={cn("gap-2 flex flex-col", open && "p-1")}>
+            <div className="flex gap-2 items-center">
+              <TooltipText
+                side="right"
+                className={cn("hidden", !open && "flex")}
+                value={
+                  <div className="flex flex-col text-xs">
+                    <h5 className="font-semibold">{data?.user?.name}</h5>
+                    <p>{data?.user?.email}</p>
+                  </div>
+                }
               >
-                <UserRound className="size-5" />
+                <div
+                  className={cn(
+                    "size-9 border rounded-md flex items-center justify-center",
+                    !open && "size-8"
+                  )}
+                >
+                  <UserRound className="size-5" />
+                </div>
+              </TooltipText>
+              <div className={cn("flex flex-col text-sm", !open && "hidden")}>
+                <h5 className="font-semibold">{data?.user?.name}</h5>
+                <p className="text-xs">{data?.user?.email}</p>
               </div>
-            </TooltipText>
-            <div className={cn("flex flex-col text-sm", !open && "hidden")}>
-              <h5 className="font-semibold">{data?.user?.name}</h5>
-              <p className="text-xs">{data?.user?.email}</p>
             </div>
+            <LogoutButton
+              className={cn(
+                "w-full justify-center bg-red-500 text-white hover:bg-red-600 hover:text-white",
+                !open && "p-0 size-8"
+              )}
+              isVisible={open}
+            />
           </div>
-          <LogoutButton
-            className={cn(
-              "w-full justify-center bg-red-500 text-white hover:bg-red-600 hover:text-white",
-              !open && "p-0 size-8"
-            )}
-            isVisible={open}
-          />
+          <div className="bg-gray-200 text-xs text-center py-2">
+            <p>v{appVersion}</p>
+          </div>
         </div>
       </SidebarMenuItem>
     </SidebarMenu>

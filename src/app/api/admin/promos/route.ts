@@ -10,12 +10,6 @@ import { asc, countDistinct, desc, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import slugify from "slugify";
 
-function combineDateTime(date: string | null, time?: string | null) {
-  if (!date || !time) return null;
-  const [hours, minutes] = time.split(":").map(Number);
-  return new Date(new Date(date).setHours(hours, minutes));
-}
-
 const sortFieldMap: Record<string, any> = {
   name: promos.name,
   created: promos.createdAt,
@@ -93,14 +87,8 @@ export async function POST(req: NextRequest) {
 
     if (!image) return errorRes("Image is required", 400);
 
-    const start = combineDateTime(
-      body.get("start_date") as string,
-      body.get("start_time") as string
-    );
-    const end = combineDateTime(
-      body.get("end_date") as string | null,
-      body.get("end_time") as string | null
-    );
+    const start = body.get("start_promo") as string;
+    const end = body.get("end_promo") as string | null;
 
     const slug = `${slugify(name, { lower: true })}-${generateRandomNumber()}`;
 
@@ -116,8 +104,8 @@ export async function POST(req: NextRequest) {
       id: promoId,
       name,
       image: key,
-      startAt: start!,
-      endAt: end,
+      startAt: new Date(start),
+      endAt: end ? new Date(end) : null,
       slug,
     });
 

@@ -13,9 +13,9 @@ export const invoices = pgTable("invoice", {
     .references(() => orders.id, { onDelete: "cascade" }),
 
   paymentId: text("payment_id"),
-  paymentChannel: text("payment_channel"), // grab, jne, etc
-  paymentMethod: text("payment_method"), // grab, jne, etc
-  amount: text("amount").notNull(), // grab, jne, etc
+  paymentChannel: text("payment_channel"),
+  paymentMethod: text("payment_method"),
+  amount: text("amount").notNull(),
   status: paymentStatusEnum("status").notNull().default("PENDING"),
 
   expiredAt: timestamp("expired_at"),

@@ -23,9 +23,7 @@ const SettingLayout = ({ children }: { children: ReactNode }) => {
       <div className="flex max-w-4xl mx-auto">
         <div className="grid grid-cols-7 gap-4 w-full">
           <div className="col-span-2 w-full flex h-full relative">
-            <div className="bg-white rounded-lg shadow-sm p-3 w-full sticky top-4 h-fit">
-              <SidebarSetting />
-            </div>
+            <SidebarSetting />
           </div>
           <div className="col-span-5 w-full pb-20">
             <div className="bg-white rounded-lg shadow-sm p-3 w-full">

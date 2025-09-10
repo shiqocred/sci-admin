@@ -80,3 +80,72 @@ export const checkedToString = (
   if (val === false) return "false";
   return "indeterminate";
 };
+
+export function numberToTerbilang(n: number): string {
+  const angka = [
+    "",
+    "satu",
+    "dua",
+    "tiga",
+    "empat",
+    "lima",
+    "enam",
+    "tujuh",
+    "delapan",
+    "sembilan",
+    "sepuluh",
+    "sebelas",
+  ];
+
+  function toWords(x: number): string {
+    if (x < 12) {
+      return angka[x];
+    } else if (x < 20) {
+      return toWords(x - 10) + " belas";
+    } else if (x < 100) {
+      return (
+        toWords(Math.floor(x / 10)) +
+        " puluh" +
+        (x % 10 !== 0 ? " " + toWords(x % 10) : "")
+      );
+    } else if (x < 200) {
+      return "seratus" + (x - 100 > 0 ? " " + toWords(x - 100) : "");
+    } else if (x < 1000) {
+      return (
+        toWords(Math.floor(x / 100)) +
+        " ratus" +
+        (x % 100 !== 0 ? " " + toWords(x % 100) : "")
+      );
+    } else if (x < 2000) {
+      return "seribu" + (x - 1000 > 0 ? " " + toWords(x - 1000) : "");
+    } else if (x < 1000000) {
+      return (
+        toWords(Math.floor(x / 1000)) +
+        " ribu" +
+        (x % 1000 !== 0 ? " " + toWords(x % 1000) : "")
+      );
+    } else if (x < 1000000000) {
+      return (
+        toWords(Math.floor(x / 1000000)) +
+        " juta" +
+        (x % 1000000 !== 0 ? " " + toWords(x % 1000000) : "")
+      );
+    } else if (x < 1000000000000) {
+      return (
+        toWords(Math.floor(x / 1000000000)) +
+        " miliar" +
+        (x % 1000000000 !== 0 ? " " + toWords(x % 1000000000) : "")
+      );
+    } else if (x < 1000000000000000) {
+      return (
+        toWords(Math.floor(x / 1000000000000)) +
+        " triliun" +
+        (x % 1000000000000 !== 0 ? " " + toWords(x % 1000000000000) : "")
+      );
+    }
+    return "";
+  }
+
+  if (n === 0) return "nol rupiah";
+  return toWords(n).trim() + " rupiah";
+}

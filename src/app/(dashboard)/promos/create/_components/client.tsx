@@ -33,12 +33,16 @@ export const Client = () => {
       body.append("image", input.image);
     }
     if (input.startDate) {
-      body.append("start_date", input.startDate.toString());
-      body.append("start_time", input.startTime);
+      const [hourStart, minuteStart] = input.startTime.split(":").map(Number);
+      const newDateStart = new Date(input.startDate);
+      newDateStart.setHours(hourStart, minuteStart, 0, 0);
+      body.append("start_promo", newDateStart.toString());
     }
     if (input.isEnd && input.endDate) {
-      body.append("end_date", input.endDate.toString());
-      body.append("end_time", input.endTime);
+      const [hourEnd, minuteEnd] = input.endTime.split(":").map(Number);
+      const newDateEnd = new Date(input.endDate);
+      newDateEnd.setHours(hourEnd, minuteEnd, 0, 0);
+      body.append("end_promo", newDateEnd.toString());
     }
     createPromo({ body });
   };
