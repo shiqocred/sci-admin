@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { isRecord } from "./utils";
 
@@ -16,7 +16,10 @@ export const useMutate = <
   method,
   onSuccess,
   onError,
-}: UseMutateConfig<TBody, TParams, TSearchParams>) =>
+  axiosConfig,
+}: UseMutateConfig<TBody, TParams, TSearchParams> & {
+  axiosConfig?: AxiosRequestConfig<any>;
+}) =>
   useMutation<
     AxiosResponse,
     AxiosError,
@@ -54,15 +57,15 @@ export const useMutate = <
 
       switch (method) {
         case "get":
-          return axios.get(url);
+          return axios.get(url, axiosConfig);
         case "post":
-          return axios.post(url, body);
+          return axios.post(url, body, axiosConfig);
         case "put":
-          return axios.put(url, body);
+          return axios.put(url, body, axiosConfig);
         case "delete":
-          return axios.delete(url);
+          return axios.delete(url, axiosConfig);
         default:
-          return axios.patch(url, body);
+          return axios.patch(url, body, axiosConfig);
       }
     },
     onSuccess,

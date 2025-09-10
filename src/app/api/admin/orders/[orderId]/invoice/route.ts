@@ -57,10 +57,11 @@ const formatPayment = (method: string | null, channel: string | null) => {
   return "ADMIN";
 };
 
-export async function GET(req: NextRequest) {
-  const inline = req.nextUrl.searchParams.get("inline") === "1";
-
-  const orderId = "h44cj6j32hsvpp8bmsclafp8";
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> }
+) {
+  const { orderId } = await params;
 
   const [[orderData], items, store] = await Promise.all([
     db
@@ -133,6 +134,7 @@ export async function GET(req: NextRequest) {
     })),
   };
 
+  console.log(JSON.stringify(data, null, 2));
   // Render React-PDF → Buffer
   const pdfBuffer = await renderToBuffer(invoicePDF({ data }));
 
@@ -140,7 +142,7 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="invoice.pdf"`,
+      "Content-Disposition": `attachment; filename=\"invoice-${orderId}.pdf\"`,
       "Cache-Control": "no-store",
     },
   });

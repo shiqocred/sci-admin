@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useMemo } from "react";
+import React, { MouseEvent, useMemo } from "react";
 import {
   useCancelOrder,
+  useDownloadInvoice,
   useGetOrder,
   usePayOrder,
   useSendOrder,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
+  Download,
   FileCheckIcon,
   Loader,
   Loader2,
@@ -66,6 +68,8 @@ export const Client = () => {
   const { mutate: payOrder, isPending: isPaying } = usePayOrder();
   const { mutate: cancelOrder, isPending: isCanceling } = useCancelOrder();
   const { mutate: sendOrder, isPending: isSending } = useSendOrder();
+  const { mutate: downloadInvoice, isPending: isDownloading } =
+    useDownloadInvoice();
 
   const isLoading = isPaying || isCanceling || isSending;
 
@@ -90,21 +94,54 @@ export const Client = () => {
     if (!ok) return;
     sendOrder({ params: { id: orderId as string } });
   };
+
+  const handleDownloadInvoice = (e: MouseEvent) => {
+    e.preventDefault();
+    downloadInvoice(
+      { params: { id: orderId as string } },
+      {
+        onSuccess: async (res) => {
+          const url = window.URL.createObjectURL(res.data);
+
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `invoice-${orderId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+        },
+      }
+    );
+  };
   return (
     <div className="w-full flex flex-col gap-6 pb-20">
       <PayDialog />
       <CancelDialog />
       <SendDialog />
-      <div className="w-full flex items-center gap-1">
-        <Button size={"icon"} variant={"ghost"} asChild>
-          <Link href={"/orders"}>
-            <ShoppingBag className="size-5" />
-          </Link>
+      <div className="w-full flex items-center justify-between">
+        <div className="w-full flex items-center gap-1">
+          <Button size={"icon"} variant={"ghost"} asChild>
+            <Link href={"/orders"}>
+              <ShoppingBag className="size-5" />
+            </Link>
+          </Button>
+          <ChevronRight className="size-5" />
+          <h1 className="text-xl font-semibold">Detail Orders</h1>
+          <ChevronRight className="size-5" />
+          <p>#{orderData?.id}</p>
+        </div>
+        <Button
+          onClick={handleDownloadInvoice}
+          size={"sm"}
+          className="text-xs"
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Download className="size-3.5" />
+          )}
+          {isDownloading ? "Downloading..." : "Order Invoice"}
         </Button>
-        <ChevronRight className="size-5" />
-        <h1 className="text-xl font-semibold">Detail Orders</h1>
-        <ChevronRight className="size-5" />
-        <p>#{orderData?.id}</p>
       </div>
       <div className="flex w-full flex-col gap-3">
         {isPending ? (

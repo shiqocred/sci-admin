@@ -75,11 +75,6 @@ interface VariantData {
   weight: string;
 }
 
-interface ExistingImageData {
-  url: string;
-  position: string;
-}
-
 interface ExistingVariantData {
   id: string;
   name: string;

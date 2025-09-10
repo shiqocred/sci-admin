@@ -2,14 +2,13 @@
 
 import React, { useEffect, useMemo } from "react";
 import { parseAsString, useQueryStates } from "nuqs";
-import { Download, Plus, RefreshCcw, Share, XCircle } from "lucide-react";
+import { Plus, RefreshCcw, XCircle } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/pagination";
 import { SortTable } from "@/components/sort-table";
 import { DataTable } from "@/components/data-table";
-import { Separator } from "@/components/ui/separator";
 import { TooltipText } from "@/providers/tooltip-provider";
 
 import { cn } from "@/lib/utils";

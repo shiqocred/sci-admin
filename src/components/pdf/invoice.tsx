@@ -1,4 +1,3 @@
-// components/pdf/InvoicePDF.tsx
 import { baseUrl } from "@/config";
 import { numberToTerbilang } from "@/lib/utils";
 import {
