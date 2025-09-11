@@ -3,6 +3,7 @@
 import { useQueryState } from "nuqs";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
+import pkg from "../../.././../../package.json";
 
 export const Client = () => {
   const [fromURL, setFromURL] = useQueryState("from");
@@ -13,6 +14,8 @@ export const Client = () => {
       setFromURL(null);
     }
   }, [fromURL]);
+
+  console.log(pkg.version);
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="w-full flex items-center gap-4">
