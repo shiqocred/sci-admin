@@ -25,7 +25,6 @@ const sortField = (s: string) => {
 
 export async function GET(req: NextRequest) {
   try {
-    console.log(pkg.version);
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 

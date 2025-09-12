@@ -15,7 +15,6 @@ export const Client = () => {
     }
   }, [fromURL]);
 
-  console.log(pkg.version);
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="w-full flex items-center gap-4">
