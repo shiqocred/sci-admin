@@ -20,7 +20,9 @@ export const SingleVariant = ({
   disabled: boolean;
   errors: any;
 }) => {
-  const [isAllPrice, setIsAllPrice] = useState<boolean | "indeterminate">(true);
+  const [isAllPrice, setIsAllPrice] = useState<boolean | "indeterminate">(
+    false
+  );
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
