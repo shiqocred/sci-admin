@@ -70,8 +70,8 @@ export const Client = () => {
     maxPrice,
     minProduct,
     maxProduct,
-    minDate: dateFormatted(minDate, "min"),
-    maxDate: dateFormatted(maxDate, "max"),
+    minDate: minDate ? dateFormatted(minDate, "min") : "",
+    maxDate: maxDate ? dateFormatted(maxDate, "max") : "",
   });
 
   const ordersList = useMemo(() => data?.data.data, [data]);

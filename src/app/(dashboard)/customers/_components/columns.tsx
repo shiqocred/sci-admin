@@ -108,7 +108,9 @@ export const column = ({
                   : "bg-amber-100"
             )}
           >
-            {role}
+            {role === "Basic" && "Pet Owner"}
+            {role === "Veterinarian" && "Vet Clinic"}
+            {role === "Pet Shop" && "Pet Shop"}
           </p>
           <div className="flex gap-0.5 items-center">
             {(status_role === 1 || status_role === 2) && (
@@ -139,7 +141,9 @@ export const column = ({
                     : "bg-amber-100"
               )}
             >
-              {newRole}
+              {newRole === "Basic" && "Pet Owner"}
+              {newRole === "Veterinarian" && "Vet Clinic"}
+              {newRole === "Pet Shop" && "Pet Shop"}
             </p>
           )}
         </div>

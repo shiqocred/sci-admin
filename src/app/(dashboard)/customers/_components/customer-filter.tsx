@@ -173,7 +173,9 @@ export const CustomerFilter = ({
                           item === "veterinarian" && "bg-violet-200"
                         )}
                       >
-                        {item}
+                        {item === "basic" && "Pet Owner"}
+                        {item === "petshop" && "Pet Shop"}
+                        {item === "veterinarian" && "Vet Clinic"}
                       </div>
                     ))}
                   </div>
@@ -245,7 +247,7 @@ export const CustomerFilter = ({
                   >
                     <Check className="text-primary-foreground size-3" />
                   </div>
-                  Vet Shop
+                  Vet Clinic
                 </CommandItem>
               </CommandGroup>
               {query.role && (
