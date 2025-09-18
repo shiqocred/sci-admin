@@ -9,12 +9,6 @@ import { NextRequest } from "next/server";
 
 type BannerType = "DETAIL" | "PETS" | "SUPPLIERS" | "PROMOS" | "CATEGORIES";
 
-function combineDateTime(date: string | null, time?: string | null) {
-  if (!date || !time) return null;
-  const [hours, minutes] = time.split(":").map(Number);
-  return new Date(new Date(date).setHours(hours, minutes));
-}
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ bannerId: string }> }
@@ -190,14 +184,8 @@ export async function PUT(
     const apply = body.getAll("apply") as string[];
     const image = body.get("image") as File | null;
 
-    const startAt = combineDateTime(
-      body.get("start_date") as string,
-      body.get("start_time") as string
-    );
-    const endAt = combineDateTime(
-      body.get("end_date") as string | null,
-      body.get("end_time") as string | null
-    );
+    const start = body.get("start_banner") as string;
+    const end = body.get("end_banner") as string | null;
 
     const imageKey = await uploadBannerImage(
       existingBanner.image,
@@ -210,8 +198,8 @@ export async function PUT(
       .set({
         name,
         type,
-        startAt: startAt!,
-        endAt,
+        startAt: new Date(start),
+        endAt: end ? new Date(end) : null,
         ...(imageKey && { image: imageKey }),
       })
       .where(eq(banners.id, bannerId));

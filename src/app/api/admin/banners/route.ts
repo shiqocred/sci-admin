@@ -11,12 +11,6 @@ import { NextRequest } from "next/server";
 
 type BannerType = "DETAIL" | "PETS" | "SUPPLIERS" | "PROMOS" | "CATEGORIES";
 
-function combineDateTime(date: string | null, time?: string | null) {
-  if (!date || !time) return null;
-  const [hours, minutes] = time.split(":").map(Number);
-  return new Date(new Date(date).setHours(hours, minutes));
-}
-
 const sortFieldMap: Record<string, any> = {
   name: banners.name,
   type: banners.type,
@@ -125,14 +119,8 @@ export async function POST(req: NextRequest) {
 
     if (!image) return errorRes("Image is required", 400);
 
-    const start = combineDateTime(
-      body.get("start_date") as string,
-      body.get("start_time") as string
-    );
-    const end = combineDateTime(
-      body.get("end_date") as string | null,
-      body.get("end_time") as string | null
-    );
+    const start = body.get("start_banner") as string;
+    const end = body.get("end_banner") as string | null;
 
     const bannerId = createId();
     const key = `images/banners/${bannerId}-${Date.now()}.webp`;
@@ -146,8 +134,8 @@ export async function POST(req: NextRequest) {
       id: bannerId,
       name,
       image: key,
-      startAt: start!,
-      endAt: end,
+      startAt: new Date(start),
+      endAt: end ? new Date(end) : null,
       type,
     });
 

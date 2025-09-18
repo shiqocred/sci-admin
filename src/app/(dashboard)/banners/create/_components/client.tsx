@@ -10,6 +10,13 @@ import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
 import { format } from "date-fns";
 
+const dateFormatted = (time: string, date: Date) => {
+  const [hour, minute] = time.split(":").map(Number);
+  const newDate = new Date(date);
+  newDate.setHours(hour, minute, 0, 0);
+  return newDate.toISOString();
+};
+
 export const Client = () => {
   const [input, setInput] = useState({
     name: "",
@@ -40,12 +47,12 @@ export const Client = () => {
       body.append("image", input.image);
     }
     if (input.startDate) {
-      body.append("start_date", input.startDate.toString());
-      body.append("start_time", input.startTime);
+      const startDiscount = dateFormatted(input.startTime, input.startDate);
+      body.append("start_banner", startDiscount);
     }
     if (input.isEnd && input.endDate) {
-      body.append("end_date", input.endDate.toString());
-      body.append("end_time", input.endTime);
+      const endDiscount = dateFormatted(input.endTime, input.endDate);
+      body.append("end_banner", endDiscount);
     }
     createBanner({ body });
   };

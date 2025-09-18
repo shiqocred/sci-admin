@@ -82,13 +82,13 @@ export const Client = () => {
       const [hourStart, minuteStart] = input.startTime.split(":").map(Number);
       const newDateStart = new Date(input.startDate);
       newDateStart.setHours(hourStart, minuteStart, 0, 0);
-      body.append("start_promo", newDateStart.toString());
+      body.append("start_promo", newDateStart.toISOString());
     }
     if (input.isEnd && input.endDate) {
       const [hourEnd, minuteEnd] = input.endTime.split(":").map(Number);
       const newDateEnd = new Date(input.endDate);
       newDateEnd.setHours(hourEnd, minuteEnd, 0, 0);
-      body.append("end_promo", newDateEnd.toString());
+      body.append("end_promo", newDateEnd.toISOString());
     }
     updatePromo({ body, params: { id: promoId as string } });
   };

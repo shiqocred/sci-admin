@@ -18,6 +18,16 @@ import { OrderFilter } from "./order-filter";
 
 const filterField = [{ name: "Order Id", value: "id" }];
 
+const dateFormatted = (date: string, type: "min" | "max") => {
+  const newDate = new Date(date);
+  if (type === "min") {
+    newDate.setHours(0, 0);
+    return newDate.toISOString();
+  }
+  newDate.setHours(23, 59);
+  return newDate.toISOString();
+};
+
 export const Client = () => {
   const [
     {
@@ -60,8 +70,8 @@ export const Client = () => {
     maxPrice,
     minProduct,
     maxProduct,
-    minDate,
-    maxDate,
+    minDate: dateFormatted(minDate, "min"),
+    maxDate: dateFormatted(maxDate, "max"),
   });
 
   const ordersList = useMemo(() => data?.data.data, [data]);

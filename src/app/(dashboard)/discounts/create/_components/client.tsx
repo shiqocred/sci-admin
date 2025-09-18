@@ -32,30 +32,11 @@ const eligibilityFormatted = (eligibility: string, input: InputProps) => {
   return null;
 };
 
-const endDateFormatted = (
-  input: InputProps,
-  dateEnd: Date | undefined,
-  endDate: CheckedState
-) => {
-  if (input.endTime && dateEnd && endDate) {
-    const [hourEnd, minuteEnd] = input.endTime.split(":").map(Number);
-    const newDateEnd = new Date(dateEnd);
-    newDateEnd.setHours(hourEnd, minuteEnd, 0, 0);
-    return newDateEnd;
-  } else {
-    return dateEnd;
-  }
-};
-
-const startDateFormatted = (input: InputProps, dateStart: Date | undefined) => {
-  if (input.startTime && dateStart) {
-    const [hourStart, minuteStart] = input.startTime.split(":").map(Number);
-    const newDateStart = new Date(dateStart);
-    newDateStart.setHours(hourStart, minuteStart, 0, 0);
-    return newDateStart;
-  } else {
-    return dateStart;
-  }
+const dateFormatted = (time: string, date: Date) => {
+  const [hour, minute] = time.split(":").map(Number);
+  const newDate = new Date(date);
+  newDate.setHours(hour, minute, 0, 0);
+  return newDate.toISOString();
 };
 
 export const Client = () => {
@@ -120,10 +101,13 @@ export const Client = () => {
       minimum: minimumFormatted(minimumReq, input),
       limitUse: checkedFormat(limitUse) ? input.use : null,
       limitOnce: checkedFormat(limitOnce),
-      startDiscount: startDateFormatted(input, dateStart) ?? null,
-      endDiscount: checkedFormat(endDate)
-        ? endDateFormatted(input, dateEnd, checkedFormat(endDate))
+      startDiscount: dateStart
+        ? dateFormatted(input.startTime, dateStart)
         : null,
+      endDiscount:
+        checkedFormat(endDate) && dateEnd
+          ? dateFormatted(input.endTime, dateEnd)
+          : null,
     };
     createDiscount({ body });
   };

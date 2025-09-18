@@ -16,8 +16,8 @@ type Body = {
   minimum: string | null;
   limitUse: string | null;
   limitOnce: CheckedState;
-  startDiscount: Date | null;
-  endDiscount: Date | null | undefined;
+  startDiscount: string | null;
+  endDiscount: string | null | undefined;
 };
 
 export const useCreateDiscount = () => {

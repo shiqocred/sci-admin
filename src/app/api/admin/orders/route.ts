@@ -57,17 +57,6 @@ const formatStatus = (
 
 type OrderType = (typeof orderStatusEnum)["enumValues"][number];
 
-const setDate = (v: string, t: "min" | "max") => {
-  const z = new Date(v);
-
-  if (t === "min") {
-    z.setHours(0, 0);
-    return z;
-  }
-  z.setHours(23, 59);
-  return z;
-};
-
 const getFilters = (
   userId: string[],
   status: string[],
@@ -143,8 +132,14 @@ export async function GET(req: NextRequest) {
     const minDate = req.nextUrl.searchParams.get("minDate");
     const maxDate = req.nextUrl.searchParams.get("maxDate");
 
-    const minDateFormatted = minDate ? setDate(minDate, "min") : null;
-    const maxDateFormatted = maxDate ? setDate(maxDate, "max") : null;
+    const minDateFormatted = minDate ? new Date(minDate) : null;
+    const maxDateFormatted = maxDate ? new Date(maxDate) : null;
+
+    console.log(
+      minDateFormatted,
+      maxDateFormatted,
+      maxDateFormatted && format(maxDateFormatted, "PPpp")
+    );
 
     const filters = getFilters(
       userId,
