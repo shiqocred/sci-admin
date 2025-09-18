@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import { useGetCustomers } from "../_api/query/use-get-customers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCcw, XCircle } from "lucide-react";
+import { RefreshCcw, XCircle } from "lucide-react";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { cn } from "@/lib/utils";
@@ -147,14 +147,6 @@ export const Client = () => {
             setSort={setQuery}
             data={filterField}
           />
-          <Button
-            className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
-            onClick={() => {}}
-            disabled={loading}
-          >
-            <Plus className="size-3" />
-            Add Customer
-          </Button>
         </div>
       </div>
       <div className="flex w-full flex-col gap-3">

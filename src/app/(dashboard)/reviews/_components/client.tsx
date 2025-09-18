@@ -118,40 +118,6 @@ export const Client = () => {
     <div className="w-full flex flex-col gap-6">
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Reviews</h1>
-        {/* <div className="flex items-center gap-2">
-          <div className="flex rounded-md overflow-hidden border">
-            <Button
-              className="size-8 flex-none rounded-none"
-              variant={"ghost"}
-              size={"icon"}
-              // disabled={loading}
-            >
-              <Share className="size-3.5" />
-            </Button>
-            <Separator
-              orientation="vertical"
-              className="data-[orientation=vertical]:h-8"
-            />
-            <Button
-              className="size-8 flex-none rounded-none"
-              variant={"ghost"}
-              size={"icon"}
-              // disabled={loading}
-            >
-              <Download className="size-3.5" />
-            </Button>
-          </div>
-          <Button
-            className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
-            asChild
-            //   disabled={loading}
-          >
-            <Link href={"/orders/create"}>
-              <Plus className="size-3" />
-              Add Order
-            </Link>
-          </Button>
-        </div> */}
       </div>
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">
@@ -273,7 +239,7 @@ export const Client = () => {
                   {detailReview.product.map((i) => (
                     <Link
                       key={i.id}
-                      className="h-8 px-3 flex items-center gap-2 text-sm hover:underline hover:underline-offset-2"
+                      className="min-h-8 py-1.5 px-3 flex items-center gap-2 text-sm hover:underline hover:underline-offset-2"
                       href={`/products/${i.id}/detail`}
                     >
                       <ChartNoAxesGanttIcon className="size-4" />

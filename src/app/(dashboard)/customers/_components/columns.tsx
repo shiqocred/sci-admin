@@ -205,10 +205,6 @@ export const column = ({
               Review upgrade role
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-xs" onSelect={() => {}}>
-              <Edit className="size-3.5" />
-              Edit
-            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {}}
               className="text-xs text-red-400 focus:text-red-500 group"
