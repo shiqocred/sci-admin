@@ -45,12 +45,12 @@ export const timeNow = async () => {
   return now;
 };
 
-export const pronoun = (num: string | number) => {
+export const pronoun = (num: string | number, es?: boolean) => {
   const value =
     typeof num === "string" ? parseFloat(num.replace(/[^\d.-]/g, "")) : num;
 
   if (!value || isNaN(value)) return "";
-  return value > 1 ? "s" : "";
+  return value > 1 ? (es ? "es" : "s") : "";
 };
 
 export const numericString = (e: string) => {

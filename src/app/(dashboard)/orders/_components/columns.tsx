@@ -54,7 +54,7 @@ export const column = ({
         <p
           className={cn(
             "px-3 py-0.5 w-fit rounded-lg font-medium capitalize",
-            row.original.status === "waiting payment" && "bg-yellow-200",
+            row.original.status === "waiting-payment" && "bg-yellow-200",
             row.original.status === "processed" && "bg-blue-200",
             row.original.status === "shipping" && "bg-yellow-200",
             row.original.status === "delivered" && "bg-green-200",
@@ -62,7 +62,7 @@ export const column = ({
             row.original.status === "expired" && "bg-orange-200"
           )}
         >
-          {row.original.status}
+          {row.original.status.split("-").join(" ")}
         </p>
       </div>
     ),

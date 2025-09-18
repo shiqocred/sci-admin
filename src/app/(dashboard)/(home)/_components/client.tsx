@@ -3,7 +3,6 @@
 import { useQueryState } from "nuqs";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import pkg from "../../.././../../package.json";
 
 export const Client = () => {
   const [fromURL, setFromURL] = useQueryState("from");

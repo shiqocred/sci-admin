@@ -9,7 +9,6 @@ import slugify from "slugify";
 import { z } from "zod/v4";
 import { r2Public } from "@/config";
 import { convertToWebP } from "@/lib/convert-image";
-import pkg from "../../../../../package.json";
 
 const supplierSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 character" }),

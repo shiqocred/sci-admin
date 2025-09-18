@@ -702,7 +702,7 @@ export async function GET(
     if (!product) return errorRes("Product not found", 404);
 
     // Parallel queries for related data
-    const [images, petsData, compositions, variants, availableRoles, pricings] =
+    const [images, petsData, compositions, variants, availableRoles] =
       await Promise.all([
         db.query.productImages.findMany({
           columns: { url: true },

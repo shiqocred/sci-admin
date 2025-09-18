@@ -13,8 +13,14 @@ import Pagination from "@/components/pagination";
 import { column } from "./columns";
 import { useSearchQuery } from "@/lib/search";
 import { usePagination } from "@/lib/pagination";
-import { parseAsString, useQueryStates } from "nuqs";
+import {
+  parseAsArrayOf,
+  parseAsBoolean,
+  parseAsString,
+  useQueryStates,
+} from "nuqs";
 import { SheetRole } from "./dialogs/sheet-role";
+import { CustomerFilter } from "./customer-filter";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -24,12 +30,34 @@ const filterField = [
 ];
 
 export const Client = () => {
-  const [{ sort, order, dialog, customerId }, setQuery] = useQueryStates(
+  const [
+    {
+      sort,
+      order,
+      dialog,
+      customerId,
+      role,
+      minOrder,
+      maxOrder,
+      minSpent,
+      maxSpent,
+      email,
+      approve,
+    },
+    setQuery,
+  ] = useQueryStates(
     {
       sort: parseAsString.withDefault("created"),
       order: parseAsString.withDefault("desc"),
       dialog: parseAsString.withDefault(""),
       customerId: parseAsString.withDefault(""),
+      role: parseAsArrayOf(parseAsString.withDefault("")).withDefault([]),
+      minOrder: parseAsString.withDefault(""),
+      maxOrder: parseAsString.withDefault(""),
+      minSpent: parseAsString.withDefault(""),
+      maxSpent: parseAsString.withDefault(""),
+      email: parseAsString.withDefault(""),
+      approve: parseAsBoolean.withDefault(false),
     },
     {
       urlKeys: {
@@ -48,6 +76,13 @@ export const Client = () => {
       limit,
       sort,
       order,
+      role,
+      status: email,
+      approval: approve,
+      minOrder,
+      maxOrder,
+      minSpent,
+      maxSpent,
     }
   );
 
@@ -74,83 +109,72 @@ export const Client = () => {
       />
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Customers</h1>
-      </div>
-      <div className="flex w-full flex-col gap-3">
-        <div className="flex items-center w-full justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center group">
-              <Input
-                className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
-                placeholder="Search customer..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search.length > 0 && (
-                <Button
-                  size={"icon"}
-                  className="absolute right-2 size-4 hover:bg-gray-200 group-hover:flex hidden"
-                  variant={"ghost"}
-                  onClick={() => setSearch(null)}
-                >
-                  <XCircle className="size-3" />
-                </Button>
-              )}
-            </div>
-            <TooltipText value="Reload data">
-              <Button
-                className="size-8 flex-none disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed"
-                variant={"outline"}
-                size={"icon"}
-                onClick={() => refetch()}
-                disabled={loading}
-              >
-                <RefreshCcw
-                  className={cn("size-3.5", loading && "animate-spin")}
-                />
-              </Button>
-            </TooltipText>
-          </div>
-          <div className="flex items-center gap-2">
-            <SortTable
-              order={order}
-              sort={sort}
-              setSort={setQuery}
-              data={filterField}
+        <div className="flex items-center gap-2">
+          <div className="relative flex items-center group">
+            <Input
+              className="h-8 focus-visible:ring-0 shadow-none w-52 placeholder:text-xs"
+              placeholder="Search customer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-            {/* <div className="flex rounded-md overflow-hidden border">
-              <TooltipText value="Export">
-                <Button
-                  className="size-8 flex-none rounded-none"
-                  variant={"ghost"}
-                  size={"icon"}
-                >
-                  <Share className="size-3.5" />
-                </Button>
-              </TooltipText>
-              <Separator
-                orientation="vertical"
-                className="data-[orientation=vertical]:h-8"
-              />
-              <TooltipText value="Import">
-                <Button
-                  className="size-8 flex-none rounded-none"
-                  variant={"ghost"}
-                  size={"icon"}
-                >
-                  <Download className="size-3.5" />
-                </Button>
-              </TooltipText>
-            </div> */}
+            {search.length > 0 && (
+              <Button
+                size={"icon"}
+                className="absolute right-2 size-4 hover:bg-gray-200 group-hover:flex hidden"
+                variant={"ghost"}
+                onClick={() => setSearch(null)}
+              >
+                <XCircle className="size-3" />
+              </Button>
+            )}
+          </div>
+          <TooltipText value="Reload data">
             <Button
-              className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
-              onClick={() => {}}
+              className="size-8 flex-none disabled:opacity-100 disabled:pointer-events-auto disabled:cursor-not-allowed"
+              variant={"outline"}
+              size={"icon"}
+              onClick={() => refetch()}
               disabled={loading}
             >
-              <Plus className="size-3" />
-              Add Customer
+              <RefreshCcw
+                className={cn("size-3.5", loading && "animate-spin")}
+              />
             </Button>
-          </div>
+          </TooltipText>
+          <SortTable
+            order={order}
+            sort={sort}
+            setSort={setQuery}
+            data={filterField}
+          />
+          <Button
+            className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
+            onClick={() => {}}
+            disabled={loading}
+          >
+            <Plus className="size-3" />
+            Add Customer
+          </Button>
         </div>
+      </div>
+      <div className="flex w-full flex-col gap-3">
+        {data?.data.option && (
+          <CustomerFilter
+            query={{
+              role,
+              email,
+              minOrder,
+              maxOrder,
+              minSpent,
+              maxSpent,
+              approve,
+            }}
+            setQuery={setQuery}
+            data={data?.data.option}
+            current={data?.data.current}
+          />
+        )}
+
         <DataTable
           data={customersList}
           columns={column({ metaPage, setQuery })}
