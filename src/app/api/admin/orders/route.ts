@@ -135,12 +135,6 @@ export async function GET(req: NextRequest) {
     const minDateFormatted = minDate ? new Date(minDate) : null;
     const maxDateFormatted = maxDate ? new Date(maxDate) : null;
 
-    console.log(
-      minDateFormatted,
-      maxDateFormatted,
-      maxDateFormatted && format(maxDateFormatted, "PPpp")
-    );
-
     const filters = getFilters(
       userId,
       status,

@@ -21,6 +21,8 @@ import {
 } from "nuqs";
 import { SheetRole } from "./dialogs/sheet-role";
 import { CustomerFilter } from "./customer-filter";
+import { useDeleteUser, useVerifyEmail } from "../_api";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -66,6 +68,19 @@ export const Client = () => {
     }
   );
 
+  const [VerifyDialog, confirmVerify] = useConfirm(
+    "Verify Email",
+    "This action cannot be undone"
+  );
+  const [DeleteDialog, confirmDelete] = useConfirm(
+    "Delete User",
+    "This action cannot be undone",
+    "destructive"
+  );
+
+  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
+  const { mutate: verifyEmail, isPending: isVerifiying } = useVerifyEmail();
+
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
@@ -86,11 +101,23 @@ export const Client = () => {
     }
   );
 
-  const loading = isRefetching || isPending;
+  const loading = isRefetching || isPending || isVerifiying || isDeleting;
 
   const customersList = useMemo(() => {
     return data?.data?.data ?? [];
   }, [data]);
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDelete();
+    if (!ok) return;
+    deleteUser({ params: { id } });
+  };
+
+  const handleVerify = async (id: string) => {
+    const ok = await confirmVerify();
+    if (!ok) return;
+    verifyEmail({ params: { id } });
+  };
 
   useEffect(() => {
     if (data && isSuccess) {
@@ -107,6 +134,8 @@ export const Client = () => {
         }}
         id={customerId}
       />
+      <VerifyDialog />
+      <DeleteDialog />
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Customers</h1>
         <div className="flex items-center gap-2">
@@ -169,7 +198,7 @@ export const Client = () => {
 
         <DataTable
           data={customersList}
-          columns={column({ metaPage, setQuery })}
+          columns={column({ metaPage, setQuery, handleVerify, handleDelete })}
           isLoading={isPending}
         />
         <Pagination

@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { ProductFilter } from "./product-filter";
+import { ProductTrending } from "./product-trending";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -118,28 +119,6 @@ export const Client = () => {
       <div className="w-full flex items-center gap-4 justify-between">
         <h1 className="text-xl font-semibold">Products</h1>
         <div className="flex items-center gap-2">
-          {/* <div className="flex rounded-md overflow-hidden border">
-            <Button
-              className="size-8 flex-none rounded-none"
-              variant={"ghost"}
-              size={"icon"}
-              disabled={loading}
-            >
-              <Share className="size-3.5" />
-            </Button>
-            <Separator
-              orientation="vertical"
-              className="data-[orientation=vertical]:h-8"
-            />
-            <Button
-              className="size-8 flex-none rounded-none"
-              variant={"ghost"}
-              size={"icon"}
-              disabled={loading}
-            >
-              <Download className="size-3.5" />
-            </Button>
-          </div> */}
           <Button
             className="py-0 h-8 px-3 text-xs font-medium lg:cursor-pointer"
             asChild
@@ -152,6 +131,7 @@ export const Client = () => {
           </Button>
         </div>
       </div>
+      <ProductTrending />
       <div className="flex w-full flex-col gap-3">
         <div className="flex items-center w-full justify-between gap-2">
           <ProductFilter

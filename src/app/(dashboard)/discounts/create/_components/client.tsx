@@ -7,7 +7,6 @@ import { BadgePercent, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React, { MouseEvent, useState } from "react";
 import { useCreateDiscount } from "../_api";
-import { CheckedState } from "@radix-ui/react-checkbox";
 import { parseAsString, useQueryStates } from "nuqs";
 import {
   DiscountCore,

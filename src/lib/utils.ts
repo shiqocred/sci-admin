@@ -149,3 +149,10 @@ export function numberToTerbilang(n: number): string {
   if (n === 0) return "nol rupiah";
   return toWords(n).trim() + " rupiah";
 }
+
+export const formatRole = (role: string) => {
+  if (role === "BASIC") return "Pet Owner";
+  if (role === "PETSHOP") return "Pet Shop";
+  if (role === "VETERINARIAN") return "Vet Clinic";
+  return "";
+};

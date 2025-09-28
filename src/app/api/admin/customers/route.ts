@@ -54,6 +54,7 @@ const getFiltersBase = (
 ) => {
   const filters = [];
   filters.push(not(eq(users.role, "ADMIN")));
+  filters.push(isNull(users.deletedAt));
   if (roles.length) {
     filters.push(
       inArray(
@@ -123,6 +124,7 @@ export async function GET(req: NextRequest) {
       and(
         not(eq(orders.status, "WAITING_PAYMENT")),
         not(eq(orders.status, "CANCELLED"))
+        // not(eq(orders.status, "EXPIRED"))
       )
     );
 
@@ -167,7 +169,7 @@ export async function GET(req: NextRequest) {
           image: users.image,
           status_role: userRoleDetails.status,
           newRole: userRoleDetails.newRole,
-          orders: count(orders.id).as("orders"),
+          orders: countDistinct(orders.id).as("orders"),
           amountSpent: sum(orders.totalPrice).as("amountSpent"),
         })
         .from(users)

@@ -31,6 +31,7 @@ import {
   productCompositions,
   productImages,
   productVariants,
+  productTrendings,
   productToPets,
   productVariantPrices,
   products,
@@ -84,6 +85,7 @@ export const schema = {
   productCompositions,
   productImages,
   productVariants,
+  productTrendings,
   productToPets,
   productVariantPrices,
   products,
@@ -130,6 +132,7 @@ export * from "./product-available-roles";
 export * from "./product-compositions";
 export * from "./product-images";
 export * from "./product-variants";
+export * from "./products-trending";
 export * from "./product-to-pets";
 export * from "./product-variant-prices";
 export * from "./products";

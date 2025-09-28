@@ -134,15 +134,14 @@ export async function POST(
     })),
   };
 
-  console.log(JSON.stringify(data, null, 2));
   // Render React-PDF → Buffer
   const pdfBuffer = await renderToBuffer(invoicePDF({ data }));
 
-  return new Response(pdfBuffer, {
+  return new Response(new Uint8Array(pdfBuffer), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=\"invoice-${orderId}.pdf\"`,
+      "Content-Disposition": `attachment; filename="invoice-${orderId}.pdf"`,
       "Cache-Control": "no-store",
     },
   });

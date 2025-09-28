@@ -16,24 +16,29 @@ import {
   BadgeCheck,
   CheckCircle,
   Clock,
-  Edit,
   IdCard,
   ImageIcon,
   Minus,
   MoreHorizontal,
+  ReceiptText,
   Trash2,
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { cn, formatRupiah, sizesImage } from "@/lib/utils";
 import { TooltipText } from "@/providers/tooltip-provider";
+import Link from "next/link";
 
 export const column = ({
   metaPage,
   setQuery,
+  handleVerify,
+  handleDelete,
 }: {
   metaPage: MetaPageProps;
   setQuery: any;
+  handleVerify: (id: string) => Promise<void>;
+  handleDelete: (id: string) => Promise<void>;
 }): ColumnDef<any>[] => [
   {
     header: () => <div className="text-center">No</div>,
@@ -189,7 +194,7 @@ export const column = ({
             <DropdownMenuItem
               disabled={customer.isVerified}
               className="text-xs"
-              onSelect={() => {}}
+              onSelect={() => handleVerify(customer.id)}
             >
               <BadgeCheck className="size-3.5" />
               Mark email as verified
@@ -205,8 +210,15 @@ export const column = ({
               Review upgrade role
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-xs" asChild>
+              <Link href={`/customers/${customer.id}`}>
+                <ReceiptText className="size-3.5" />
+                Detail
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => {}}
+              onSelect={() => handleDelete(customer.id)}
               className="text-xs text-red-400 focus:text-red-500 group"
             >
               <Trash2 className="size-3.5 text-red-400 group-focus:text-red-500" />
