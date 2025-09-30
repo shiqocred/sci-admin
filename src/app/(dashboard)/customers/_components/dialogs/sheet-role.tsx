@@ -7,22 +7,12 @@ import {
 } from "@/components/ui/sheet";
 import { cn, sizesImage } from "@/lib/utils";
 import { TooltipText } from "@/providers/tooltip-provider";
-import { Check, Eye, EyeIcon, Loader, X } from "lucide-react";
+import { CheckCircle2, Eye, EyeIcon, Loader, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
 import { useUpdateReview, useGetReviewUpgrade } from "../../_api";
 import { useConfirm } from "@/hooks/use-confirm";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RejectDialog } from "./reject-dialog";
 
 export const SheetRole = ({
   open,
@@ -270,53 +260,19 @@ export const SheetRole = ({
                   </div>
                 </div>
                 <div className="w-full h-10 grid grid-cols-2 mt-4">
-                  <Dialog open={isReject} onOpenChange={setIsReject}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full h-full rounded-none shadow-none bg-red-300 text-black hover:bg-red-400 ">
-                        <X />
-                        Rejected
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent showCloseButton={false}>
-                      <DialogHeader>
-                        <DialogTitle>Reject Document</DialogTitle>
-                        <DialogDescription>
-                          This action cannot be undone
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex flex-col gap-1.5">
-                        <Label>Message</Label>
-                        <Textarea
-                          className="focus-visible:ring-0"
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                        />
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant={"outline"}
-                          onClick={() => {
-                            setIsReject(false);
-                            setInput("");
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleReject}
-                          disabled={!input}
-                          className="bg-red-300 text-black hover:bg-red-400 "
-                        >
-                          Confirm
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <RejectDialog
+                    handleReject={handleReject}
+                    input={input}
+                    isOpen={isReject}
+                    setIsOpen={setIsReject}
+                    loading={loading}
+                    setInput={setInput}
+                  />
                   <Button
                     onClick={handleApprove}
                     className="w-full h-full rounded-none shadow-none bg-green-300 text-black hover:bg-green-400"
                   >
-                    <Check />
+                    <CheckCircle2 />
                     Approved
                   </Button>
                 </div>

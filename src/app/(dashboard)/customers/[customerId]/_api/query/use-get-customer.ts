@@ -24,7 +24,7 @@ type Address = {
   detail: string;
 };
 
-type Customer = {
+export type Customer = {
   personalIdFile: string | null;
   storefrontFile: string | null;
   veterinarianIdFile: string | null;
@@ -47,7 +47,10 @@ type Customer = {
   totalOrder: number;
   totalAmount: number;
   lastOrder: string;
-  orders: Order[];
+  orders: {
+    include: Order[];
+    exclude: Order[];
+  };
   addresses: Address[];
 };
 

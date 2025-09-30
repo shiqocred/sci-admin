@@ -58,14 +58,7 @@ export async function GET(
       .leftJoin(userRoleDetails, eq(userRoleDetails.userId, users.id))
       .leftJoin(
         orders,
-        and(
-          eq(orders.userId, users.id),
-          and(
-            not(eq(orders.status, "WAITING_PAYMENT")),
-            not(eq(orders.status, "CANCELLED"))
-            // not(eq(orders.status, "EXPIRED"))
-          )
-        )
+        and(eq(orders.userId, users.id), eq(orders.status, "DELIVERED"))
       )
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .groupBy(
@@ -89,7 +82,16 @@ export async function GET(
         id: true,
         status: true,
       },
-      where: (o, { eq }) => eq(o.userId, userId),
+      where: (o, { eq, and }) =>
+        and(eq(o.userId, userId), eq(o.status, "DELIVERED")),
+    });
+    const ordersExcludeList = await db.query.orders.findMany({
+      columns: {
+        id: true,
+        status: true,
+      },
+      where: (o, { eq, and, not }) =>
+        and(eq(o.userId, userId), and(not(eq(o.status, "DELIVERED")))),
     });
     const addressesList = await db.query.addresses.findMany({
       columns: {
@@ -129,7 +131,7 @@ export async function GET(
         ? format(userDetail.createdAt, "PP 'at' HH:mm")
         : null,
       emailVerified: !!userDetail.emailVerified,
-      orders: ordersList,
+      orders: { include: ordersList, exclude: ordersExcludeList },
       addresses: addressesList.map((address) => ({
         id: address.id,
         name: address.name,
