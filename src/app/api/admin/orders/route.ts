@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
     const joinProductVariant = eq(orderItems.variantId, productVariants.id);
     const joinProduct = eq(productVariants.productId, products.id);
 
-    const searchClause = buildWhereClause(q, [users.name, users.email]);
+    const searchClause = buildWhereClause(q, [orders.id]);
     const baseWhere = and(searchClause, ...filters);
 
     const [baseQuery] = await db
