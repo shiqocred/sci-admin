@@ -3,16 +3,7 @@ import { auth, errorRes, successRes } from "@/lib/auth";
 import { db, orders, userRoleDetails, users } from "@/lib/db";
 import { deleteR2 } from "@/lib/providers";
 import { format } from "date-fns";
-import {
-  and,
-  countDistinct,
-  eq,
-  isNull,
-  max,
-  not,
-  sql,
-  sum,
-} from "drizzle-orm";
+import { and, countDistinct, eq, isNull, max, sql, sum } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
 export async function GET(
