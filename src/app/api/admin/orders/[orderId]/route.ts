@@ -376,7 +376,7 @@ export async function POST(
       })),
     };
 
-    console.log(requestBody);
+    console.log(JSON.stringify(requestBody, null, 2));
 
     const { ok: orderOk, response: biteshipRes } =
       await createOrder(requestBody);
