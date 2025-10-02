@@ -376,6 +376,8 @@ export async function POST(
       })),
     };
 
+    console.log(requestBody);
+
     const { ok: orderOk, response: biteshipRes } =
       await createOrder(requestBody);
 
