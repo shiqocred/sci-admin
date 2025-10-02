@@ -351,7 +351,7 @@ export async function POST(
 
     const requestBody = {
       origin_contact_name: store.name,
-      origin_contact_phone: `0${store.phone}`,
+      origin_contact_phone: store.phone,
       origin_address: store.shipping_address,
       origin_coordinate: {
         latitude: store.latitude,
