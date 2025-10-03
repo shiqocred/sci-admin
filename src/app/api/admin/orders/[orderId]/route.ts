@@ -376,10 +376,7 @@ export async function POST(
             (acc, product) => acc + Number(product.weight),
             0
           ),
-          quantity: orderItemsExist.reduce(
-            (acc, product) => acc + Number(product.quantity),
-            0
-          ),
+          quantity: 1,
         },
       ],
       // items: orderItemsExist.map((product) => ({

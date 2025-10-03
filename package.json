@@ -1,6 +1,6 @@
 {
   "name": "sci-admin",
-  "version": "0.3.27",
+  "version": "0.3.28",
   "private": true,
   "scripts": {
     "dev": "next dev --port=3001 --turbopack",
