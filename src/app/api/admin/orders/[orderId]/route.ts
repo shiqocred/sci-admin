@@ -369,11 +369,11 @@ export async function POST(
       courier_type: addressSelected.courierType,
       delivery_type: "now",
       reference_id: orderId,
-      items: orderItemsExist.map((product) => ({
-        name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
-        weight: product.weight,
-        quantity: product.quantity,
-      })),
+      // items: orderItemsExist.map((product) => ({
+      //   name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
+      //   weight: product.weight,
+      //   quantity: product.quantity,
+      // })),
     };
 
     console.log(JSON.stringify(requestBody, null, 2));
