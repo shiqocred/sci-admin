@@ -369,6 +369,7 @@ export async function POST(
       courier_type: addressSelected.courierType,
       delivery_type: "now",
       reference_id: orderId,
+      items: [],
       // items: orderItemsExist.map((product) => ({
       //   name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
       //   weight: product.weight,
