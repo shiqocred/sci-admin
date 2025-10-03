@@ -369,24 +369,12 @@ export async function POST(
       courier_type: addressSelected.courierType,
       delivery_type: "now",
       reference_id: orderId,
-      items: [
-        {
-          name: "test",
-          weight: orderItemsExist.reduce(
-            (acc, product) => acc + Number(product.weight),
-            0
-          ),
-          quantity: 1,
-        },
-      ],
-      // items: orderItemsExist.map((product) => ({
-      //   name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
-      //   weight: product.weight,
-      //   quantity: product.quantity,
-      // })),
+      items: orderItemsExist.map((product) => ({
+        name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
+        weight: product.weight,
+        quantity: product.quantity,
+      })),
     };
-
-    console.log(JSON.stringify(requestBody, null, 2));
 
     const { ok: orderOk, response: biteshipRes } =
       await createOrder(requestBody);
