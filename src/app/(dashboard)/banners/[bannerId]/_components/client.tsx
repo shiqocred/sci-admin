@@ -16,7 +16,7 @@ import { useGetBanner, useUpdateBanner } from "../_api";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { cn, toLocalDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -143,7 +143,8 @@ export const Client = () => {
     if (!detail) return;
 
     const data = detail.data as any;
-    const startAt = toLocalDate(data.startAt);
+    const startAt = new Date(data.startAt);
+    console.log(startAt);
     const updatedInput: typeof input = {
       ...data,
       startDate: startAt,
@@ -151,7 +152,7 @@ export const Client = () => {
     };
 
     if (data.endAt && data.isEnd) {
-      const endAt = toLocalDate(data.endAt);
+      const endAt = new Date(data.endAt);
       updatedInput.endDate = endAt;
       updatedInput.endTime = format(endAt, "HH:mm");
     }
