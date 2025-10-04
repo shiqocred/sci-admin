@@ -16,11 +16,12 @@ import { useGetBanner, useUpdateBanner } from "../_api";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, toLocalDate } from "@/lib/utils";
 import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteBanner, useUpdateBannerStatus } from "../../_api";
+import { format } from "date-fns";
 
 const dateFormatted = (time: string, date: Date) => {
   const [hour, minute] = time.split(":").map(Number);
@@ -139,13 +140,25 @@ export const Client = () => {
     isRefetching;
 
   useEffect(() => {
-    if (detail) {
-      setInput({
-        ...(detail.data as any),
-        endTime: detail.data.endTime ? detail.data.endTime : "08:00",
-      });
+    if (!detail) return;
+
+    const data = detail.data as any;
+    const startAt = toLocalDate(data.startAt);
+    const updatedInput: typeof input = {
+      ...data,
+      startDate: startAt,
+      startTime: format(startAt, "HH:mm"),
+    };
+
+    if (data.endAt && data.isEnd) {
+      const endAt = toLocalDate(data.endAt);
+      updatedInput.endDate = endAt;
+      updatedInput.endTime = format(endAt, "HH:mm");
     }
+
+    setInput(updatedInput);
   }, [detail]);
+
   return (
     <div className="w-full flex flex-col gap-6">
       <DeleteDialog />

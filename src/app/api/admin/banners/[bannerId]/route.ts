@@ -3,7 +3,6 @@ import { auth, errorRes, successRes } from "@/lib/auth";
 import { convertToWebP } from "@/lib/convert-image";
 import { bannerItems, banners, db } from "@/lib/db";
 import { deleteR2, uploadToR2 } from "@/lib/providers";
-import { format } from "date-fns";
 import { and, eq, notInArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -68,10 +67,8 @@ export async function GET(
       imageOld: `${r2Public}/${bannerRes.image}`,
       apply: bannerRes.type.toLowerCase(),
       selected: formatSelected(bannerRes.type),
-      startDate: bannerRes.startAt.toString(),
-      startTime: format(bannerRes.startAt, "HH:mm"),
-      endDate: bannerRes.endAt ? bannerRes.endAt.toString() : undefined,
-      endTime: bannerRes.endAt ? format(bannerRes.endAt, "HH:mm") : undefined,
+      startAt: bannerRes.startAt.toISOString(),
+      endAt: bannerRes.endAt ? bannerRes.endAt.toISOString() : undefined,
       isEnd: !!bannerRes.endAt,
       status: statusFormat(),
     };

@@ -5,12 +5,10 @@ export type BannerProps = {
   imageOld: string;
   apply: string;
   selected: string[];
-  startDate: string;
-  startTime: string;
-  endDate?: string;
-  endTime?: string;
+  startAt: string;
+  endAt: string | undefined;
   isEnd: boolean;
-  status?: string;
+  status: string;
 };
 
 type Response = {

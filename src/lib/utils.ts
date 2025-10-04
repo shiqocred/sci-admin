@@ -156,3 +156,16 @@ export const formatRole = (role: string) => {
   if (role === "VETERINARIAN") return "Vet Clinic";
   return "";
 };
+
+/**
+ * Konversi UTC ISO string (misal dari server/DB) menjadi Date lokal
+ * berdasarkan timezone browser (client-side).
+ */
+export function toLocalDate(utcIsoString: string): Date {
+  const utcDate = new Date(utcIsoString);
+  // buat Date baru sesuai timezone lokal browser
+  const localDate = new Date(
+    utcDate.getTime() - utcDate.getTimezoneOffset() * 60 * 1000
+  );
+  return localDate;
+}
