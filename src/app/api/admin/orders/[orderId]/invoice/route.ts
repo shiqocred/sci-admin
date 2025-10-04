@@ -105,11 +105,24 @@ export async function POST(
     }),
   ]);
 
+  const dateISO = orderData.transactionDate
+    ? new Date(orderData.transactionDate.toISOString())
+    : null;
+
+  const formattedDate = () => {
+    if (dateISO) {
+      const GMTime = dateISO.getTime() + 7 * 60 * 60 * 1000;
+      const formatted = format(new Date(GMTime), "P", { locale: id });
+
+      return formatted;
+    }
+
+    return "-";
+  };
+
   const data: InvoiceData = {
     orderNo: orderId,
-    transactionDate: format(orderData.transactionDate ?? new Date(), "P", {
-      locale: id,
-    }),
+    transactionDate: formattedDate(),
     paymentMethod:
       formatPayment(orderData.paymentMethod, orderData.paymentMethod) ?? "",
     subtotalProducts: Number(orderData.productPrice),

@@ -267,6 +267,7 @@ export const SheetRole = ({
                     setIsOpen={setIsReject}
                     loading={loading}
                     setInput={setInput}
+                    isPublic={true}
                   />
                   <Button
                     onClick={handleApprove}

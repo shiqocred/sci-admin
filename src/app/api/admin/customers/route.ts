@@ -123,8 +123,8 @@ export async function GET(req: NextRequest) {
       eq(orders.userId, users.id),
       and(
         not(eq(orders.status, "WAITING_PAYMENT")),
-        not(eq(orders.status, "CANCELLED"))
-        // not(eq(orders.status, "EXPIRED"))
+        not(eq(orders.status, "CANCELLED")),
+        not(eq(orders.status, "EXPIRED"))
       )
     );
 

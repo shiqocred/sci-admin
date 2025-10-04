@@ -34,6 +34,7 @@ import { invalidateQuery } from "@/lib/query";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { UpgradeDocument } from "./_section/upgrade-document";
+import { format } from "date-fns";
 
 export const Client = () => {
   const { customerId } = useParams();
@@ -201,13 +202,17 @@ export const Client = () => {
               <div className="flex flex-col gap-0.5 group cursor-default">
                 <p className="text-xs text-gray-500">Last Order</p>
                 <p className="text-sm font-medium group-hover:underline">
-                  {customer.lastOrder}
+                  {customer.lastOrder
+                    ? format(new Date(customer.lastOrder), "PP 'at' HH:mm")
+                    : "-"}
                 </p>
               </div>
               <div className="flex flex-col gap-0.5 group cursor-default">
                 <p className="text-xs text-gray-500">Joined at</p>
                 <p className="text-sm font-medium group-hover:underline">
-                  {customer.createdAt}
+                  {customer.createdAt
+                    ? format(new Date(customer.createdAt), "PP 'at' HH:mm")
+                    : "-"}
                 </p>
               </div>
             </div>
@@ -231,47 +236,55 @@ export const Client = () => {
                   </div>
                   <Separator />
                   <div className="px-5 py-3">
-                    <div className="border rounded-md border-gray-300">
-                      <Accordion type="single" collapsible>
-                        {customer.addresses.map((address) => (
-                          <AccordionItem key={address.id} value={address.id}>
-                            <AccordionTrigger className="px-5">
-                              <div className="flex items-center gap-2">
-                                <Map className="size-4" />
-                                <ChevronRight className="size-3.5" />
-                                <p>{address.name}</p>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="bg-gray-50">
-                              <Separator />
-                              <div className="px-5 pt-5 flex flex-col gap-3">
-                                <div className="flex flex-col gap-0.5 group cursor-default">
-                                  <p className="text-xs text-gray-500">Phone</p>
-                                  <p className="text-sm font-medium group-hover:underline">
-                                    {address.phoneNumber}
-                                  </p>
+                    <div className="border rounded-md border-gray-300 overflow-hidden">
+                      {customer.addresses.length > 0 ? (
+                        <Accordion type="single" collapsible>
+                          {customer.addresses.map((address) => (
+                            <AccordionItem key={address.id} value={address.id}>
+                              <AccordionTrigger className="px-5">
+                                <div className="flex items-center gap-2">
+                                  <Map className="size-4" />
+                                  <ChevronRight className="size-3.5" />
+                                  <p>{address.name}</p>
                                 </div>
-                                <div className="flex flex-col gap-0.5 group cursor-default">
-                                  <p className="text-xs text-gray-500">
-                                    Address Detail
-                                  </p>
-                                  <p className="text-sm font-medium group-hover:underline">
-                                    {address.detail}
-                                  </p>
+                              </AccordionTrigger>
+                              <AccordionContent className="bg-gray-50">
+                                <Separator />
+                                <div className="px-5 pt-5 flex flex-col gap-3">
+                                  <div className="flex flex-col gap-0.5 group cursor-default">
+                                    <p className="text-xs text-gray-500">
+                                      Phone
+                                    </p>
+                                    <p className="text-sm font-medium group-hover:underline">
+                                      {address.phoneNumber}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col gap-0.5 group cursor-default">
+                                    <p className="text-xs text-gray-500">
+                                      Address Detail
+                                    </p>
+                                    <p className="text-sm font-medium group-hover:underline">
+                                      {address.detail}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col gap-0.5 group cursor-default">
+                                    <p className="text-xs text-gray-500">
+                                      Address
+                                    </p>
+                                    <p className="text-sm font-medium group-hover:underline">
+                                      {address.address}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="flex flex-col gap-0.5 group cursor-default">
-                                  <p className="text-xs text-gray-500">
-                                    Address
-                                  </p>
-                                  <p className="text-sm font-medium group-hover:underline">
-                                    {address.address}
-                                  </p>
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
+                              </AccordionContent>
+                            </AccordionItem>
+                          ))}
+                        </Accordion>
+                      ) : (
+                        <div className="p-5 flex justify-center items-center h-20 text-xs font-semibold bg-gray-50 text-gray-500">
+                          No address yet.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -287,42 +300,49 @@ export const Client = () => {
                   <Separator />
                   <div className="px-5 py-3">
                     <div className="border rounded-md border-gray-300 overflow-hidden divide-y">
-                      {customer.orders.include.map((order) => (
-                        <Button
-                          key={order.id}
-                          className="w-full flex-auto rounded-none justify-start group hover:bg-gray-100"
-                          variant={"ghost"}
-                          asChild
-                        >
-                          <Link href={`/orders/${order.id}`}>
-                            <ShoppingBag className="size-3.5" />
-                            <ChevronRight className="size-3.5" />
-                            <p className="group-hover:underline group-hover:underline-offset-2 text-xs">
-                              #{order.id}
-                            </p>
-                            <Badge
-                              className={cn(
-                                "text-xs py-0 rounded-full ml-auto capitalize text-black",
-                                order.status === "PACKING" && "bg-yellow-200",
-                                (order.status === "CANCELLED" ||
-                                  order.status === "EXPIRED") &&
-                                  "bg-red-200",
-                                order.status === "WAITING_PAYMENT" &&
-                                  "bg-blue-200",
-                                order.status === "SHIPPING" && "bg-violet-200",
-                                order.status === "DELIVERED" && "bg-green-200"
-                              )}
-                            >
-                              {order.status === "PACKING"
-                                ? "Processed"
-                                : order.status
-                                    .split("_")
-                                    .join(" ")
-                                    .toLowerCase()}
-                            </Badge>
-                          </Link>
-                        </Button>
-                      ))}
+                      {customer.orders.include.length > 0 ? (
+                        customer.orders.include.map((order) => (
+                          <Button
+                            key={order.id}
+                            className="w-full flex-auto rounded-none justify-start group hover:bg-gray-100"
+                            variant={"ghost"}
+                            asChild
+                          >
+                            <Link href={`/orders/${order.id}`}>
+                              <ShoppingBag className="size-3.5" />
+                              <ChevronRight className="size-3.5" />
+                              <p className="group-hover:underline group-hover:underline-offset-2 text-xs">
+                                #{order.id}
+                              </p>
+                              <Badge
+                                className={cn(
+                                  "text-xs py-0 rounded-full ml-auto capitalize text-black",
+                                  order.status === "PACKING" && "bg-yellow-200",
+                                  (order.status === "CANCELLED" ||
+                                    order.status === "EXPIRED") &&
+                                    "bg-red-200",
+                                  order.status === "WAITING_PAYMENT" &&
+                                    "bg-blue-200",
+                                  order.status === "SHIPPING" &&
+                                    "bg-violet-200",
+                                  order.status === "DELIVERED" && "bg-green-200"
+                                )}
+                              >
+                                {order.status === "PACKING"
+                                  ? "Processed"
+                                  : order.status
+                                      .split("_")
+                                      .join(" ")
+                                      .toLowerCase()}
+                              </Badge>
+                            </Link>
+                          </Button>
+                        ))
+                      ) : (
+                        <div className="p-5 flex justify-center items-center h-20 text-xs font-semibold bg-gray-50 text-gray-500">
+                          No orders yet.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -334,42 +354,49 @@ export const Client = () => {
                   <Separator />
                   <div className="px-5 py-3">
                     <div className="border rounded-md border-gray-300 overflow-hidden divide-y">
-                      {customer.orders.exclude.map((order) => (
-                        <Button
-                          key={order.id}
-                          className="w-full flex-auto rounded-none justify-start group hover:bg-gray-100"
-                          variant={"ghost"}
-                          asChild
-                        >
-                          <Link href={`/orders/${order.id}`}>
-                            <ShoppingBag className="size-3.5" />
-                            <ChevronRight className="size-3.5" />
-                            <p className="group-hover:underline group-hover:underline-offset-2 text-xs">
-                              #{order.id}
-                            </p>
-                            <Badge
-                              className={cn(
-                                "text-xs py-0 rounded-full ml-auto capitalize text-black",
-                                order.status === "PACKING" && "bg-yellow-200",
-                                (order.status === "CANCELLED" ||
-                                  order.status === "EXPIRED") &&
-                                  "bg-red-200",
-                                order.status === "WAITING_PAYMENT" &&
-                                  "bg-blue-200",
-                                order.status === "SHIPPING" && "bg-violet-200",
-                                order.status === "DELIVERED" && "bg-green-200"
-                              )}
-                            >
-                              {order.status === "PACKING"
-                                ? "Processed"
-                                : order.status
-                                    .split("_")
-                                    .join(" ")
-                                    .toLowerCase()}
-                            </Badge>
-                          </Link>
-                        </Button>
-                      ))}
+                      {customer.orders.exclude.length > 0 ? (
+                        customer.orders.exclude.map((order) => (
+                          <Button
+                            key={order.id}
+                            className="w-full flex-auto rounded-none justify-start group hover:bg-gray-100"
+                            variant={"ghost"}
+                            asChild
+                          >
+                            <Link href={`/orders/${order.id}`}>
+                              <ShoppingBag className="size-3.5" />
+                              <ChevronRight className="size-3.5" />
+                              <p className="group-hover:underline group-hover:underline-offset-2 text-xs">
+                                #{order.id}
+                              </p>
+                              <Badge
+                                className={cn(
+                                  "text-xs py-0 rounded-full ml-auto capitalize text-black",
+                                  order.status === "PACKING" && "bg-yellow-200",
+                                  (order.status === "CANCELLED" ||
+                                    order.status === "EXPIRED") &&
+                                    "bg-red-200",
+                                  order.status === "WAITING_PAYMENT" &&
+                                    "bg-blue-200",
+                                  order.status === "SHIPPING" &&
+                                    "bg-violet-200",
+                                  order.status === "DELIVERED" && "bg-green-200"
+                                )}
+                              >
+                                {order.status === "PACKING"
+                                  ? "Processed"
+                                  : order.status
+                                      .split("_")
+                                      .join(" ")
+                                      .toLowerCase()}
+                              </Badge>
+                            </Link>
+                          </Button>
+                        ))
+                      ) : (
+                        <div className="p-5 flex justify-center items-center h-20 text-xs font-semibold bg-gray-50 text-gray-500">
+                          No orders yet.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -381,11 +408,10 @@ export const Client = () => {
         <div className="flex flex-col gap-6 w-full">
           <Skeleton className="h-[183px] w-full" />
           <div className="grid grid-cols-2 gap-6">
-            <div className="flex flex-col gap-6">
-              <Skeleton className="h-40 w-full" />
-              <Skeleton className="h-40 w-full" />
-            </div>
-            <Skeleton className="h-full w-full" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
           </div>
         </div>
       )}

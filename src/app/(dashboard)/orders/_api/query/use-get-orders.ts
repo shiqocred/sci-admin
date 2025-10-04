@@ -2,7 +2,7 @@ import { PaginationMeta } from "@/lib/pagination/fastPaginate";
 import { useApiQuery } from "@/lib/query/use-query";
 
 export type OrderResponse = {
-  date: string;
+  date: string | null;
   status:
     | "waiting-payment"
     | "processed"

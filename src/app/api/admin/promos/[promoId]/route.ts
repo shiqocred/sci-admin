@@ -4,7 +4,6 @@ import { convertToWebP } from "@/lib/convert-image";
 import { db, promoItems, promos } from "@/lib/db";
 import { deleteR2, uploadToR2 } from "@/lib/providers";
 import { generateRandomNumber } from "@/lib/utils";
-import { format } from "date-fns";
 import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import slugify from "slugify";
@@ -47,10 +46,8 @@ export async function GET(
       name: promoRes.name,
       imageOld: `${r2Public}/${promoRes.image}`,
       selected: promoItemsRes.map((product) => product.productId),
-      startDate: promoRes.startAt.toString(),
-      startTime: format(promoRes.startAt, "HH:mm"),
-      endDate: promoRes.endAt ? promoRes.endAt.toString() : undefined,
-      endTime: promoRes.endAt ? format(promoRes.endAt, "HH:mm") : undefined,
+      startAt: promoRes.startAt.toISOString(),
+      endAt: promoRes.endAt ? promoRes.endAt.toISOString() : undefined,
       isEnd: !!promoRes.endAt,
       status: statusFormat(),
     };

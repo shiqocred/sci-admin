@@ -4,10 +4,8 @@ export type PromoProps = {
   name: string;
   imageOld: string;
   selected: string[];
-  startDate: string;
-  startTime: string;
-  endDate: string | undefined;
-  endTime: string | undefined;
+  startAt: string;
+  endAt?: string;
   isEnd: boolean;
   status: string;
 };

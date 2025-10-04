@@ -144,7 +144,6 @@ export const Client = () => {
 
     const data = detail.data as any;
     const startAt = new Date(data.startAt);
-    console.log(startAt);
     const updatedInput: typeof input = {
       ...data,
       startDate: startAt,

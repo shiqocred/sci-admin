@@ -157,9 +157,9 @@ export const Client = () => {
       purchase,
       quantity,
       use: limitUse ?? "0",
-      startTime: format(startFreeShipping, "HH:mm", { locale: id }),
+      startTime: format(new Date(startFreeShipping), "HH:mm"),
       endTime: endFreeShipping
-        ? format(endFreeShipping, "HH:mm", { locale: id })
+        ? format(new Date(endFreeShipping), "HH:mm")
         : "08:00",
     });
 
@@ -171,8 +171,8 @@ export const Client = () => {
       limitUse: limitUse ? "true" : "false",
       minimumReq: minimumType,
     });
-    setDateStart(startFreeShipping);
-    setDateEnd(endFreeShipping ?? new Date());
+    setDateStart(new Date(startFreeShipping));
+    setDateEnd(endFreeShipping ? new Date(endFreeShipping) : undefined);
   }, [data]);
 
   const isDisabled =

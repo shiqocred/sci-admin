@@ -154,10 +154,8 @@ export const Client = () => {
       purchase,
       quantity,
       use: limitUse ?? "0",
-      startTime: format(startDiscount, "HH:mm", { locale: id }),
-      endTime: endDiscount
-        ? format(endDiscount, "HH:mm", { locale: id })
-        : "08:00",
+      startTime: format(new Date(startDiscount), "HH:mm"),
+      endTime: endDiscount ? format(new Date(endDiscount), "HH:mm") : "08:00",
     });
 
     setDiscounts({
@@ -169,8 +167,8 @@ export const Client = () => {
       minimumReq: minimumType,
       value: valueType,
     });
-    setDateStart(startDiscount);
-    setDateEnd(endDiscount ?? new Date());
+    setDateStart(new Date(startDiscount));
+    setDateEnd(endDiscount ? new Date(endDiscount) : undefined);
   }, [data]);
 
   const isDisabled =

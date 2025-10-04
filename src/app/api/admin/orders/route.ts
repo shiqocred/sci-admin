@@ -10,8 +10,6 @@ import {
 } from "@/lib/db";
 import { fastPagination } from "@/lib/pagination";
 import { buildWhereClause } from "@/lib/search";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import {
   asc,
   countDistinct,
@@ -86,7 +84,7 @@ const getFilters = (
     filters.push(
       and(
         sql`${orders.totalPrice}::integer >= ${Number(minPrice)}`,
-        sql`${orders.totalPrice}::integer >= ${Number(maxPrice)}`
+        sql`${orders.totalPrice}::integer <= ${Number(maxPrice)}`
       )
     );
   }
@@ -107,8 +105,8 @@ const getHavingFilter = (
   const filters = [];
   if (minProduct && maxProduct) {
     filters.push(
-      gte(sql`COALESCE(${products.id},0)`, minProduct),
-      lte(sql`COALESCE(${products.id},0)`, maxProduct)
+      gte(sql`COALESCE(${countDistinct(products.id)},0)`, minProduct),
+      lte(sql`COALESCE(${countDistinct(products.id)},0)`, maxProduct)
     );
   }
   return filters;
@@ -225,11 +223,7 @@ export async function GET(req: NextRequest) {
     const response = {
       data: ordersRes.map((item) => ({
         ...item,
-        date: `${format(new Date(item.date ?? new Date()), "PP", { locale: id })} at ${format(
-          new Date(item.date ?? new Date()),
-          "HH:mm",
-          { locale: id }
-        )}`,
+        date: item.date ? item.date.toISOString() : null,
         status: formatStatus(item.status),
       })),
       pagination,

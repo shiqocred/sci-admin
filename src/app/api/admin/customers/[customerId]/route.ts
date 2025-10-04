@@ -2,7 +2,6 @@ import { r2Public } from "@/config";
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { db, orders, userRoleDetails, users } from "@/lib/db";
 import { deleteR2 } from "@/lib/providers";
-import { format } from "date-fns";
 import { and, countDistinct, eq, isNull, max, sql, sum } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -114,12 +113,14 @@ export async function GET(
         userDetail.newRole === "VETERINARIAN" && userDetail.veterinarianIdFile
           ? `${r2Public}/${userDetail.veterinarianIdFile}`
           : null,
-      lastOrder: format(userDetail.lastOrder, "PP 'at' HH:mm"),
+      lastOrder: userDetail.lastOrder
+        ? new Date(userDetail.lastOrder).toISOString()
+        : null,
       updatedAt: userDetail.updatedAt
-        ? format(userDetail.updatedAt, "PP 'at' HH:mm")
+        ? userDetail.updatedAt.toISOString()
         : null,
       createdAt: userDetail.createdAt
-        ? format(userDetail.createdAt, "PP 'at' HH:mm")
+        ? userDetail.createdAt.toISOString()
         : null,
       emailVerified: !!userDetail.emailVerified,
       orders: { include: ordersList, exclude: ordersExcludeList },

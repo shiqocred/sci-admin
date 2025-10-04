@@ -21,6 +21,7 @@ import { PromoCore } from "../../_components/section/promo-core";
 import { PromoActive } from "../../_components/section/promo-active";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeletePromo, useUpdatePromoStatus } from "../../_api";
+import { format } from "date-fns";
 
 export const Client = () => {
   const router = useRouter();
@@ -127,12 +128,23 @@ export const Client = () => {
     (input.isEnd && (!input.endDate || !input.endTime));
 
   useEffect(() => {
-    if (detail) {
-      setInput({
-        ...(detail.data as any),
-        endTime: detail.data.endTime ? detail.data.endTime : "08:00",
-      });
+    if (!detail) return;
+
+    const data = detail.data as any;
+    const startAt = new Date(data.startAt);
+    const updatedInput: typeof input = {
+      ...data,
+      startDate: startAt,
+      startTime: format(startAt, "HH:mm"),
+    };
+
+    if (data.endAt && data.isEnd) {
+      const endAt = new Date(data.endAt);
+      updatedInput.endDate = endAt;
+      updatedInput.endTime = format(endAt, "HH:mm");
     }
+
+    setInput(updatedInput);
   }, [detail]);
   return (
     <div className="w-full flex flex-col gap-6">

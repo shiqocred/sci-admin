@@ -14,8 +14,6 @@ import {
   users,
 } from "@/lib/db";
 import { pronoun } from "@/lib/utils";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import { countDistinct, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -264,23 +262,17 @@ export async function GET(
         method: orderRes.paymentMethod,
       },
       timestamp: {
-        expired: orderRes.expiredAt
-          ? format(orderRes.expiredAt, "PPP 'at' HH:mm", { locale: id })
-          : null,
+        expired: orderRes.expiredAt ? orderRes.expiredAt.toISOString() : null,
         cancelled: orderRes.cancelledAt
-          ? format(orderRes.cancelledAt, "PPP 'at' HH:mm", { locale: id })
+          ? orderRes.cancelledAt.toISOString()
           : null,
-        paid: orderRes.paidAt
-          ? format(orderRes.paidAt, "PPP 'at' HH:mm", { locale: id })
-          : null,
+        paid: orderRes.paidAt ? orderRes.paidAt.toISOString() : null,
         shipping: orderRes.shippingAt
-          ? format(orderRes.shippingAt, "PPP 'at' HH:mm", { locale: id })
+          ? orderRes.shippingAt.toISOString()
           : null,
-        created: orderRes.createdAt
-          ? format(orderRes.createdAt, "PPP 'at' HH:mm", { locale: id })
-          : null,
+        created: orderRes.createdAt ? orderRes.createdAt.toISOString() : null,
         delivered: orderRes.deliveredAt
-          ? format(orderRes.deliveredAt, "PPP 'at' HH:mm", { locale: id })
+          ? orderRes.deliveredAt.toISOString()
           : null,
       },
       shipping: {

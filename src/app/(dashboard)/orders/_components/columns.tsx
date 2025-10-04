@@ -13,6 +13,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, ReceiptText } from "lucide-react";
 import { OrderResponse } from "../_api";
 import Link from "next/link";
+import { format } from "date-fns";
 
 export const column = ({
   metaPage,
@@ -36,6 +37,10 @@ export const column = ({
   {
     header: () => <div className="text-xs">Date</div>,
     accessorKey: "date",
+    cell: ({ row }) =>
+      row.original.date
+        ? format(new Date(row.original.date), "PP 'at' HH:mm")
+        : "-",
   },
   {
     header: () => <div className="text-xs">Customer</div>,
