@@ -124,7 +124,7 @@ export async function POST(
     orderNo: orderId,
     transactionDate: formattedDate(),
     paymentMethod:
-      formatPayment(orderData.paymentMethod, orderData.paymentMethod) ?? "",
+      formatPayment(orderData.paymentMethod, orderData.paymentChannel) ?? "",
     subtotalProducts: Number(orderData.productPrice),
     shippingSubtotal: Number(orderData.shippingPrice),
     totalDiscount: Number(orderData.totalDiscount),
