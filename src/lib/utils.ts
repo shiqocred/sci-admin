@@ -1,6 +1,8 @@
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { clsx, type ClassValue } from "clsx";
+import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { id } from "date-fns/locale";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -155,4 +157,78 @@ export const formatRole = (role: string) => {
   if (role === "PETSHOP") return "Pet Shop";
   if (role === "VETERINARIAN") return "Vet Clinic";
   return "";
+};
+
+const BANK_MAP: Record<string, string> = {
+  BRI: "Bank BRI",
+  BSI: "Bank BSI",
+  BCA: "Bank BCA",
+  BNI: "Bank BNI",
+  BJB: "Bank BJB",
+  BNC: "Bank Neo",
+  PERMATA: "Bank Permata",
+  SAMPOERNA: "Bank Samoerna",
+  CIMB: "Bank CIMB Niaga",
+  MANDIRI: "Bank Mandiri",
+  MUAMALAT: "Bank Muamalat",
+};
+
+const EWALLET_MAP: Record<string, string> = {
+  SHOPEEPAY: "ShopeePay",
+  ASTRAPAY: "AstraPay",
+  JENIUSPAY: "JeniusPay",
+  DANA: "DANA",
+  LINKAJA: "Link Aja",
+  OVO: "OVO",
+  GOPAY: "GOPAY",
+  NEXCASH: "Nex Cash",
+};
+
+export const formatPayment = (
+  method: string | null,
+  channel: string | null
+) => {
+  if (!method || !channel) return null;
+  if (method === "BANK_TRANSFER") return BANK_MAP[channel] ?? "Bank Muamalat";
+  if (method === "EWALLET") return EWALLET_MAP[channel] ?? "Nex Cash";
+  if (method === "CREDIT_CARD") return "Credit Card";
+  if (method === "DIRECT_DEBIT")
+    return channel === "DD_MANDIRI"
+      ? "Direct Debit Mandiri"
+      : "Direct Debit BRI";
+  if (method === "QR_CODE" && channel === "QRIS") return "QRIS";
+  return "ADMIN";
+};
+
+export const formatOrderStatus = (
+  status:
+    | "WAITING_PAYMENT"
+    | "PACKING"
+    | "SHIPPING"
+    | "DELIVERED"
+    | "EXPIRED"
+    | "CANCELLED"
+) => {
+  if (status === "WAITING_PAYMENT") return "waiting payment";
+  if (status === "PACKING") return "processed";
+  if (status === "SHIPPING") return "shipping";
+  if (status === "DELIVERED") return "delivered";
+  if (status === "EXPIRED") return "expired";
+  return "canceled";
+};
+
+export const formattedDateServer = (
+  date?: Date | string | null,
+  formatStr: string = "P"
+): string => {
+  if (!date) return "-";
+
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return "-";
+
+  // Geser ke zona waktu WIB (UTC+7)
+  const dateWIB = new Date(parsedDate.getTime() + 7 * 60 * 60 * 1000);
+
+  // Format pakai locale Indonesia
+  return format(dateWIB, formatStr, { locale: id });
 };

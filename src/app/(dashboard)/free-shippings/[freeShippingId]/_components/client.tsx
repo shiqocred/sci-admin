@@ -20,7 +20,6 @@ import {
 } from "../../_components/_section";
 import { InputProps } from "../../_components/client";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteFreeShipping, useUpdateFreeShippingStatus } from "../../_api";
 

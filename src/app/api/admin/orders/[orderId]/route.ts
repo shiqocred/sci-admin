@@ -13,7 +13,7 @@ import {
   shippings,
   users,
 } from "@/lib/db";
-import { pronoun } from "@/lib/utils";
+import { formatOrderStatus, pronoun } from "@/lib/utils";
 import { countDistinct, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -61,23 +61,6 @@ type HistoriesExist = {
   shippingId: string;
   note: string | null;
   serviceType: string | null;
-};
-
-const formatStatus = (
-  status:
-    | "WAITING_PAYMENT"
-    | "PACKING"
-    | "SHIPPING"
-    | "DELIVERED"
-    | "EXPIRED"
-    | "CANCELLED"
-) => {
-  if (status === "WAITING_PAYMENT") return "waiting payment";
-  if (status === "PACKING") return "processed";
-  if (status === "SHIPPING") return "shipping";
-  if (status === "DELIVERED") return "delivered";
-  if (status === "EXPIRED") return "expired";
-  return "canceled";
 };
 
 const formatVariant = async (
@@ -239,7 +222,7 @@ export async function GET(
 
     const response = {
       id: orderRes.id,
-      status: formatStatus(orderRes.status),
+      status: formatOrderStatus(orderRes.status),
       note: orderRes.note,
       pricing: {
         products: orderRes.product_price,

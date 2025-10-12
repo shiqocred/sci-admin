@@ -653,11 +653,11 @@ export const OrderFilter = ({
             <Calendar
               mode="range"
               numberOfMonths={2}
-              defaultMonth={minMax?.minDate}
               disabled={{
                 before: minMax.minDate as Date,
                 after: minMax.maxDate as Date,
               }}
+              defaultMonth={minMax?.minDate}
               selected={rangeDate}
               onSelect={setRangeDate}
             />

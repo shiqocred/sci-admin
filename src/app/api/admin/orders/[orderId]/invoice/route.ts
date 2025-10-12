@@ -12,50 +12,11 @@ import {
   shippings,
 } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { formatPayment, formattedDateServer } from "@/lib/utils";
 
 // Paksa runtime Node.js (bukan Edge) agar React-PDF jalan lancar
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const BANK_MAP: Record<string, string> = {
-  BRI: "Bank BRI",
-  BSI: "Bank BSI",
-  BCA: "Bank BCA",
-  BNI: "Bank BNI",
-  BJB: "Bank BJB",
-  BNC: "Bank Neo",
-  PERMATA: "Bank Permata",
-  SAMPOERNA: "Bank Samoerna",
-  CIMB: "Bank CIMB Niaga",
-  MANDIRI: "Bank Mandiri",
-  MUAMALAT: "Bank Muamalat",
-};
-
-const EWALLET_MAP: Record<string, string> = {
-  SHOPEEPAY: "ShopeePay",
-  ASTRAPAY: "AstraPay",
-  JENIUSPAY: "JeniusPay",
-  DANA: "DANA",
-  LINKAJA: "Link Aja",
-  OVO: "OVO",
-  GOPAY: "GOPAY",
-  NEXCASH: "Nex Cash",
-};
-
-const formatPayment = (method: string | null, channel: string | null) => {
-  if (!method || !channel) return null;
-  if (method === "BANK_TRANSFER") return BANK_MAP[channel] ?? "Bank Muamalat";
-  if (method === "EWALLET") return EWALLET_MAP[channel] ?? "Nex Cash";
-  if (method === "CREDIT_CARD") return "Credit Card";
-  if (method === "DIRECT_DEBIT")
-    return channel === "DD_MANDIRI"
-      ? "Direct Debit Mandiri"
-      : "Direct Debit BRI";
-  if (method === "QR_CODE" && channel === "QRIS") return "QRIS";
-  return "ADMIN";
-};
 
 export async function POST(
   req: NextRequest,
@@ -105,24 +66,9 @@ export async function POST(
     }),
   ]);
 
-  const dateISO = orderData.transactionDate
-    ? new Date(orderData.transactionDate.toISOString())
-    : null;
-
-  const formattedDate = () => {
-    if (dateISO) {
-      const GMTime = dateISO.getTime() + 7 * 60 * 60 * 1000;
-      const formatted = format(new Date(GMTime), "P", { locale: id });
-
-      return formatted;
-    }
-
-    return "-";
-  };
-
   const data: InvoiceData = {
     orderNo: orderId,
-    transactionDate: formattedDate(),
+    transactionDate: formattedDateServer(orderData.transactionDate),
     paymentMethod:
       formatPayment(orderData.paymentMethod, orderData.paymentChannel) ?? "",
     subtotalProducts: Number(orderData.productPrice),

@@ -15,6 +15,7 @@ import { useGetOrders } from "../_api";
 import { usePagination } from "@/lib/pagination";
 import Pagination from "@/components/pagination";
 import { OrderFilter } from "./order-filter";
+import { OrderExport } from "./order-export";
 
 const filterField = [{ name: "Order Id", value: "id" }];
 
@@ -55,6 +56,7 @@ export const Client = () => {
     minDate: parseAsString.withDefault(""),
     maxDate: parseAsString.withDefault(""),
   });
+
   const { page, metaPage, limit, setLimit, setPage, setPagination } =
     usePagination();
   const { search, searchValue, setSearch } = useSearchQuery();
@@ -76,11 +78,14 @@ export const Client = () => {
 
   const ordersList = useMemo(() => data?.data.data, [data]);
 
+  const loading = isRefetching || isPending;
+
   useEffect(() => {
     if (data && isSuccess) {
       setPagination(data.data.pagination);
     }
   }, [isSuccess, data]);
+
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="w-full flex items-center gap-4 justify-between">
@@ -110,7 +115,7 @@ export const Client = () => {
               variant={"outline"}
               size={"icon"}
               onClick={() => refetch()}
-              // disabled={loading}
+              disabled={loading}
             >
               <RefreshCcw
                 className={cn("size-3.5", isRefetching && "animate-spin")}
@@ -122,8 +127,9 @@ export const Client = () => {
             sort={sort}
             setSort={setQuery}
             data={filterField}
-            //   disabled={loading}
+            disabled={loading}
           />
+          <OrderExport />
         </div>
       </div>
       <div className="flex w-full flex-col gap-3">

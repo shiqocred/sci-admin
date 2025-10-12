@@ -1,6 +1,6 @@
 {
   "name": "sci-admin",
-  "version": "0.4.11",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port=3001 --turbopack",
@@ -54,6 +54,7 @@
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.2",
     "drizzle-seed": "^0.3.1",
+    "exceljs": "^4.4.0",
     "google-auth-library": "^10.1.0",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
