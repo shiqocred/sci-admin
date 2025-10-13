@@ -17,7 +17,6 @@ import {
   formatOrderStatus,
   formatPayment,
   formatRole,
-  formatRupiah,
   formattedDateServer,
 } from "@/lib/utils";
 import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
@@ -46,11 +45,6 @@ type RequestProps = {
 function groupOrders(rows: any[]) {
   const map: Record<string, any> = {};
 
-  const rupiahFormatted = (value: string | number) => {
-    if (!value) return "-";
-    return formatRupiah(value);
-  };
-
   for (const row of rows) {
     if (!map[row.id]) {
       map[row.id] = {
@@ -70,10 +64,10 @@ function groupOrders(rows: any[]) {
         productSupplier: row.productSupplier,
         shippingAddress:
           `${row.shippingAddressNote ?? ""}, ${row.shippingAddress ?? ""}`.trim(),
-        orderDiscount: rupiahFormatted(row.orderDiscount),
-        productPrice: rupiahFormatted(row.productPrice),
-        shippingCost: rupiahFormatted(row.shippingCost),
-        totalPrice: rupiahFormatted(row.totalPrice),
+        orderDiscount: Number(row.orderDiscount ?? "0"),
+        productPrice: Number(row.productPrice ?? "0"),
+        shippingCost: Number(row.shippingCost ?? "0"),
+        totalPrice: Number(row.totalPrice ?? "0"),
         products: [],
       };
     }
@@ -220,10 +214,34 @@ export async function POST(req: NextRequest) {
     const grouped = groupOrders(rows);
 
     // === Distinct Info ===
-    const distinctCustomers = [...new Set(grouped.map((o) => o.customerName))];
-    const distinctProducts = [
-      ...new Set(grouped.flatMap((o) => o.products.map((p: any) => p.name))),
-    ];
+    let distinctCustomers = [] as { name: string }[];
+
+    let distinctProducts = [] as {
+      name: string;
+      sku: string | null;
+      variantName: string | null;
+    }[];
+
+    if (productReq.length > 0 && !isAllProduct) {
+      distinctProducts = await db
+        .select({
+          name: products.name,
+          sku: productVariants.sku,
+          variantName: productVariants.name,
+        })
+        .from(products)
+        .leftJoin(productVariants, eq(productVariants.productId, products.id))
+        .where(inArray(productVariants.id, productReq));
+    }
+
+    if (type === "customer" && customers.length > 0 && !isAllCustomer) {
+      distinctCustomers = await db
+        .select({
+          name: users.name,
+        })
+        .from(users)
+        .where(inArray(users.id, customers));
+    }
 
     // === Workbook ===
     const workbook = new ExcelJS.Workbook();
@@ -282,7 +300,9 @@ export async function POST(req: NextRequest) {
       ],
       [
         "Customer Name:",
-        isAllCustomer ? "All Customers" : distinctCustomers.join(", "),
+        isAllCustomer
+          ? "All Customers"
+          : distinctCustomers.map((i) => i.name).join(", "),
       ],
       [
         "Customer Category:",
@@ -290,7 +310,19 @@ export async function POST(req: NextRequest) {
           ? "All Customer Categories"
           : roles.map((r) => formatRole(r.toUpperCase())).join(", "),
       ],
-      ["Product:", isAllProduct ? "All Products" : distinctProducts.join(", ")],
+      [
+        "Product:",
+        isAllProduct
+          ? "All Products"
+          : distinctProducts
+              .map(
+                (i) =>
+                  `(${i.sku ?? "-"}) ${i.name}${
+                    i.variantName === "default" ? "" : " - " + i.variantName
+                  }`
+              )
+              .join(", "),
+      ],
       [
         "Exported Date:",
         formattedDateServer(new Date().toISOString(), "PPP 'at' HH:mm"),
@@ -313,6 +345,16 @@ export async function POST(req: NextRequest) {
         c.alignment = { vertical: "middle", wrapText: true };
         if (col === "A") c.font = { bold: true };
       });
+    });
+
+    // === Adjust row height dynamically for rows 3 and 4 ===
+    [3, 4, 5, 6, 7].forEach((rowNumber) => {
+      const cell = ws.getCell(`B${rowNumber}`);
+      const text = (cell.value || "").toString();
+      const approxLines = Math.ceil(text.length / 50); // kira-kira 50 karakter per baris
+      const baseHeight = 15; // tinggi dasar Excel per baris teks
+      const padding = 6; // tambahan ruang agar tidak mepet
+      ws.getRow(rowNumber).height = baseHeight * approxLines + padding;
     });
 
     ws.addRow([]);
@@ -338,6 +380,11 @@ export async function POST(req: NextRequest) {
         right: { style: "thin" },
       };
     });
+
+    ws.getColumn("orderDiscount").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
+    ws.getColumn("productPrice").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
+    ws.getColumn("shippingCost").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
+    ws.getColumn("totalPrice").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
 
     // === Data Rows ===
     let rowStart = headerRow.number + 1;

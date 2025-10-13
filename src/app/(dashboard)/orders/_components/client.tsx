@@ -15,7 +15,7 @@ import { useGetOrders } from "../_api";
 import { usePagination } from "@/lib/pagination";
 import Pagination from "@/components/pagination";
 import { OrderFilter } from "./order-filter";
-import { OrderExport } from "./order-export";
+import { OrderExport } from "@/components/exports/orders";
 
 const filterField = [{ name: "Order Id", value: "id" }];
 

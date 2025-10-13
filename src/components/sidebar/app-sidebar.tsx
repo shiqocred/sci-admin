@@ -83,9 +83,10 @@ const data = {
     },
     {
       title: "Marketings",
-      url: "/discounts",
+      url: "/reports",
       icon: Percent,
       items: [
+        { title: "Reports", url: "/reports" },
         { title: "Discounts", url: "/discounts" },
         { title: "Banners", url: "/banners" },
         { title: "Promos", url: "/promos" },

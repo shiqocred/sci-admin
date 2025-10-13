@@ -1,17 +1,14 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
-import { db, products, productVariants, users } from "@/lib/db";
-import { and, eq, isNull, not } from "drizzle-orm";
+import { db, products, productVariants, suppliers } from "@/lib/db";
+import { eq, isNull } from "drizzle-orm";
 
 export async function GET() {
   try {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const [customers, productsRes] = await Promise.all([
-      db
-        .select({ value: users.id, label: users.name })
-        .from(users)
-        .where(and(isNull(users.deletedAt), not(eq(users.role, "ADMIN")))),
+    const [supplierRes, productsRes] = await Promise.all([
+      db.select({ value: suppliers.id, label: suppliers.name }).from(suppliers),
       db
         .selectDistinct({
           id: productVariants.id,
@@ -22,6 +19,7 @@ export async function GET() {
         .from(productVariants)
         .leftJoin(products, eq(products.id, productVariants.productId))
         .where(isNull(products.deletedAt)),
+      ,
     ]);
 
     const productFormatted = productsRes.map((product) => ({
@@ -32,9 +30,9 @@ export async function GET() {
           : `(${product.skuVariant}) ${product.productName} - ${product.variantName}`,
     }));
 
-    return successRes({ customers, products: productFormatted });
+    return successRes({ suppliers: supplierRes, products: productFormatted });
   } catch (error) {
-    console.error("ERROR_GET_ORDER_FILTER_EXPORT:", error);
+    console.error("ERROR_GET_CUSTOMER_FILTER_EXPORT:", error);
     return errorRes("Internal Error", 500);
   }
 }

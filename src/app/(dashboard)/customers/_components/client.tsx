@@ -23,6 +23,7 @@ import { SheetRole } from "./dialogs/sheet-role";
 import { CustomerFilter } from "./customer-filter";
 import { useDeleteUser, useVerifyEmail } from "../_api";
 import { useConfirm } from "@/hooks/use-confirm";
+import { TopCustomers } from "@/components/exports/top-customers";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -176,6 +177,7 @@ export const Client = () => {
             setSort={setQuery}
             data={filterField}
           />
+          <TopCustomers />
         </div>
       </div>
       <div className="flex w-full flex-col gap-3">
