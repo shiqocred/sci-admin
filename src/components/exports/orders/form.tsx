@@ -28,12 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { subMonths } from "date-fns";
-
-/* ---------------------- Types ---------------------- */
-interface DataProps {
-  label: string;
-  value: string;
-}
+import { DATA_ROLES, DATA_STATUSES } from "../libs/utils";
 
 interface ExportFormProps {
   statuses: string[];
@@ -54,8 +49,6 @@ interface ExportFormProps {
   setRangeDate: Dispatch<SetStateAction<DateRange | undefined>>;
   handleDownload: (e: MouseEvent) => void;
   isMarketing?: boolean;
-  dataStatuses: DataProps[];
-  dataRole: DataProps[];
 }
 
 /* ---------------------- Component ---------------------- */
@@ -77,8 +70,6 @@ export const ExportForm = ({
   rangeDate,
   setRangeDate,
   handleDownload,
-  dataStatuses,
-  dataRole,
   isMarketing = false,
 }: ExportFormProps) => {
   /* ---------------------- Memos & Callbacks ---------------------- */
@@ -95,10 +86,10 @@ export const ExportForm = ({
     (val: "customer" | "role") => {
       setType(val);
       if (val === "role" && roles.length === 0) {
-        setRoles(dataRole.map((r) => r.value));
+        setRoles(DATA_ROLES.map((r) => r.value));
       }
     },
-    [setType, setRoles, roles.length, dataRole]
+    [setType, setRoles, roles.length, DATA_ROLES]
   );
 
   const handleResetDate = useCallback(
@@ -120,7 +111,7 @@ export const ExportForm = ({
       <SelectPopover
         label="Status"
         placeholder="Select Status Order..."
-        data={dataStatuses}
+        data={DATA_STATUSES}
         selected={statuses}
         onChange={setStatuses}
         isVocal
@@ -154,7 +145,7 @@ export const ExportForm = ({
           <SelectPopover
             label="Role"
             placeholder="Select Customer Role..."
-            data={dataRole}
+            data={DATA_ROLES}
             selected={roles}
             onChange={setRoles}
           />

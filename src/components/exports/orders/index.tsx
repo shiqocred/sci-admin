@@ -15,22 +15,7 @@ import { id } from "date-fns/locale";
 import { useDownloadExport, useGetExportFilters } from "./_api";
 import { ExportForm } from "./form";
 import { ExportingDialog } from "../exporting-dialog";
-
-/* ---------------------- Static Data ---------------------- */
-const DATA_STATUSES = [
-  { label: "Waiting Payment", value: "waiting-payment" },
-  { label: "Processed", value: "processed" },
-  { label: "Shipping", value: "shipping" },
-  { label: "Delivered", value: "delivered" },
-  { label: "Cancelled", value: "cancelled" },
-  { label: "Expired", value: "expired" },
-];
-
-const DATA_ROLES = [
-  { label: "Pet Owner", value: "basic" },
-  { label: "Pet Shop", value: "petshop" },
-  { label: "Vet Clinic", value: "veterinarian" },
-];
+import { DATA_ROLES, DATA_STATUSES } from "../libs/utils";
 
 /* ---------------------- Utility ---------------------- */
 const formatDateRange = (range?: DateRange) => {
@@ -93,7 +78,6 @@ export const OrderExport = ({
     products,
     dataFilter?.products?.map((i) => i.value)
   );
-  console.log(isAllRole);
 
   /* ---------------------- Handle Download ---------------------- */
   const handleDownload = (e: MouseEvent) => {
@@ -145,7 +129,7 @@ export const OrderExport = ({
       <div className="border rounded-lg w-full flex flex-col overflow-hidden p-3 gap-5">
         {isExporting && <ExportingDialog />}
         <div className="size-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-5 rounded-md">
-          <h3 className="font-bold text-lg">Order Report</h3>
+          <h3 className="font-bold text-lg">Orders Report</h3>
         </div>
 
         <ExportForm
@@ -169,8 +153,6 @@ export const OrderExport = ({
             handleDownload,
           }}
           isMarketing
-          dataStatuses={DATA_STATUSES}
-          dataRole={DATA_ROLES}
         />
       </div>
     );
@@ -221,8 +203,6 @@ export const OrderExport = ({
               setRangeDate,
               handleDownload,
             }}
-            dataStatuses={DATA_STATUSES}
-            dataRole={DATA_ROLES}
           />
         </PopoverContent>
       </Popover>

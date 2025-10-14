@@ -1,6 +1,7 @@
 "use client";
 
 import { OrderExport } from "@/components/exports/orders";
+import { ProductExport } from "@/components/exports/products";
 import { TopCustomers } from "@/components/exports/top-customers";
 import React from "react";
 
@@ -13,6 +14,7 @@ export const Client = () => {
       <div className="w-full grid grid-cols-2 xl:grid-cols-3 gap-6">
         <OrderExport isMarketing={true} />
         <TopCustomers isMarketing={true} />
+        <ProductExport isMarketing={true} />
       </div>
     </div>
   );

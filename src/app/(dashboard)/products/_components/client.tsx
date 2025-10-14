@@ -19,6 +19,7 @@ import { TooltipText } from "@/providers/tooltip-provider";
 import { SortTable } from "@/components/sort-table";
 import { ProductFilter } from "./product-filter";
 import { ProductTrending } from "./product-trending";
+import { ProductExport } from "@/components/exports/products";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -182,6 +183,7 @@ export const Client = () => {
               data={filterField}
               disabled={loading}
             />
+            <ProductExport />
           </div>
         </div>
         <DataTable
