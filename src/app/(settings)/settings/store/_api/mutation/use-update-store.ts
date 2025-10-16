@@ -2,7 +2,7 @@ import { invalidateQuery, useMutate } from "@/lib/query";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-type Body = { name: string; address: string; phone: string };
+type Body = { name: string; phone: string };
 
 export const useUpdateStore = () => {
   const queryClient = useQueryClient();

@@ -10,7 +10,7 @@ export async function GET() {
 
     const address = await db.query.about.findFirst({
       columns: {
-        shipping_address: true,
+        address: true,
         longitude: true,
         latitude: true,
       },
@@ -18,7 +18,7 @@ export async function GET() {
 
     const response = address
       ? {
-          address: address.shipping_address,
+          address: address.address,
           lat: address.latitude,
           long: address.longitude,
         }
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest) {
     await db
       .update(about)
       .set({
-        shipping_address: address,
+        address,
         latitude: lat,
         longitude: long,
       })

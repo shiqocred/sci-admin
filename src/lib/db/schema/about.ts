@@ -15,7 +15,6 @@ export const about = pgTable("about", {
   instagram: text("instagram"),
   facebook: text("facebook"),
   expired: text("expired"),
-  shipping_address: text("shipping_address").notNull(),
   longitude: text("longitude").notNull(),
   latitude: text("latitude").notNull(),
 

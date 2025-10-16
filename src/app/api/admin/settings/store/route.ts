@@ -13,7 +13,6 @@ export async function GET() {
     const response = {
       store: {
         name: about?.name,
-        address: about?.address,
         phone: about?.phone,
       },
       service: {
@@ -38,9 +37,9 @@ export async function PUT(req: NextRequest) {
   try {
     if (!(await auth())) return errorRes("Unauthorized", 401);
 
-    const { name, address, phone } = await req.json();
+    const { name, phone } = await req.json();
 
-    await db.update(about).set({ name, address, phone });
+    await db.update(about).set({ name, phone });
 
     return successRes(null, "Store successfully updated");
   } catch (error) {

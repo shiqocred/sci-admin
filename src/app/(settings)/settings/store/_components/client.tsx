@@ -23,7 +23,6 @@ export const Client = () => {
   });
   const [store, setStore] = useState({
     name: "",
-    address: "",
     phone: "",
   });
 
@@ -61,11 +60,7 @@ export const Client = () => {
   }, [data, service]);
   const isUpdateStore = useMemo(() => {
     const storeData = data?.data.store;
-    return (
-      storeData?.name !== store.name ||
-      storeData.phone !== store.phone ||
-      storeData.address !== store.address
-    );
+    return storeData?.name !== store.name || storeData.phone !== store.phone;
   }, [data, store]);
   const isUpdateSosmed = useMemo(() => {
     const sosmedData = data?.data.sosmed;
@@ -88,7 +83,6 @@ export const Client = () => {
       });
       setStore({
         name: storeData.name ?? "",
-        address: storeData.address ?? "",
         phone: storeData.phone ?? "",
       });
       setService({
@@ -124,17 +118,6 @@ export const Client = () => {
                 setStore((prev) => ({ ...prev, phone: e.target.value }))
               }
             />
-            <div className="flex flex-col gap-1">
-              <Label>Address</Label>
-              <Textarea
-                placeholder="e.g. Jl. RS Fatmawati No. 39..."
-                value={store.address}
-                onChange={(e) =>
-                  setStore((prev) => ({ ...prev, address: e.target.value }))
-                }
-                className="border-gray-300 focus-visible:border-gray-500 focus-visible:ring-0 min-h-24"
-              />
-            </div>
             <div className="w-full flex justify-end">
               <Button
                 type="submit"

@@ -8,7 +8,6 @@ const db = drizzle(databaseUrl);
 const aboutData = {
   name: "PT Sehat Cerah Indonesia",
   phone: "0217228383",
-  shipping_address: "Jakarta",
   latitude: "-6.175392",
   longitude: "106.827153",
   address:
