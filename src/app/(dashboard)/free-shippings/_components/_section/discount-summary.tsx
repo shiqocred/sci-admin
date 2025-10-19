@@ -101,7 +101,7 @@ export const DiscountSummary = ({
       if (input.role.length === 3) {
         return "For all customers";
       }
-      return `For ${input.role.map((r) => (r === "BASIC" && "Pet Owner") || (r === "PETSHOP" && "Pet Shop") || (r === "VETERINARIAN" && "Vet Clinic")).join(", ")}`;
+      return `For ${input.role.map((r) => (r === "BASIC" && "Agent") || (r === "PETSHOP" && "Pet Shop") || (r === "VETERINARIAN" && "Vet Clinic")).join(", ")}`;
     }
     if (eligibility === "user" && input.userId.length > 0) {
       return `For ${input.userId.length} User${pronoun(input.userId.length)}`;

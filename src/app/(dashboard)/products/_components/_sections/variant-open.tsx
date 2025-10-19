@@ -213,7 +213,7 @@ export const VariantOpen = ({
             <div className="grid grid-cols-3 gap-3">
               {available.some((i) => i === "basic") && (
                 <LabelInput
-                  label="Pet owner price"
+                  label="Agent price"
                   type="number"
                   placeholder="e.g. 10000"
                   value={variant.basicPrice}

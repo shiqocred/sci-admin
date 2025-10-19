@@ -256,7 +256,7 @@ export const Client = () => {
                               key={role}
                               className="rounded-full font-normal"
                             >
-                              {role.toLowerCase() === "basic" && "Pet Owner"}
+                              {role.toLowerCase() === "basic" && "Agent"}
                               {role.toLowerCase() === "petshop" && "Pet Shop"}
                               {role.toLowerCase() === "veterinarian" &&
                                 "Vet Clinic"}
@@ -316,7 +316,7 @@ export const Client = () => {
                     {product.available.some((i) => i === "BASIC") && (
                       <div className="w-full flex items-center">
                         <div className="w-36 flex-none bg-gray-100 px-6 py-3 font-medium">
-                          <p>Pet Owner</p>
+                          <p>Agent</p>
                         </div>
                         <div className="w-full py-3 px-6 capitalize">
                           {formatRupiah(
@@ -424,7 +424,7 @@ export const Client = () => {
                             {product.available.some((i) => i === "BASIC") && (
                               <div className="px-6 flex h-full items-center border-r gap-1 last:border-0">
                                 <span className="text-gray-700 uppercase tracking-wider">
-                                  Pet Owner:
+                                  Agent:
                                 </span>
                                 <span className="text-gray-900">
                                   {formatRupiah(

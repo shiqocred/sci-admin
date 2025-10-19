@@ -153,7 +153,7 @@ export function numberToTerbilang(n: number): string {
 }
 
 export const formatRole = (role: string) => {
-  if (role === "BASIC") return "Pet Owner";
+  if (role === "BASIC") return "Agent";
   if (role === "PETSHOP") return "Pet Shop";
   if (role === "VETERINARIAN") return "Vet Clinic";
   return "";

@@ -8,7 +8,7 @@ export const DATA_STATUSES = [
 ];
 
 export const DATA_ROLES = [
-  { label: "Pet Owner", value: "basic" },
+  { label: "Agent", value: "basic" },
   { label: "Pet Shop", value: "petshop" },
   { label: "Vet Clinic", value: "veterinarian" },
 ];

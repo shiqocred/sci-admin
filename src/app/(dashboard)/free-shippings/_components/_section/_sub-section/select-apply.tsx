@@ -180,7 +180,7 @@ export const SelectApply = ({
                                 (i) => i.role === "BASIC"
                               ) && (
                                 <p>
-                                  Pet Owner:{" "}
+                                  Agent:{" "}
                                   {formatRupiah(
                                     item.defaultVariant.pricing.find(
                                       (i) => i.role === "BASIC"
@@ -265,7 +265,7 @@ export const SelectApply = ({
                                     (i) => i.role === "BASIC"
                                   ) && (
                                     <p>
-                                      Pet Owner:{" "}
+                                      Agent:{" "}
                                       {formatRupiah(
                                         variant.pricing.find(
                                           (i) => i.role === "BASIC"

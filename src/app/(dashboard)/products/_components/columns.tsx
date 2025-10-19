@@ -159,7 +159,7 @@ export const column = ({
         <div className="flex items-center gap-0.5">
           {product.available.map((role) => (
             <Badge key={role} className="capitalize rounded-full font-normal">
-              {role === "BASIC" && "Pet Owner"}
+              {role === "BASIC" && "Agent"}
               {role === "PETSHOP" && "Pet Shop"}
               {role === "VETERINARIAN" && "Vet Clinic"}
             </Badge>

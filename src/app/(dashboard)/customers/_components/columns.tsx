@@ -113,7 +113,7 @@ export const column = ({
                   : "bg-amber-100"
             )}
           >
-            {role === "Basic" && "Pet Owner"}
+            {role === "Basic" && "Agent"}
             {role === "Veterinarian" && "Vet Clinic"}
             {role === "Pet Shop" && "Pet Shop"}
           </p>
@@ -146,7 +146,7 @@ export const column = ({
                     : "bg-amber-100"
               )}
             >
-              {newRole === "Basic" && "Pet Owner"}
+              {newRole === "Basic" && "Agent"}
               {newRole === "Veterinarian" && "Vet Clinic"}
               {newRole === "Pet Shop" && "Pet Shop"}
             </p>

@@ -66,7 +66,7 @@ export const ProductAction = ({
                 <CommandList>
                   <CommandGroup>
                     <CommandItem onSelect={() => handleSelectRole("basic")}>
-                      Pet Owner
+                      Agent
                       <CheckIcon
                         className={cn(
                           "hidden ml-auto",
@@ -110,7 +110,7 @@ export const ProductAction = ({
                   key={item}
                   className="w-full border-l h-full first:border-0 flex items-center justify-center capitalize"
                 >
-                  {item === "basic" && "Pet Owner"}
+                  {item === "basic" && "Agent"}
                   {item === "petshop" && "Pet Shop"}
                   {item === "veterinarian" && "Vet Clinic"}
                 </div>

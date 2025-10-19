@@ -173,7 +173,7 @@ export const CustomerFilter = ({
                           item === "veterinarian" && "bg-violet-200"
                         )}
                       >
-                        {item === "basic" && "Pet Owner"}
+                        {item === "basic" && "Agent"}
                         {item === "petshop" && "Pet Shop"}
                         {item === "veterinarian" && "Vet Clinic"}
                       </div>
@@ -213,7 +213,7 @@ export const CustomerFilter = ({
                   >
                     <Check className="text-primary-foreground size-3" />
                   </div>
-                  Pet Owner
+                  Agent
                 </CommandItem>
                 <CommandItem
                   value="petshop"

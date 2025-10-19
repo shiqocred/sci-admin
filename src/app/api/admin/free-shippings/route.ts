@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
             : filtered
                 .map(
                   (i) =>
-                    (i.role === "BASIC" && "Role Pet Owner") ||
+                    (i.role === "BASIC" && "Role Agent") ||
                     (i.role === "PETSHOP" && "Role Pet Shop") ||
                     (i.role === "VETERINARIAN" && "Role Vet Clinic")
                 )
