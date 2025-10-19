@@ -751,7 +751,7 @@ export async function POST(
         v:
           detailFormatted.status === "PENDING"
             ? "Waiting for approval"
-            : `${detailFormatted.status === "APPROVED" && "Approved at"}${detailFormatted.status === "REJECTED" && "Approved at"} ${formattedDateServer(detailFormatted.upgradeAt, "PPP 'at' HH:mm")}`,
+            : `${detailFormatted.status === "APPROVED" ? "Approved at" : ""}${detailFormatted.status === "REJECTED" ? "Rejected at" : ""} ${formattedDateServer(detailFormatted.upgradeAt, "PPP 'at' HH:mm")}`,
       };
 
       docText(
