@@ -1034,7 +1034,7 @@ export async function POST(
 
 type LucideIconType = "id-card" | "map" | "map-pinned" | "chevron-right";
 
-export function drawLucideIcon(
+function drawLucideIcon(
   doc: PDFKit.PDFDocument,
   type: LucideIconType,
   x: number,
