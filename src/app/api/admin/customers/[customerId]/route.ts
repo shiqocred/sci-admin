@@ -7,7 +7,7 @@ import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ customerId: string }> } // langsung object saja, sudah resolved
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
     const isAuth = await auth();

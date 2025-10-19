@@ -327,15 +327,14 @@ export async function POST(
     const requestBody = {
       origin_contact_name: store.name,
       origin_contact_phone: store.phone,
-      origin_address: store.shipping_address,
+      origin_address: store.address,
       origin_coordinate: {
         latitude: store.latitude,
         longitude: store.longitude,
       },
       destination_contact_name: addressSelected.name,
       destination_contact_phone: `0${addressSelected.phone.split(" ")[1]}`,
-      destination_address: addressSelected.address,
-      destination_note: addressSelected.address_note,
+      destination_address: `${addressSelected.address_note}, ${addressSelected.address}`,
       destination_coordinate: {
         latitude: addressSelected.latitude,
         longitude: addressSelected.longitude,

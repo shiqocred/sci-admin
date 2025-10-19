@@ -10,6 +10,7 @@ import {
 } from "@/config";
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -62,3 +63,26 @@ export const transporter = nodemailer.createTransport({
     pass: smtpPassword, // password
   },
 });
+
+export const getR2Buffer = async (
+  key: string | null
+): Promise<Buffer | null> => {
+  try {
+    if (!key) return null;
+
+    const command = new GetObjectCommand({ Bucket: r2bucket, Key: key });
+    const response = await r2.send(command);
+
+    if (!response.Body) return null;
+
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+
+    return Buffer.concat(chunks);
+  } catch (err) {
+    console.error("R2 download error:", err);
+    return null;
+  }
+};

@@ -1,5 +1,4 @@
-import axios, { AxiosError } from "axios";
-import { getCookie } from "cookies-next/client";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { useQuery, UseQueryOptions, QueryKey } from "@tanstack/react-query";
 
 import { buildUrl } from "./utils";
@@ -18,6 +17,7 @@ interface UseApiQueryProps<T> extends UseApiQueryOptions<T> {
     string,
     string | number | boolean | (string | number | boolean)[] | undefined
   >;
+  axiosConfig?: AxiosRequestConfig<any>;
 }
 
 export function useApiQuery<T = any>({
@@ -25,17 +25,17 @@ export function useApiQuery<T = any>({
   endpoint,
   params,
   searchParams,
+  axiosConfig,
   ...options
 }: UseApiQueryProps<T>) {
-  const token = getCookie("accessToken");
   const urlWithParams = buildUrl(endpoint, searchParams);
 
   return useQuery<T, AxiosError>({
     queryKey: key,
     queryFn: async () => {
       const res = await axios.get(urlWithParams, {
-        headers: { Authorization: `Bearer ${token}` },
         params,
+        ...axiosConfig,
       });
       return res.data as T;
     },

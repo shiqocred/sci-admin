@@ -7,6 +7,7 @@ import {
   CheckCircle,
   ChevronRight,
   CircleQuestionMark,
+  Download,
   Map,
   MapPinned,
   RefreshCw,
@@ -35,6 +36,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { UpgradeDocument } from "./_section/upgrade-document";
 import { format } from "date-fns";
+import { useDownloadExport } from "../_api";
+import { id } from "date-fns/locale";
 
 export const Client = () => {
   const { customerId } = useParams();
@@ -94,6 +97,25 @@ export const Client = () => {
     );
   };
 
+  const { mutate: exportData, isPending: isExporting } = useDownloadExport();
+
+  const handleDownload = () => {
+    exportData(
+      { params: { customerId: customerId as string } },
+      {
+        onSuccess: (res) => {
+          const url = window.URL.createObjectURL(res.data);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `REPORT CUSTOMER (${customer?.name}) - ${format(new Date(), "P_HH_mm_ss", { locale: id })}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        },
+      }
+    );
+  };
+
   return (
     <div className="w-full flex flex-col gap-6">
       <VerifyDialog />
@@ -120,6 +142,17 @@ export const Client = () => {
               <RefreshCw
                 className={cn("size-3.5", loading && "animate-spin")}
               />
+            </Button>
+          </TooltipText>
+          <TooltipText value="Export Detail" side="bottom">
+            <Button
+              size={"icon"}
+              className="size-8"
+              variant={"outline"}
+              onClick={handleDownload}
+              disabled={isExporting || loading}
+            >
+              <Download className="size-3.5" />
             </Button>
           </TooltipText>
           <TooltipText value="Delete" side="bottom">
