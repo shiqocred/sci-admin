@@ -29,12 +29,12 @@ export function fastPagination({
 } {
   const url = req.nextUrl;
 
-  let page = parseInt(url.searchParams.get(pageParamName) ?? "1", 10);
-  let limit = parseInt(url.searchParams.get(limitParamName) ?? "10", 10);
+  let page = Number.parseInt(url.searchParams.get(pageParamName) ?? "1", 10);
+  let limit = Number.parseInt(url.searchParams.get(limitParamName) ?? "10", 10);
 
   // ✅ Validasi untuk menghindari NaN atau nilai tidak valid
-  if (isNaN(page) || page < 1) page = 1;
-  if (isNaN(limit) || limit < 1) limit = 10;
+  if (Number.isNaN(page) || page < 1) page = 1;
+  if (Number.isNaN(limit) || limit < 1) limit = 10;
 
   const offset = (page - 1) * limit;
   const lastPage = Math.max(Math.ceil(total / limit), 1);

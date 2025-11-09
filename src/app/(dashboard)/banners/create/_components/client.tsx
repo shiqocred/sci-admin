@@ -1,97 +1,110 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { CheckedState } from "@radix-ui/react-checkbox";
-import { ChevronRight, ImageIcon, Loader2, Send } from "lucide-react";
-import React, { MouseEvent, useState } from "react";
-import { useCreateBanner } from "../_api";
+import React, { MouseEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ImageIcon, Loader2, Send } from "lucide-react";
+import { useCreateBanner } from "../_api";
 import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
-import { format } from "date-fns";
+import { BannerInput } from "../../_api/types";
+import { formatDateTimeToISO } from "@/lib/utils";
+import { ParamsLoading } from "../../_components/_loading/params";
 
-const dateFormatted = (time: string, date: Date) => {
-  const [hour, minute] = time.split(":").map(Number);
-  const newDate = new Date(date);
-  newDate.setHours(hour, minute, 0, 0);
-  return newDate.toISOString();
+const initialValue: BannerInput = {
+  name: "",
+  apply: "detail",
+  selected: [],
+  image: null,
+  startDate: new Date(),
+  startTime: format(new Date(), "HH:mm"),
+  endDate: undefined,
+  endTime: format(new Date(), "HH:mm"),
+  isEnd: false,
 };
 
 export const Client = () => {
-  const [input, setInput] = useState({
-    name: "",
-    apply: "detail" as
-      | "detail"
-      | "categories"
-      | "suppliers"
-      | "pets"
-      | "promos",
-    selected: [] as string[],
-    image: null as File | null,
-    startDate: new Date() as Date | undefined,
-    startTime: format(new Date(), "HH:mm") ?? "08:00",
-    endDate: undefined as Date | undefined,
-    endTime: format(new Date(), "HH:mm") ?? "08:00",
-    isEnd: false as CheckedState | undefined,
-  });
+  const [input, setInput] = useState<BannerInput>(initialValue);
 
   const { mutate: createBanner, isPending: isCreating } = useCreateBanner();
 
-  const handleCreateBanner = (e: MouseEvent) => {
-    e.preventDefault();
-    const body = new FormData();
-    body.append("name", input.name);
-    body.append("type", input.apply.toUpperCase());
-    input.selected.map((item) => body.append("apply", item));
-    if (input.image) {
-      body.append("image", input.image);
-    }
-    if (input.startDate) {
-      const startDiscount = dateFormatted(input.startTime, input.startDate);
-      body.append("start_banner", startDiscount);
-    }
-    if (input.isEnd && input.endDate) {
-      const endDiscount = dateFormatted(input.endTime, input.endDate);
-      body.append("end_banner", endDiscount);
-    }
-    createBanner({ body });
-  };
+  const handleCreateBanner = useCallback(
+    (e: MouseEvent) => {
+      e.preventDefault();
 
-  const notSubmit =
+      const formData = new FormData();
+      formData.append("name", input.name);
+      formData.append("type", input.apply.toUpperCase());
+
+      for (const item of input.selected) formData.append("apply", item);
+
+      if (input.image) formData.append("image", input.image);
+
+      if (input.startDate) {
+        const start = formatDateTimeToISO(input.startTime, input.startDate);
+        formData.append("start_banner", start);
+      }
+
+      if (input.isEnd && input.endDate) {
+        const end = formatDateTimeToISO(input.endTime, input.endDate);
+        formData.append("end_banner", end);
+      }
+
+      createBanner({ body: formData });
+    },
+    [input, createBanner]
+  );
+
+  const notSubmittable =
+    isCreating ||
     !input.name ||
     !input.image ||
-    input.selected.length === 0 ||
     !input.startDate ||
     !input.startTime ||
-    (input.isEnd && (!input.endDate || !input.endTime)) ||
-    isCreating;
+    input.selected.length === 0 ||
+    (input.isEnd && (!input.endDate || !input.endTime));
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    if (!isMounted) {
+      setIsMounted(true);
+    }
+  }, []);
+
+  if (!isMounted) {
+    return <ParamsLoading mode="create" />;
+  }
 
   return (
-    <div className="w-full flex flex-col gap-6">
-      <div className="w-full flex items-center gap-2">
+    <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full items-center gap-2">
         <Button
-          size={"icon"}
-          variant={"secondary"}
-          className="size-7 hover:bg-gray-200"
           asChild
+          size="icon"
+          variant="secondary"
+          className="size-7 hover:bg-gray-200"
         >
           <Link href="/banners">
             <ImageIcon className="size-5" />
           </Link>
         </Button>
         <ChevronRight className="size-4 text-gray-500" />
-        <h1 className="text-xl font-semibold">Add Banner</h1>
+        <h1 className="text-xl font-semibold">Create Banner</h1>
       </div>
-      <div className="w-full grid gap-6 grid-cols-7">
-        <div className="col-span-4 w-full">
+
+      <div className="grid w-full grid-cols-7 gap-6">
+        <div className="col-span-4">
           <BannerCore input={input} setInput={setInput} />
         </div>
-        <div className="col-span-3 w-full">
-          <div className="flex flex-col gap-4 w-full">
+
+        <div className="col-span-3">
+          <div className="flex w-full flex-col gap-4">
             <BannerActive input={input} setInput={setInput} />
-            <Button onClick={handleCreateBanner} disabled={notSubmit}>
+            <Button onClick={handleCreateBanner} disabled={notSubmittable}>
               {isCreating ? <Loader2 className="animate-spin" /> : <Send />}
-              Creat{isCreating ? "ing" : "e"} Banner{isCreating && "..."}
+              {isCreating ? " Creating..." : " Create Banner"}
             </Button>
           </div>
         </div>

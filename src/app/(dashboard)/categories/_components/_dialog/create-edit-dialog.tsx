@@ -13,11 +13,12 @@ import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import slugify from "slugify";
 import {
   useCreateCategory,
-  useGetShowCategory,
+  useGetCategory,
   useUpdateCategory,
 } from "../../_api";
 import { FileUpload } from "@/components/ui/file-upload";
 import { MessageInputError } from "@/components/message-input-error";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const initialValue = {
   name: "",
@@ -42,7 +43,7 @@ export const CreateEditDialog = ({
 
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: UpdateCategory, isPending: isupdating } = useUpdateCategory();
-  const { data, isPending, isSuccess } = useGetShowCategory({
+  const { data, isPending, isSuccess } = useGetCategory({
     categoryId,
     open,
   });
@@ -181,26 +182,36 @@ export const CreateEditDialog = ({
               />
             </div>
           )}
-          <DialogFooter>
-            <Button
-              disabled={loading}
-              type="button"
-              variant={"outline"}
-              onClick={onOpenChange}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={
-                loading ||
-                !input.name ||
-                (categoryId ? !input.image && !input.imageOld : !input.image)
-              }
-              type="submit"
-            >
-              {categoryId ? "Update" : "Create"}
-            </Button>
-          </DialogFooter>
+          {isPending && categoryId ? (
+            <DialogFooter>
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-20" />
+            </DialogFooter>
+          ) : (
+            <DialogFooter>
+              <Button
+                disabled={loading}
+                type="button"
+                variant={"outline"}
+                onClick={onOpenChange}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={
+                  loading ||
+                  !input.name ||
+                  (categoryId ? !input.image && !input.imageOld : !input.image)
+                }
+                type="submit"
+              >
+                {!categoryId && isCreating && "Creating..."}
+                {isupdating && categoryId && "Updating..."}
+                {!categoryId && !isCreating && "Create"}
+                {!isupdating && categoryId && "Update"}
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </DialogContent>
     </Dialog>

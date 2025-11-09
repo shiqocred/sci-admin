@@ -9,7 +9,7 @@ type UseApiQueryOptions<T> = Omit<
   "queryKey" | "queryFn"
 >;
 
-interface UseApiQueryProps<T> extends UseApiQueryOptions<T> {
+export interface UseApiQueryProps<T> extends UseApiQueryOptions<T> {
   key: QueryKey;
   endpoint: string;
   params?: QueryParams;

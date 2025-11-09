@@ -30,6 +30,19 @@ import { cn, formatRupiah } from "@/lib/utils";
 import { phoneNumberCode } from "@/lib/dial-phone";
 import { Skeleton } from "./ui/skeleton";
 
+export type LabelInputPros = ComponentProps<"input"> & {
+  label: string;
+  isPassword?: boolean;
+  isPhone?: boolean;
+  isLoading?: boolean;
+  isPricing?: boolean;
+  isNested?: boolean;
+  classContainer?: string;
+  classLabel?: string;
+  dialCode?: string;
+  setDialCode?: Dispatch<SetStateAction<string>>;
+};
+
 export const LabelInput = ({
   classContainer,
   label,
@@ -45,18 +58,7 @@ export const LabelInput = ({
   setDialCode,
   id,
   ...props
-}: ComponentProps<"input"> & {
-  label: string;
-  isPassword?: boolean;
-  isPhone?: boolean;
-  isLoading?: boolean;
-  isPricing?: boolean;
-  isNested?: boolean;
-  classContainer?: string;
-  classLabel?: string;
-  dialCode?: string;
-  setDialCode?: Dispatch<SetStateAction<string>>;
-}) => {
+}: LabelInputPros) => {
   return (
     <div className={cn("flex flex-col w-full gap-1.5", classContainer)}>
       <Label htmlFor={id} className={classLabel}>

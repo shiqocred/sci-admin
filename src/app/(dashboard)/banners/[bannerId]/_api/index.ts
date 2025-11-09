@@ -1,3 +1,2 @@
-export * from "./query/use-get-banner";
-
-export * from "./mutation/use-update-banner";
+export * from "./use-detail-banner";
+export * from "./types";

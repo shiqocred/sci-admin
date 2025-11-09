@@ -2,14 +2,10 @@ import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import React from "react";
-
-interface ValueSelect {
-  name: string;
-  id: string;
-}
+import { SelectItemsProps } from "../../../_api";
 
 interface OptionProps {
-  item: ValueSelect;
+  item: SelectItemsProps;
   input: any;
   handleSelectApply: (item: any) => void;
 }

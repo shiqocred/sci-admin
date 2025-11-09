@@ -1,5 +1,5 @@
 // src/lib/api/types.ts
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 export type IfDefined<T, Then> = [T] extends [undefined] ? {} : Then;
 
@@ -18,6 +18,7 @@ export type UseMutateConfig<
 > = {
   endpoint: string;
   method: "post" | "put" | "delete" | "patch" | "get";
+  axiosConfig?: AxiosRequestConfig<any>;
   onSuccess?: (
     data: AxiosResponse<any>,
     variables: MutationVariables<TBody, TParams, TSearchParams>,

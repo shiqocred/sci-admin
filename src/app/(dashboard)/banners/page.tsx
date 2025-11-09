@@ -1,18 +1,17 @@
-import { Metadata } from "next";
-import { ContainerPage } from "@/components/container-page";
 import React from "react";
-import { redirect } from "next/navigation";
+import { Metadata } from "next";
 import { auth } from "@/lib/auth";
+
+import { redirect } from "next/navigation";
+import { loginRedirect } from "@/lib/utils";
 import { Client } from "./_components/client";
+import { ContainerPage } from "@/components/container-page";
 
 export const metadata: Metadata = { title: "Banners" };
 
 const BannersPage = async () => {
   const session = await auth();
-  if (!session) {
-    const path = "/banners";
-    redirect(`/login?redirect=${encodeURIComponent(path)}`);
-  }
+  if (!session) redirect(loginRedirect("/banners"));
 
   return (
     <ContainerPage

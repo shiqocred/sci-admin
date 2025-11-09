@@ -224,11 +224,30 @@ export const formattedDateServer = (
   if (!date) return "-";
 
   const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) return "-";
+  if (Number.isNaN(parsedDate.getTime())) return "-";
 
   // Geser ke zona waktu WIB (UTC+7)
   const dateWIB = new Date(parsedDate.getTime() + 7 * 60 * 60 * 1000);
 
   // Format pakai locale Indonesia
   return format(dateWIB, formatStr, { locale: id });
+};
+
+export const loginRedirect = (path: string) => {
+  return `/login?redirect=${encodeURIComponent(path)}`;
+};
+
+export const formatDateTimeToISO = (time: string, date: Date) => {
+  const [hour, minute] = time.split(":").map(Number);
+  const newDate = new Date(date);
+  newDate.setHours(hour, minute, 0, 0);
+  return newDate.toISOString();
+};
+
+export type GetListProps = {
+  q: string;
+  p: number;
+  limit: number;
+  sort: string;
+  order: string;
 };

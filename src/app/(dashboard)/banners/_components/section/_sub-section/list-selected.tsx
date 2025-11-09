@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ChevronRight, LucideIcon, X } from "lucide-react";
 import React from "react";
-
-interface ValueSelect {
-  name: string;
-  id: string;
-}
+import { SelectItemsProps } from "../../../_api";
 
 interface ListSelectedProps {
   icon: LucideIcon;
-  item: ValueSelect;
+  item: SelectItemsProps;
   handleRemoveApply: () => void;
 }
 

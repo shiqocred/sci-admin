@@ -4,15 +4,13 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Client } from "./_components/client";
+import { loginRedirect } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Edit Banners" };
 
 const EditBannerPage = async () => {
   const session = await auth();
-  if (!session) {
-    const path = "/banners";
-    redirect(`/login?redirect=${encodeURIComponent(path)}`);
-  }
+  if (!session) redirect(loginRedirect("/banners"));
 
   return (
     <ContainerPage

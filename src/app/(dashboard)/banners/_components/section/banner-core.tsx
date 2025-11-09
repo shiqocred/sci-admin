@@ -1,6 +1,12 @@
-import { LabelInput } from "@/components/label-input";
-import { FileUploadBanner } from "@/components/ui/file-upload-banner";
-import { Label } from "@/components/ui/label";
+import {
+  BadgePercent,
+  ChartNoAxesGanttIcon,
+  PawPrint,
+  StoreIcon,
+  TagIcon,
+} from "lucide-react";
+import React, { Dispatch, SetStateAction } from "react";
+
 import {
   Select,
   SelectContent,
@@ -9,68 +15,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import React, { Dispatch, SetStateAction } from "react";
-import { ListSelected } from "./_sub-section/list-selected";
 import { useGetSelects } from "../../_api";
 import { SelectApply } from "./select-apply";
-import {
-  BadgePercent,
-  ChartNoAxesGanttIcon,
-  PawPrint,
-  StoreIcon,
-  TagIcon,
-} from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { LabelInput } from "@/components/label-input";
+import { FileUploadBanner } from "@/components/ui/file-upload-banner";
+import { ListSelected } from "./_sub-section/list-selected";
 
-export const BannerCore = ({
-  input,
-  setInput,
-}: {
+interface BannerCoreProps {
   input: any;
   setInput: Dispatch<SetStateAction<any>>;
-}) => {
+}
+
+export const BannerCore = ({ input, setInput }: BannerCoreProps) => {
   const { data } = useGetSelects();
-  const categories = React.useMemo(() => {
-    return data?.data.categories ?? [];
-  }, [data]);
-  const suppliers = React.useMemo(() => {
-    return data?.data.suppliers ?? [];
-  }, [data]);
-  const pets = React.useMemo(() => {
-    return data?.data.pets ?? [];
-  }, [data]);
-  const products = React.useMemo(() => {
-    return data?.data.products ?? [];
-  }, [data]);
-  const promos = React.useMemo(() => {
-    return data?.data.promos ?? [];
+
+  const selects = React.useMemo(() => {
+    const res = data?.data;
+    return {
+      categories: res?.categories ?? [],
+      suppliers: res?.suppliers ?? [],
+      pets: res?.pets ?? [],
+      products: res?.products ?? [],
+      promos: res?.promos ?? [],
+    };
   }, [data]);
 
-  const handleRemoveApply = (item: any) => {
-    if (input.apply === "detail") {
-      setInput((prev: any) => ({ ...prev, selected: [] }));
-    } else {
-      setInput((prev: any) => ({
-        ...prev,
-        selected: prev.selected.filter((i: any) => i !== item),
-      }));
-    }
+  const handleRemoveApply = (itemId: any) => {
+    setInput((prev: any) => ({
+      ...prev,
+      selected:
+        prev.apply === "detail"
+          ? []
+          : prev.selected.filter((id: any) => id !== itemId),
+    }));
   };
+
   const handleSelectApply = (item: any) => {
-    if (input.apply === "detail") {
-      setInput((prev: any) => ({ ...prev, selected: [item.id] }));
-    } else {
-      if (input.selected.includes(item.id)) {
-        handleRemoveApply(item.id);
-      } else {
-        setInput((prev: any) => ({
-          ...prev,
-          selected: [...prev.selected, item.id],
-        }));
-      }
-    }
+    const { id } = item;
+    setInput((prev: any) => {
+      const isSelected = prev.selected.includes(id);
+      if (prev.apply === "detail") return { ...prev, selected: [id] };
+      return {
+        ...prev,
+        selected: isSelected
+          ? prev.selected.filter((i: any) => i !== id)
+          : [...prev.selected, id],
+      };
+    });
   };
+
+  const renderSelectedList = () => {
+    const applyMap: Record<string, { data: any[]; icon: any }> = {
+      categories: { data: selects.categories, icon: TagIcon },
+      suppliers: { data: selects.suppliers, icon: StoreIcon },
+      pets: { data: selects.pets, icon: PawPrint },
+      detail: { data: selects.products, icon: ChartNoAxesGanttIcon },
+      promos: { data: selects.promos, icon: BadgePercent },
+    };
+
+    const current = applyMap[input.apply];
+    if (!current) return null;
+
+    return current.data
+      .filter((item) => input.selected.includes(item.id))
+      .map((item) => (
+        <ListSelected
+          key={item.id}
+          icon={current.icon}
+          handleRemoveApply={() => handleRemoveApply(item.id)}
+          item={item}
+        />
+      ));
+  };
+
   return (
-    <div className="bg-gray-50 border-gray-200 border p-5 rounded-lg flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
       <LabelInput
         label="Name"
         placeholder="Type banner name..."
@@ -80,6 +100,7 @@ export const BannerCore = ({
           setInput((prev: any) => ({ ...prev, name: e.target.value }))
         }
       />
+
       <div className="flex flex-col gap-1.5">
         <Label className="required">Upload Image</Label>
         <FileUploadBanner
@@ -93,15 +114,16 @@ export const BannerCore = ({
         />
         <p className="text-xs text-gray-500">*Recommended ratio 21:10</p>
       </div>
+
       <div className="flex flex-col gap-1.5">
         <Label className="required">Type Banner</Label>
         <Select
           value={input.apply}
-          onValueChange={(e) =>
+          onValueChange={(val) =>
             setInput((prev: any) => ({
               ...prev,
               selected: [],
-              apply: e as
+              apply: val as
                 | "detail"
                 | "categories"
                 | "suppliers"
@@ -124,72 +146,16 @@ export const BannerCore = ({
           </SelectContent>
         </Select>
       </div>
+
       <SelectApply
-        categories={categories}
-        handleSelectApply={handleSelectApply}
+        {...selects}
         input={input}
-        pets={pets}
-        products={products}
-        promos={promos}
-        suppliers={suppliers}
+        handleSelectApply={handleSelectApply}
       />
+
       {input.selected.length > 0 && (
-        <div className="flex flex-col border rounded-md divide-y overflow-hidden">
-          {input.apply === "categories" &&
-            categories
-              .filter((item) => input.selected.includes(item.id))
-              .map((item) => (
-                <ListSelected
-                  key={item.id}
-                  icon={TagIcon}
-                  handleRemoveApply={() => handleRemoveApply(item.id)}
-                  item={item}
-                />
-              ))}
-          {input.apply === "suppliers" &&
-            suppliers
-              .filter((item) => input.selected.includes(item.id))
-              .map((item) => (
-                <ListSelected
-                  key={item.id}
-                  icon={StoreIcon}
-                  handleRemoveApply={() => handleRemoveApply(item.id)}
-                  item={item}
-                />
-              ))}
-          {input.apply === "pets" &&
-            pets
-              .filter((item) => input.selected.includes(item.id))
-              .map((item) => (
-                <ListSelected
-                  key={item.id}
-                  icon={PawPrint}
-                  handleRemoveApply={() => handleRemoveApply(item.id)}
-                  item={item}
-                />
-              ))}
-          {input.apply === "detail" &&
-            products
-              .filter((item) => input.selected.includes(item.id))
-              .map((item) => (
-                <ListSelected
-                  key={item.id}
-                  icon={ChartNoAxesGanttIcon}
-                  handleRemoveApply={() => handleRemoveApply(item.id)}
-                  item={item}
-                />
-              ))}
-          {input.apply === "promos" &&
-            promos
-              .filter((item) => input.selected.includes(item.id))
-              .map((item) => (
-                <ListSelected
-                  key={item.id}
-                  icon={BadgePercent}
-                  handleRemoveApply={() => handleRemoveApply(item.id)}
-                  item={item}
-                />
-              ))}
+        <div className="flex flex-col divide-y overflow-hidden rounded-md border">
+          {renderSelectedList()}
         </div>
       )}
     </div>

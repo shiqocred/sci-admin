@@ -13,30 +13,43 @@ import { id } from "date-fns/locale";
 import { ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const BannerActive = ({
-  input,
-  setInput,
-}: {
+interface BannerActiveProps {
   input: any;
   setInput: Dispatch<SetStateAction<any>>;
-}) => {
+}
+
+export const BannerActive = ({ input, setInput }: BannerActiveProps) => {
+  const handleDateChange = (
+    key: "startDate" | "endDate",
+    date: Date | undefined
+  ) => {
+    setInput((prev: any) => ({
+      ...prev,
+      [key]: prev.isEnd || key === "startDate" ? date : undefined,
+      ...(key === "startDate" && !prev.isEnd ? { endDate: undefined } : {}),
+    }));
+  };
+
+  const handleTimeChange = (key: "startTime" | "endTime", value: string) => {
+    setInput((prev: any) => ({ ...prev, [key]: value }));
+  };
+
   return (
-    <div className="bg-gray-50 border-gray-200 border p-5 rounded-lg flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-gray-50 p-5">
       <Label className="required">Active dates</Label>
       <div className="grid grid-cols-3 gap-4">
-        <div className="flex flex-col col-span-2 gap-1.5">
+        <div className="col-span-2 flex flex-col gap-1.5">
           <Label>Start Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                id="date-picker"
-                className="w-full justify-between font-normal bg-transparent border-gray-300 hover:border-gray-400 hover:bg-gray-100 shadow-none data-[state=open]:border-gray-400 group"
+                className="group w-full justify-between border-gray-300 bg-transparent font-normal shadow-none hover:border-gray-400 hover:bg-gray-100 data-[state=open]:border-gray-400"
               >
                 {input.startDate
                   ? format(input.startDate, "PP", { locale: id })
                   : "Select date"}
-                <ChevronDownIcon className="group-data-[state=open]:rotate-180 transition-all" />
+                <ChevronDownIcon className="transition-all group-data-[state=open]:rotate-180" />
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -48,56 +61,47 @@ export const BannerActive = ({
                 selected={input.startDate}
                 captionLayout="dropdown"
                 disabled={{ before: new Date() }}
-                onSelect={(date) => {
-                  setInput((prev: any) => ({
-                    ...prev,
-                    startDate: date,
-                    endDate: prev.isEnd ? date : undefined,
-                  }));
-                }}
+                onSelect={(date) => handleDateChange("startDate", date)}
               />
             </PopoverContent>
           </Popover>
         </div>
+
         <div className="flex flex-col gap-1.5">
           <Label>Start Time</Label>
           <Input
             type="time"
             step="60"
             value={input.startTime}
-            onChange={(e) =>
-              setInput((prev: any) => ({
-                ...prev,
-                startTime: e.target.value,
-              }))
-            }
-            className="border-gray-300 focus-visible:border-gray-400 focus-visible:ring-0 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+            onChange={(e) => handleTimeChange("startTime", e.target.value)}
+            className="appearance-none border-gray-300 focus-visible:border-gray-400 focus-visible:ring-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
           />
         </div>
-        <Label className="flex items-center gap-2 col-span-3">
+
+        <Label className="col-span-3 flex items-center gap-2">
           <Checkbox
             checked={input.isEnd}
-            onCheckedChange={(e) =>
-              setInput((prev: any) => ({ ...prev, isEnd: e }))
+            onCheckedChange={(checked) =>
+              setInput((prev: any) => ({ ...prev, isEnd: checked }))
             }
           />
           <p>Set end date</p>
         </Label>
+
         {input.isEnd && (
           <>
-            <div className="flex flex-col col-span-2 gap-1.5">
+            <div className="col-span-2 flex flex-col gap-1.5">
               <Label>End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    id="date-picker"
-                    className="w-full justify-between font-normal bg-transparent border-gray-300 hover:border-gray-400 hover:bg-gray-100 shadow-none data-[state=open]:border-gray-400 group"
+                    className="group w-full justify-between border-gray-300 bg-transparent font-normal shadow-none hover:border-gray-400 hover:bg-gray-100 data-[state=open]:border-gray-400"
                   >
                     {input.endDate
                       ? format(input.endDate, "PP", { locale: id })
                       : "Select date"}
-                    <ChevronDownIcon className="group-data-[state=open]:rotate-180 transition-all" />
+                    <ChevronDownIcon className="transition-all group-data-[state=open]:rotate-180" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -109,29 +113,20 @@ export const BannerActive = ({
                     selected={input.endDate}
                     captionLayout="dropdown"
                     disabled={{ before: input.startDate ?? new Date() }}
-                    onSelect={(date) => {
-                      setInput((prev: any) => ({
-                        ...prev,
-                        endDate: prev.isEnd ? date : undefined,
-                      }));
-                    }}
+                    onSelect={(date) => handleDateChange("endDate", date)}
                   />
                 </PopoverContent>
               </Popover>
             </div>
+
             <div className="flex flex-col gap-1.5">
               <Label>End Time</Label>
               <Input
                 type="time"
                 step="60"
                 value={input.endTime}
-                onChange={(e) =>
-                  setInput((prev: any) => ({
-                    ...prev,
-                    endTime: e.target.value,
-                  }))
-                }
-                className="border-gray-300 focus-visible:border-gray-400 focus-visible:ring-0 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                onChange={(e) => handleTimeChange("endTime", e.target.value)}
+                className="appearance-none border-gray-300 focus-visible:border-gray-400 focus-visible:ring-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />
             </div>
           </>

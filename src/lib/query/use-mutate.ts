@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 import { isRecord } from "./utils";
 
@@ -17,9 +17,7 @@ export const useMutate = <
   onSuccess,
   onError,
   axiosConfig,
-}: UseMutateConfig<TBody, TParams, TSearchParams> & {
-  axiosConfig?: AxiosRequestConfig<any>;
-}) =>
+}: UseMutateConfig<TBody, TParams, TSearchParams>) =>
   useMutation<
     AxiosResponse,
     AxiosError,
@@ -34,9 +32,9 @@ export const useMutate = <
         variables.params !== undefined &&
         isRecord(variables.params)
       ) {
-        Object.entries(variables.params).forEach(([key, val]) => {
+        for (const [key, val] of Object.entries(variables.params)) {
           url = url.replace(`:${key}`, encodeURIComponent(val));
-        });
+        }
       }
 
       if (
