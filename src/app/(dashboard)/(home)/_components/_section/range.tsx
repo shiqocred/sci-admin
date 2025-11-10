@@ -67,7 +67,6 @@ import { DateRange } from "react-day-picker";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { CustomersRange, useGetDashboardRange } from "../../_api";
 import { id } from "date-fns/locale";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // 🧠 Constants
 const chartConfig = {
