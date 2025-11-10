@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { RejectDialog } from "../../../_components/dialogs/reject-dialog";
-import { useUpdateReview } from "../../../_api";
+import { useReviewCustomer } from "../../../_api";
 import { PreviewDialog } from "../dialogs/preview-dialog";
 import { useConfirm } from "@/hooks/use-confirm";
 import { format } from "date-fns";
@@ -249,7 +249,7 @@ export const UpgradeDocument = ({
     "This action cannot be undone"
   );
 
-  const { mutate: update, isPending: isUpdating } = useUpdateReview();
+  const { mutate: update, isPending: isUpdating } = useReviewCustomer();
 
   const handleApprove = async () => {
     const ok = await confirmApprove();
