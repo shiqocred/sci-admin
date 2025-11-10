@@ -10,9 +10,9 @@ import { TooltipText } from "@/providers/tooltip-provider";
 import { CheckCircle2, Eye, EyeIcon, Loader, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
-import { useUpdateReview, useGetReviewUpgrade } from "../../_api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { RejectDialog } from "./reject-dialog";
+import { useGetCustomersReview, useReviewCustomer } from "../../_api";
 
 export const SheetRole = ({
   open,
@@ -33,9 +33,9 @@ export const SheetRole = ({
     "This action cannot be undone"
   );
 
-  const { mutate: update, isPending: isUpdating } = useUpdateReview();
+  const { mutate: update, isPending: isUpdating } = useReviewCustomer();
 
-  const { data, isPending, refetch, isRefetching } = useGetReviewUpgrade({
+  const { data, isPending, refetch, isRefetching } = useGetCustomersReview({
     id,
   });
 

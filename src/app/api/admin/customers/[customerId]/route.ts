@@ -123,6 +123,7 @@ export async function GET(
         ? userDetail.createdAt.toISOString()
         : null,
       emailVerified: !!userDetail.emailVerified,
+      image: userDetail.image ? `${r2Public}/${userDetail.image}` : null,
       orders: { include: ordersList, exclude: ordersExcludeList },
       addresses: addressesList.map((address) => ({
         id: address.id,

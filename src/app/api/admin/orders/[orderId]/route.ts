@@ -314,6 +314,8 @@ export async function POST(
         variantName: productVariants.name,
         quantity: orderItems.quantity,
         weight: orderItems.weight,
+        price: orderItems.price,
+        sku: productVariants.sku,
       })
       .from(orderItems)
       .leftJoin(productVariants, eq(productVariants.id, orderItems.variantId))
@@ -347,6 +349,8 @@ export async function POST(
         name: `${product.productName}${product.variantName === "default" ? "" : " - " + product.variantName}`,
         weight: product.weight,
         quantity: product.quantity,
+        value: Number(product.price),
+        sku: product.sku,
       })),
     };
 

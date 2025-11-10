@@ -67,6 +67,7 @@ import { DateRange } from "react-day-picker";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { CustomersRange, useGetDashboardRange } from "../../_api";
 import { id } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // 🧠 Constants
 const chartConfig = {
@@ -436,9 +437,9 @@ export const DashboardRange = () => {
         <Card className="col-span-7 p-0 gap-0">
           <CardHeader className="border-b !p-4 flex flex-row gap-1">
             <div className="flex flex-col gap-1 w-full">
-              <CardTitle>Summary Orders</CardTitle>
+              <CardTitle>Orders Summary</CardTitle>
               <CardDescription>
-                Showing total orders for selected period
+                Showing total orders for the selected period
               </CardDescription>
             </div>
             <div className="flex flex-col items-end flex-none">
@@ -528,7 +529,7 @@ export const DashboardRange = () => {
             <CardHeader className="border-b !p-4 flex flex-col gap-1">
               <CardTitle>Top Customers</CardTitle>
               <CardDescription>
-                Showing top customers for selected period
+                Showing top customers for the selected period
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { useGetCustomers } from "../_api/query/use-get-customers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, XCircle } from "lucide-react";
@@ -21,9 +20,13 @@ import {
 } from "nuqs";
 import { SheetRole } from "./dialogs/sheet-role";
 import { CustomerFilter } from "./customer-filter";
-import { useDeleteUser, useVerifyEmail } from "../_api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { TopCustomers } from "@/components/exports/top-customers";
+import {
+  useDeleteCustomer,
+  useGetCustomers,
+  useVerifyEmailCustomer,
+} from "../_api";
 
 const filterField = [
   { name: "Name", value: "name" },
@@ -79,8 +82,9 @@ export const Client = () => {
     "destructive"
   );
 
-  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
-  const { mutate: verifyEmail, isPending: isVerifiying } = useVerifyEmail();
+  const { mutate: deleteUser, isPending: isDeleting } = useDeleteCustomer();
+  const { mutate: verifyEmail, isPending: isVerifiying } =
+    useVerifyEmailCustomer();
 
   const { search, searchValue, setSearch } = useSearchQuery();
   const { page, metaPage, limit, setLimit, setPage, setPagination } =

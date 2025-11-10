@@ -10,8 +10,8 @@ import { RejectDialog } from "../../../_components/dialogs/reject-dialog";
 import { useUpdateReview } from "../../../_api";
 import { PreviewDialog } from "../dialogs/preview-dialog";
 import { useConfirm } from "@/hooks/use-confirm";
-import { invalidateQuery } from "@/lib/query";
-import { QueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 const DocumentCard = ({
   label,
@@ -54,7 +54,13 @@ const DocumentHeader = ({ customer }: { customer: Customer }) => (
       <IdCard className="size-4" />
       <h5>Document Updrading</h5>
     </div>
-    {customer.role !== customer.newRole ? (
+    {customer.role === customer.newRole ? (
+      <div className="flex items-center">
+        <Badge variant={"outline"} className="text-[10px]">
+          {customer.role && formatRole(customer.role)}
+        </Badge>
+      </div>
+    ) : (
       <div className="flex items-center gap-2">
         <Badge variant={"outline"} className="text-[10px]">
           {customer.role && formatRole(customer.role)}
@@ -72,12 +78,6 @@ const DocumentHeader = ({ customer }: { customer: Customer }) => (
           )}
         >
           {customer.newRole && formatRole(customer.newRole)}
-        </Badge>
-      </div>
-    ) : (
-      <div className="flex items-center">
-        <Badge variant={"outline"} className="text-[10px]">
-          {customer.role && formatRole(customer.role)}
         </Badge>
       </div>
     )}
@@ -224,7 +224,7 @@ const DocumentFooter = ({
     ) : (
       <p className="text-sm ml-auto w-fit">
         {customer.status === "APPROVED" ? "Approved" : "Rejected"} at{" "}
-        {customer.updatedAt}
+        {format(new Date(customer.updatedAt), "PPP", { locale: id })}
       </p>
     )}
   </div>
@@ -233,11 +233,9 @@ const DocumentFooter = ({
 export const UpgradeDocument = ({
   customer,
   customerId,
-  queryClient,
 }: {
   customer: Customer;
   customerId: string;
-  queryClient: QueryClient;
 }) => {
   const [state, setState] = useState({
     isReject: false,
@@ -253,11 +251,6 @@ export const UpgradeDocument = ({
 
   const { mutate: update, isPending: isUpdating } = useUpdateReview();
 
-  const handleSuccess = async () => {
-    setState((prev) => ({ ...prev, input: "", isReject: false }));
-    await invalidateQuery(queryClient, [["customers-detail", customerId]]);
-  };
-
   const handleApprove = async () => {
     const ok = await confirmApprove();
     if (!ok) return;
@@ -265,7 +258,9 @@ export const UpgradeDocument = ({
     update(
       { body: { status: "approve" }, params: { id: customerId } },
       {
-        onSuccess: handleSuccess,
+        onSuccess: () => {
+          setState((prev) => ({ ...prev, input: "", isReject: false }));
+        },
       }
     );
   };
@@ -277,7 +272,9 @@ export const UpgradeDocument = ({
         params: { id: customerId },
       },
       {
-        onSuccess: handleSuccess,
+        onSuccess: () => {
+          setState((prev) => ({ ...prev, input: "", isReject: false }));
+        },
       }
     );
   };

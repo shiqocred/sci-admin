@@ -82,7 +82,7 @@ const data = {
       items: [],
     },
     {
-      title: "Marketings",
+      title: "Marketing",
       url: "/reports",
       icon: Percent,
       items: [

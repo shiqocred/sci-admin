@@ -35,7 +35,7 @@ export type Customer = {
   id: string;
   image: string | null;
   phoneNumber: string;
-  updatedAt: boolean;
+  updatedAt: string;
   newRole: Role | null;
   fullName: string | null;
   message: string | null;

@@ -59,9 +59,9 @@ export const DashboardSummary = () => {
         <div>
           <Card className="p-0 w-full gap-0">
             <CardHeader className="flex justify-center gap-1 space-y-0 border-b !p-4 flex-col">
-              <CardTitle>Need Approving Document</CardTitle>
+              <CardTitle>Pending Document Approvals</CardTitle>
               <CardDescription>
-                Showing customer needing approve upgrading role
+                Showing customers needing a role upgrade
               </CardDescription>
             </CardHeader>
             <CardContent className="py-2">
@@ -97,8 +97,10 @@ export const DashboardSummary = () => {
         <div>
           <Card className="p-0 w-full gap-0">
             <CardHeader className="flex justify-center gap-1 space-y-0 border-b !p-4 flex-col">
-              <CardTitle>Need Proceed Order</CardTitle>
-              <CardDescription>Showing order on proceed</CardDescription>
+              <CardTitle>Pending Orders</CardTitle>
+              <CardDescription>
+                Showing orders that are in progress
+              </CardDescription>
             </CardHeader>
             <CardContent className="py-2">
               {data && data?.data.needed.confirm_order.length > 0 ? (
