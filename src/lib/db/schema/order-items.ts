@@ -27,6 +27,10 @@ export const orderItems = pgTable(
     weight: numeric("weight", { precision: 10, scale: 0 }).notNull(),
     quantity: numeric("quantity", { precision: 10, scale: 0 }).notNull(),
 
+    discountPrice: numeric("discount_price", { precision: 12, scale: 0 })
+      .default("0")
+      .notNull(),
+
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },

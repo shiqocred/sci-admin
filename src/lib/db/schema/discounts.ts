@@ -37,6 +37,8 @@ export const discounts = pgTable("discounts", {
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at"),
 
+  deletedAt: timestamp("deleted_at"),
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

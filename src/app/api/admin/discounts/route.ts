@@ -10,7 +10,7 @@ import {
   discountUsers,
 } from "@/lib/db";
 import { getTotalAndPagination } from "@/lib/db/pagination";
-import { asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
 
@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
       )
       .leftJoin(discountUsers, eq(discountUsers.discountId, discounts.id))
       .leftJoin(discountToRoles, eq(discountToRoles.discountId, discounts.id))
-      .where(where)
+      .where(and(where, isNull(discounts.deletedAt)))
       .groupBy(discounts.id)
       .orderBy(order === "desc" ? desc(sortField(sort)) : asc(sortField(sort)))
       .limit(limit)

@@ -9,7 +9,7 @@ import {
   discountToRoles,
   discountUsers,
 } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
 
@@ -60,6 +60,9 @@ const discountSchema = z.object({
     .refine((val) => !isNaN(val.getTime()), { message: "Invalid date" })
     .nullish(),
 });
+
+const whereDiscount = (discountId: string) =>
+  and(eq(discounts.id, discountId), isNull(discounts.deletedAt));
 
 export async function GET(
   req: NextRequest,
@@ -255,7 +258,7 @@ export async function PUT(
           startAt: new Date(startDiscount),
           endAt: endDiscount ? new Date(endDiscount) : null,
         })
-        .where(eq(discounts.id, discountId));
+        .where(whereDiscount(discountId));
 
       // 2. Handle applyTo
       const applyTable = applyMap[applyType];
@@ -326,7 +329,10 @@ export async function DELETE(
 
     if (!discountExist) return errorRes("Discount not found", 404);
 
-    await db.delete(discounts).where(eq(discounts.id, discountId));
+    await db
+      .update(discounts)
+      .set({ deletedAt: sql`NOW()` })
+      .where(whereDiscount(discountId));
 
     return successRes(null, "Discount successfully deleted");
   } catch (error) {

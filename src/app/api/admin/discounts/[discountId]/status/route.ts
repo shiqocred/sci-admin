@@ -1,6 +1,6 @@
 import { auth, errorRes, successRes } from "@/lib/auth";
 import { db, discounts } from "@/lib/db";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod/v4";
 
@@ -37,16 +37,21 @@ export async function PUT(
 
     if (!discountExist) return errorRes("Discount not found", 404);
 
+    const where = and(
+      eq(discounts.id, discountId),
+      isNull(discounts.deletedAt)
+    );
+
     if (status) {
       await db
         .update(discounts)
         .set({ startAt: sql`NOW()`, endAt: null })
-        .where(eq(discounts.id, discountId));
+        .where(where);
     } else {
       await db
         .update(discounts)
         .set({ endAt: sql`NOW()` })
-        .where(eq(discounts.id, discountId));
+        .where(where);
     }
 
     return successRes(
