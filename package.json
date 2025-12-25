@@ -2,6 +2,9 @@
   "name": "sci-admin",
   "version": "0.6.3",
   "private": true,
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "dev": "next dev --port=3001",
     "build": "next build",
