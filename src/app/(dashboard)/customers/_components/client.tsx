@@ -69,17 +69,17 @@ export const Client = () => {
       urlKeys: {
         customerId: "id",
       },
-    }
+    },
   );
 
   const [VerifyDialog, confirmVerify] = useConfirm(
     "Verify Email",
-    "This action cannot be undone"
+    "This action cannot be undone",
   );
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete User",
     "This action cannot be undone",
-    "destructive"
+    "destructive",
   );
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteCustomer();
@@ -103,7 +103,7 @@ export const Client = () => {
       maxOrder,
       minSpent,
       maxSpent,
-    }
+    },
   );
 
   const loading = isRefetching || isPending || isVerifiying || isDeleting;

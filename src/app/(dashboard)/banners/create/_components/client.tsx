@@ -1,6 +1,6 @@
 "use client";
 
-import React, { MouseEvent, useCallback, useEffect, useState } from "react";
+import { MouseEvent, useCallback, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { BannerCore } from "../../_components/section/banner-core";
 import { BannerActive } from "../../_components/section/banner-active";
 import { BannerInput } from "../../_api/types";
 import { formatDateTimeToISO } from "@/lib/utils";
-import { ParamsLoading } from "../../_components/_loading/params";
 
 const initialValue: BannerInput = {
   name: "",
@@ -64,18 +63,6 @@ export const Client = () => {
     !input.startTime ||
     input.selected.length === 0 ||
     (input.isEnd && (!input.endDate || !input.endTime));
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-    }
-  }, []);
-
-  if (!isMounted) {
-    return <ParamsLoading mode="create" />;
-  }
 
   return (
     <div className="flex w-full flex-col gap-6">

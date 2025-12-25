@@ -75,17 +75,7 @@ export const Client = () => {
     }
   }, [isSuccess, data]);
 
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-    }
-  }, []);
-
-  if (!isMounted) {
-    return <MainLoading />;
-  }
+  if (isPending) return <MainLoading />;
 
   return (
     <div className="w-full flex flex-col gap-6">

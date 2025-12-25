@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useGetCustomer } from "../_api/query/use-get-customer";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,17 +93,7 @@ export const Client = () => {
     );
   };
 
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-    }
-  }, []);
-
-  if (!isMounted) {
-    return <ParamsLoading />;
-  }
+  if (isPending) return <ParamsLoading />;
 
   return (
     <div className="w-full flex flex-col gap-6">

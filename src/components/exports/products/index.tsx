@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, MouseEvent } from "react";
+import { useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -9,12 +9,15 @@ import {
 import { TooltipText } from "@/providers/tooltip-provider";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import { useDownloadExport, useGetExportFilters } from "./_api";
 import { ExportForm } from "./form";
 import { ExportingDialog } from "../exporting-dialog";
-import { DATA_ROLES } from "../libs/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export type GetExportFiltersType = NonNullable<
+  ReturnType<typeof useGetExportFilters>["data"]
+>;
+export type DownloadExportType = ReturnType<typeof useDownloadExport>["mutate"];
 
 /* ---------------------- Main Component ---------------------- */
 export const ProductExport = ({
@@ -23,76 +26,8 @@ export const ProductExport = ({
   isMarketing?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [suppliers, setSuppliers] = useState<string[]>([]);
-  const [roles, setRoles] = useState<string[]>(DATA_ROLES.map((i) => i.value));
-  const [categories, setCategories] = useState<string[]>([]);
-  const [pets, setPets] = useState<string[]>([]);
-
   const { mutate: exportData, isPending: isExporting } = useDownloadExport();
   const { data, isPending } = useGetExportFilters();
-
-  const dataFilter = data?.data;
-
-  const getIsAll = (arr: string[], compare?: string[]) =>
-    compare ? arr.length === compare.length : false;
-
-  const isAllRole = getIsAll(
-    roles,
-    DATA_ROLES.map((i) => i.value)
-  );
-
-  const isAllSupplier = getIsAll(
-    suppliers,
-    dataFilter?.suppliers.map((i) => i.value)
-  );
-
-  const isAllPet = getIsAll(
-    pets,
-    dataFilter?.pets.map((i) => i.value)
-  );
-
-  const isAllCategory = getIsAll(
-    categories,
-    dataFilter?.categories.map((i) => i.value)
-  );
-
-  /* ---------------------- Handle Download ---------------------- */
-  const handleDownload = (e: MouseEvent) => {
-    e.preventDefault();
-    const body = {
-      suppliers: isAllSupplier ? [] : suppliers,
-      pets: isAllPet ? [] : pets,
-      roles: isAllRole ? [] : roles,
-      categories: isAllCategory ? [] : categories,
-      isAllRole,
-      isAllSupplier,
-      isAllPet,
-      isAllCategory,
-    };
-
-    exportData(
-      { body },
-      {
-        onSuccess: (res) => {
-          const url = window.URL.createObjectURL(res.data);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `ITEM LISTING REPORT - ${format(new Date(), "P_HH_mm_ss", { locale: id })}.xlsx`;
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-        },
-      }
-    );
-  };
-
-  /* ---------------------- Initial Data Load ---------------------- */
-  useEffect(() => {
-    if (!dataFilter) return;
-    setSuppliers(dataFilter.suppliers.map((i) => i.value));
-    setCategories(dataFilter.categories.map((i) => i.value));
-    setPets(dataFilter.pets.map((i) => i.value));
-  }, [dataFilter]);
 
   /* ---------------------- Marketing Mode ---------------------- */
   if (isMarketing) {
@@ -103,21 +38,14 @@ export const ProductExport = ({
           <h3 className="font-bold text-lg">Products Report</h3>
         </div>
 
-        <ExportForm
-          {...{
-            suppliers,
-            setSuppliers,
-            categories,
-            setCategories,
-            roles,
-            setRoles,
-            pets,
-            setPets,
-            dataFilter,
-            handleDownload,
-          }}
-          isMarketing
-        />
+        {data ? (
+          <ExportForm exportData={exportData} data={data} isMarketing />
+        ) : (
+          <div className="w-full h-85 flex flex-col gap-4">
+            <Skeleton className="size-full" />
+            <Skeleton className="h-8 w-full flex-none" />
+          </div>
+        )}
       </div>
     );
   }
@@ -146,20 +74,7 @@ export const ProductExport = ({
         </TooltipText>
 
         <PopoverContent align="end" sideOffset={10} className="p-3">
-          <ExportForm
-            {...{
-              suppliers,
-              setSuppliers,
-              categories,
-              setCategories,
-              roles,
-              setRoles,
-              pets,
-              setPets,
-              dataFilter,
-              handleDownload,
-            }}
-          />
+          {data && <ExportForm exportData={exportData} data={data} />}
         </PopoverContent>
       </Popover>
     </>

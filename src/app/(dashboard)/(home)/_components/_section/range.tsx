@@ -5,7 +5,6 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/components/ui/button-group";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -21,12 +20,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -50,23 +43,17 @@ import {
   startOfDay,
   startOfMonth,
   startOfYear,
-  subMonths,
-  subWeeks,
 } from "date-fns";
-import { ArrowUpRight, CalendarIcon, ChevronDown, XCircle } from "lucide-react";
+import { ArrowUpRight, ChevronDown, XCircle } from "lucide-react";
 import Link from "next/link";
 import { parseAsString, useQueryStates } from "nuqs";
-import React, {
-  MouseEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { MouseEvent, useCallback, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { CustomersRange, useGetDashboardRange } from "../../_api";
 import { id } from "date-fns/locale";
+import { MonthModeSection } from "./_mode/month";
+import { RangeLoading } from "../_loading/_partial/range";
 
 // 🧠 Constants
 const chartConfig = {
@@ -100,7 +87,7 @@ export const DashboardRange = () => {
 
   // 🔹 Local UI state
   const [open, setOpen] = useState(false);
-  const [openQuick, setOpenQuick] = useState(false);
+
   const [rangeMonth, setRangeMonth] = useState<DateRange>();
   const [rangeYear, setRangeYear] = useState({
     from: CURRENT_YEAR,
@@ -140,14 +127,8 @@ export const DashboardRange = () => {
       : `${from} - ${to}`;
   }, [modeOrder, decodeFrom, decodeTo, from, to, formatRangeLabel]);
 
-  const labelCurrent = useMemo(() => {
-    return rangeMonth?.from && rangeMonth?.to
-      ? formatRangeLabel(rangeMonth.from, rangeMonth.to)
-      : "";
-  }, [rangeMonth, formatRangeLabel]);
-
   // 🔹 Fetch data
-  const { data: dataRange } = useGetDashboardRange({
+  const { data: dataRange, isPending } = useGetDashboardRange({
     mode: modeOrder,
     from:
       modeOrder === "year"
@@ -219,37 +200,8 @@ export const DashboardRange = () => {
     [setQuery]
   );
 
-  const handleQuick = useCallback(
-    (type: "year" | "six" | "three" | "one" | "week") => {
-      const now = new Date();
-      const newRange: DateRange = (() => {
-        switch (type) {
-          case "year":
-            return { from: subMonths(now, 12), to: now };
-          case "six":
-            return { from: subMonths(now, 6), to: now };
-          case "three":
-            return { from: subMonths(now, 3), to: now };
-          case "one":
-            return { from: subMonths(now, 1), to: now };
-          default:
-            return { from: subWeeks(now, 1), to: now };
-        }
-      })();
-      setRangeMonth(newRange);
-      setOpenQuick(false);
-    },
-    []
-  );
+  if (isPending) return <RangeLoading />;
 
-  // 🔹 Sync state with URL
-  useEffect(() => {
-    if (from && to && modeOrder === "month") {
-      setRangeMonth({ from: new Date(decodeFrom), to: new Date(decodeTo) });
-    }
-  }, [from, to, modeOrder, decodeFrom, decodeTo]);
-
-  // 🔹 UI
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -296,75 +248,15 @@ export const DashboardRange = () => {
 
             {/* Month Picker */}
             {modeOrder === "month" ? (
-              <PopoverContent
-                className="p-3 flex flex-col gap-3 w-auto"
-                sideOffset={10}
-                align="end"
-                alignOffset={isDisabled ? -65 : -115}
-              >
-                <h5 className="font-semibold text-base">Pick a date range</h5>
-                <div className="flex items-center gap-3">
-                  <div className="h-8 border flex items-center rounded gap-2 w-full text-sm px-3 border-gray-300">
-                    <CalendarIcon className="size-3" />
-                    <p>{labelCurrent}</p>
-                  </div>
-                  <Popover open={openQuick} onOpenChange={setOpenQuick}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        size="icon"
-                        className="size-8 [&_svg]:size-3.5 rounded border-gray-300"
-                        variant="outline"
-                      >
-                        <ChevronDown />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-40" align="end">
-                      <Command>
-                        <CommandList>
-                          <CommandGroup>
-                            {[
-                              ["year", "Last year"],
-                              ["six", "Last 6 months"],
-                              ["three", "Last 3 months"],
-                              ["one", "Last month"],
-                              ["week", "Last week"],
-                            ].map(([key, label]) => (
-                              <CommandItem
-                                key={key}
-                                onSelect={() =>
-                                  handleQuick(
-                                    key as
-                                      | "year"
-                                      | "six"
-                                      | "three"
-                                      | "one"
-                                      | "week"
-                                  )
-                                }
-                              >
-                                {label}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <Button size="sm" className="rounded" onClick={handleConfirm}>
-                    Confirm
-                  </Button>
-                </div>
-                <div className="border border-gray-300 rounded">
-                  <Calendar
-                    mode="range"
-                    numberOfMonths={2}
-                    disabled={{ after: endOfMonth(new Date()) }}
-                    defaultMonth={subMonths(new Date(), 1)}
-                    onSelect={setRangeMonth}
-                    selected={rangeMonth}
-                  />
-                </div>
-              </PopoverContent>
+              <MonthModeSection
+                decodeFrom={decodeFrom}
+                decodeTo={decodeTo}
+                isDisabled={isDisabled}
+                rangeMonth={rangeMonth}
+                setRangeMonth={setRangeMonth}
+                setQuery={setQuery}
+                setOpen={setOpen}
+              />
             ) : (
               // Year Picker
               <PopoverContent

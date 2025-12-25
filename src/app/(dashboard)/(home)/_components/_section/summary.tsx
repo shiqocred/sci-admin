@@ -14,9 +14,12 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { id } from "date-fns/locale";
 import { useGetDashboard } from "../../_api";
+import { SummaryLoading } from "../_loading/_partial/summary";
 
 export const DashboardSummary = () => {
-  const { data } = useGetDashboard();
+  const { data, isPending } = useGetDashboard();
+
+  if (isPending) return <SummaryLoading />;
 
   return (
     <div className="flex flex-col gap-6">

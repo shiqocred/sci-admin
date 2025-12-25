@@ -16,6 +16,7 @@ import { Header } from "./section/banner-client-header";
 import { MainLoading } from "./_loading/main";
 
 export const Client = () => {
+  const [refresh, setRefresh] = useState(false);
   const [{ sort, order }, setQuery] = useQueryStates({
     sort: parseAsString.withDefault("created"),
     order: parseAsString.withDefault("desc"),
@@ -87,17 +88,7 @@ export const Client = () => {
     if (data && isSuccess) setPagination(data.data.pagination);
   }, [isSuccess, data]);
 
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-    }
-  }, []);
-
-  if (!isMounted) {
-    return <MainLoading />;
-  }
+  if (isPending && !refresh) return <MainLoading />;
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -112,6 +103,7 @@ export const Client = () => {
         refetch={refetch}
         setSearch={setSearch}
         setQuery={setQuery}
+        setRefresh={setRefresh}
       />
       <div className="flex w-full flex-col gap-3">
         <DataTable

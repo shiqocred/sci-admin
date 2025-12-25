@@ -1,7 +1,6 @@
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { clsx, type ClassValue } from "clsx";
 import { format } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
 import { id } from "date-fns/locale";
 import { twMerge } from "tailwind-merge";
 
@@ -35,17 +34,6 @@ export function formatRupiah(rupiah: string | number): string {
     minimumFractionDigits: 0,
   }).format(Math.ceil(value));
 }
-
-export const timeNow = async () => {
-  const jakartaNow = formatInTimeZone(
-    new Date(),
-    "Asia/Jakarta",
-    "yyyy-MM-dd HH:mm:ss"
-  );
-
-  const now = new Date(jakartaNow);
-  return now;
-};
 
 export const pronoun = (num: string | number, es?: boolean) => {
   const value =

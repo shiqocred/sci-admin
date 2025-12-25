@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipText } from "@/providers/tooltip-provider";
 import { Plus, RefreshCcw, XCircle } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 interface HeaderProps {
   order: string;
@@ -15,6 +15,7 @@ interface HeaderProps {
   refetch: () => void;
   setSearch: (v: string | null) => Promise<URLSearchParams>;
   setQuery: any;
+  setRefresh: Dispatch<SetStateAction<boolean>>;
 }
 
 const filterField = [{ name: "Name", value: "name" }];
@@ -27,6 +28,7 @@ export const Header = ({
   refetch,
   setSearch,
   setQuery,
+  setRefresh,
 }: HeaderProps) => {
   const handleClearSearch = () => setSearch(null);
   const handleReload = () => !loading && refetch();
@@ -39,19 +41,22 @@ export const Header = ({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="relative group">
+          <div className="relative group flex items-center">
             <Input
               className="h-8 w-52 shadow-none placeholder:text-xs focus-visible:ring-0"
               placeholder="Search banner..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setRefresh(true);
+              }}
             />
             {search && (
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={handleClearSearch}
-                className="absolute right-2 hidden size-4 hover:bg-gray-200 group-hover:flex"
+                className="absolute right-2 size-4 hover:bg-gray-200 flex"
               >
                 <XCircle className="size-3" />
               </Button>

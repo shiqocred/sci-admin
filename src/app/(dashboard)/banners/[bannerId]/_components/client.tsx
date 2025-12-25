@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   ChevronRight,
   ImageIcon,
-  Loader,
   Loader2,
   RefreshCcw,
   Send,
@@ -170,17 +169,7 @@ export const Client = () => {
     setInput(updatedInput);
   }, [detail]);
 
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-    }
-  }, []);
-
-  if (!isMounted) {
-    return <ParamsLoading mode="edit" />;
-  }
+  if (isPending) return <ParamsLoading mode="edit" />;
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -260,37 +249,29 @@ export const Client = () => {
         </div>
       </div>
 
-      {/* Main Section */}
-      {isPending ? (
-        <div className="h-[50vh] w-full flex items-center justify-center flex-col gap-2">
-          <Loader className="size-6 animate-spin" />
-          <p className="animate-pulse ml-2 text-sm">Loading...</p>
+      <div className="w-full grid gap-6 grid-cols-7">
+        <div className="col-span-4 w-full">
+          <BannerCore input={input} setInput={setInput} />
         </div>
-      ) : (
-        <div className="w-full grid gap-6 grid-cols-7">
-          <div className="col-span-4 w-full">
-            <BannerCore input={input} setInput={setInput} />
-          </div>
 
-          <div className="col-span-3 w-full">
-            <BannerActive input={input} setInput={setInput} />
-            <div className="flex flex-col gap-4 w-full">
-              <Button disabled={notSubmit} onClick={handleUpdateBanner}>
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Updating Banner...
-                  </>
-                ) : (
-                  <>
-                    <Send /> Update Banner
-                  </>
-                )}
-              </Button>
-            </div>
+        <div className="col-span-3 w-full flex flex-col gap-4">
+          <BannerActive input={input} setInput={setInput} />
+          <div className="flex flex-col gap-4 w-full">
+            <Button disabled={notSubmit} onClick={handleUpdateBanner}>
+              {isUpdating ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Updating Banner...
+                </>
+              ) : (
+                <>
+                  <Send /> Update Banner
+                </>
+              )}
+            </Button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

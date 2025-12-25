@@ -1,13 +1,6 @@
 "use client";
 
-import React, {
-  Dispatch,
-  MouseEvent,
-  SetStateAction,
-  useCallback,
-  useMemo,
-} from "react";
-import { CustomerExportProps } from "./_api";
+import { MouseEvent, useCallback, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -27,75 +20,124 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { subMonths } from "date-fns";
+import { endOfDay, format, startOfDay, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
+import { id } from "date-fns/locale";
+import { DownloadExportType, GetExportFiltersType } from ".";
+
+const formatDateRange = (range?: DateRange) => {
+  if (!range?.from && !range?.to) return "All Period";
+  const { from, to } = range;
+  if (from && to) {
+    return from.getTime() === to.getTime()
+      ? format(from, "P", { locale: id })
+      : `${format(from, "P", { locale: id })} - ${format(to, "P", {
+          locale: id,
+        })}`;
+  }
+  const date = from ?? to;
+  return date ? format(date, "P", { locale: id }) : "All Period";
+};
 
 interface ExportFormProps {
-  suppliers: string[];
-  setSuppliers: Dispatch<SetStateAction<string[]>>;
-  type: "product" | "supplier";
-  setType: Dispatch<SetStateAction<"product" | "supplier">>;
-  dataFilter?: CustomerExportProps;
-  products: string[];
-  setProducts: Dispatch<SetStateAction<string[]>>;
-  isOpenDate: boolean;
-  setIsOpenDate: Dispatch<SetStateAction<boolean>>;
-  formatRange: string;
-  rangeDate?: DateRange;
-  setRangeDate: Dispatch<SetStateAction<DateRange | undefined>>;
-  handleDownload: (e: MouseEvent) => void;
+  data: GetExportFiltersType;
+  exportData: DownloadExportType;
   isMarketing?: boolean;
 }
 
 export const ExportForm = ({
-  suppliers,
-  setSuppliers,
-  type,
-  setType,
-  dataFilter,
-  products,
-  setProducts,
-  isOpenDate,
-  setIsOpenDate,
-  formatRange,
-  rangeDate,
-  setRangeDate,
-  handleDownload,
+  data,
+  exportData,
   isMarketing = false,
 }: ExportFormProps) => {
+  const [type, setType] = useState<"product" | "supplier">("product");
+  const [suppliers, setSuppliers] = useState<string[]>(
+    data.data.suppliers.map((i) => i.value) ?? [],
+  );
+  const [products, setProducts] = useState<string[]>(
+    data.data.products.map((i) => i.value) ?? [],
+  );
+  const [isOpenDate, setIsOpenDate] = useState(false);
+  const [rangeDate, setRangeDate] = useState<DateRange>();
+
   /* ---------------------- Memos & Callbacks ---------------------- */
   const disableDownload = useMemo(
     () =>
       (type === "supplier" && suppliers.length === 0) ||
       (type === "product" && products.length === 0),
-    [suppliers, products]
+    [suppliers, products],
   );
 
-  const handleTabChange = useCallback(
-    (val: "product" | "supplier") => {
-      setType(val);
-      if (
-        val === "supplier" &&
-        suppliers.length === 0 &&
-        dataFilter?.suppliers
-      ) {
-        setSuppliers(dataFilter?.suppliers.map((r) => r.value));
-      }
-    },
-    [setType, setSuppliers, suppliers.length, dataFilter]
-  );
+  const handleTabChange = (val: "product" | "supplier") => {
+    setType(val);
+    if (val === "supplier" && suppliers.length === 0 && data.data.suppliers) {
+      setSuppliers(data.data.suppliers.map((r) => r.value));
+    }
+  };
 
   const handleResetDate = useCallback(
     () => setRangeDate(undefined),
-    [setRangeDate]
+    [setRangeDate],
   );
   const handleCloseDate = useCallback(
     () => setIsOpenDate(false),
-    [setIsOpenDate]
+    [setIsOpenDate],
   );
 
-  const supplierData = dataFilter?.suppliers ?? [];
-  const productData = dataFilter?.products ?? [];
+  const supplierData = data.data.suppliers ?? [];
+  const productData = data.data.products ?? [];
+
+  const formatRange = useMemo(() => formatDateRange(rangeDate), [rangeDate]);
+
+  const getIsAll = (arr: string[], compare?: string[]) =>
+    compare ? arr.length === compare.length : false;
+
+  const isAllProduct =
+    type === "supplier" ||
+    getIsAll(
+      products,
+      data.data.products?.map((i) => i.value),
+    );
+
+  const isAllSupplier =
+    type === "product" ||
+    getIsAll(
+      suppliers,
+      data.data.suppliers?.map((i) => i.value),
+    );
+
+  /* ---------------------- Handle Download ---------------------- */
+  const handleDownload = (e: MouseEvent) => {
+    e.preventDefault();
+    const body = {
+      suppliers: isAllSupplier ? [] : suppliers,
+      products: isAllProduct ? [] : products,
+      periodStart: rangeDate?.from
+        ? startOfDay(rangeDate.from).toISOString()
+        : null,
+      periodEnd: rangeDate?.to ? endOfDay(rangeDate.to).toISOString() : null,
+      isAllPeriod: !rangeDate?.from && !rangeDate?.to,
+      isSameDate: rangeDate?.from?.getTime() === rangeDate?.to?.getTime(),
+      isAllProduct,
+      isAllSupplier,
+      type,
+    };
+
+    exportData(
+      { body },
+      {
+        onSuccess: (res) => {
+          const url = window.URL.createObjectURL(res.data);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `REPORT TOP CUSTOMERS - ${format(new Date(), "P_HH_mm_ss", { locale: id })}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        },
+      },
+    );
+  };
 
   /* ---------------------- JSX ---------------------- */
   return (

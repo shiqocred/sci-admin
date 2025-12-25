@@ -327,7 +327,6 @@ const MultipleSelector = React.forwardRef<
       };
 
       void exec();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
 
     useEffect(() => {
@@ -353,7 +352,6 @@ const MultipleSelector = React.forwardRef<
       };
 
       void exec();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
 
     const CreatableItem = () => {
@@ -422,7 +420,7 @@ const MultipleSelector = React.forwardRef<
     );
 
     /** Avoid Creatable Selector freezing or lagging when paste a long string. */
-    const commandFilter = React.useCallback(() => {
+    const commandFilter = () => {
       if (commandProps?.filter) {
         return commandProps.filter;
       }
@@ -434,7 +432,7 @@ const MultipleSelector = React.forwardRef<
       }
       // Using default filter in `cmdk`. We don't have to provide it.
       return undefined;
-    }, [creatable, commandProps?.filter]);
+    };
 
     return (
       <Command

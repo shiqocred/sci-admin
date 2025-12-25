@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, MouseEvent } from "react";
+import { useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -9,28 +9,15 @@ import {
 import { TooltipText } from "@/providers/tooltip-provider";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import { endOfDay, format, startOfDay } from "date-fns";
-import { id } from "date-fns/locale";
 import { useDownloadExport, useGetExportFilters } from "./_api";
 import { ExportForm } from "./form";
 import { ExportingDialog } from "../exporting-dialog";
-import { DATA_ROLES, DATA_STATUSES } from "../libs/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-/* ---------------------- Utility ---------------------- */
-const formatDateRange = (range?: DateRange) => {
-  if (!range?.from && !range?.to) return "All Period";
-  const { from, to } = range;
-  if (from && to) {
-    return from.getTime() === to.getTime()
-      ? format(from, "P", { locale: id })
-      : `${format(from, "P", { locale: id })} - ${format(to, "P", {
-          locale: id,
-        })}`;
-  }
-  const date = from ?? to;
-  return date ? format(date, "P", { locale: id }) : "All Period";
-};
+export type GetExportFiltersType = NonNullable<
+  ReturnType<typeof useGetExportFilters>["data"]
+>;
+export type DownloadExportType = ReturnType<typeof useDownloadExport>["mutate"];
 
 /* ---------------------- Main Component ---------------------- */
 export const OrderExport = ({
@@ -39,121 +26,25 @@ export const OrderExport = ({
   isMarketing?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<"customer" | "role">("customer");
-  const [statuses, setStatuses] = useState<string[]>(() =>
-    DATA_STATUSES.map((i) => i.value)
-  );
-  const [roles, setRoles] = useState<string[]>([]);
-  const [customers, setCustomers] = useState<string[]>([]);
-  const [products, setProducts] = useState<string[]>([]);
-  const [isOpenDate, setIsOpenDate] = useState(false);
-  const [rangeDate, setRangeDate] = useState<DateRange>();
-
   const { mutate: exportData, isPending: isExporting } = useDownloadExport();
   const { data, isPending } = useGetExportFilters();
 
-  const dataFilter = data?.data;
-  const formatRange = useMemo(() => formatDateRange(rangeDate), [rangeDate]);
-
-  const getIsAll = (arr: string[], compare?: string[]) =>
-    compare ? arr.length === compare.length : false;
-
-  const isAllRole =
-    type === "customer" ||
-    getIsAll(
-      roles,
-      DATA_ROLES.map((i) => i.value)
-    );
-  const isAllStatus = getIsAll(
-    statuses,
-    DATA_STATUSES.map((i) => i.value)
-  );
-  const isAllCustomer =
-    type === "role" ||
-    getIsAll(
-      customers,
-      dataFilter?.customers?.map((i) => i.value)
-    );
-  const isAllProduct = getIsAll(
-    products,
-    dataFilter?.products?.map((i) => i.value)
-  );
-
-  /* ---------------------- Handle Download ---------------------- */
-  const handleDownload = (e: MouseEvent) => {
-    e.preventDefault();
-    const body = {
-      statuses: isAllStatus ? [] : statuses,
-      customers: isAllCustomer ? [] : customers,
-      roles: isAllRole ? [] : roles,
-      products: isAllProduct ? [] : products,
-      periodStart: rangeDate?.from
-        ? startOfDay(rangeDate.from).toISOString()
-        : null,
-      periodEnd: rangeDate?.to ? endOfDay(rangeDate.to).toISOString() : null,
-      isAllPeriod: !rangeDate?.from && !rangeDate?.to,
-      isSameDate: rangeDate?.from?.getTime() === rangeDate?.to?.getTime(),
-      isAllRole,
-      isAllStatus,
-      isAllCustomer,
-      isAllProduct,
-      type,
-    };
-
-    exportData(
-      { body },
-      {
-        onSuccess: (res) => {
-          const url = window.URL.createObjectURL(res.data);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `REPORT DETAILS - ${format(new Date(), "P_HH_mm_ss", { locale: id })}.xlsx`;
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-        },
-      }
-    );
-  };
-
-  /* ---------------------- Initial Data Load ---------------------- */
-  useEffect(() => {
-    if (!dataFilter) return;
-    setCustomers(dataFilter.customers.map((i) => i.value));
-    setProducts(dataFilter.products.map((i) => i.value));
-  }, [dataFilter]);
-
-  /* ---------------------- Marketing Mode ---------------------- */
   if (isMarketing) {
     return (
       <div className="border rounded-lg w-full flex flex-col overflow-hidden p-3 gap-5">
         {isExporting && <ExportingDialog />}
-        <div className="size-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-5 rounded-md">
+        <div className="w-full h-20 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-5 rounded-md">
           <h3 className="font-bold text-lg">Orders Report</h3>
         </div>
 
-        <ExportForm
-          {...{
-            statuses,
-            setStatuses,
-            type,
-            setType,
-            roles,
-            setRoles,
-            dataFilter,
-            customers,
-            setCustomers,
-            products,
-            setProducts,
-            isOpenDate,
-            setIsOpenDate,
-            formatRange,
-            rangeDate,
-            setRangeDate,
-            handleDownload,
-          }}
-          isMarketing
-        />
+        {data ? (
+          <ExportForm exportData={exportData} data={data} isMarketing />
+        ) : (
+          <div className="w-full h-85 flex flex-col gap-4">
+            <Skeleton className="size-full" />
+            <Skeleton className="h-8 w-full flex-none" />
+          </div>
+        )}
       </div>
     );
   }
@@ -183,27 +74,7 @@ export const OrderExport = ({
         </TooltipText>
 
         <PopoverContent align="end" sideOffset={10} className="p-3">
-          <ExportForm
-            {...{
-              statuses,
-              setStatuses,
-              type,
-              setType,
-              roles,
-              setRoles,
-              dataFilter,
-              customers,
-              setCustomers,
-              products,
-              setProducts,
-              isOpenDate,
-              setIsOpenDate,
-              formatRange,
-              rangeDate,
-              setRangeDate,
-              handleDownload,
-            }}
-          />
+          {data && <ExportForm exportData={exportData} data={data} />}
         </PopoverContent>
       </Popover>
     </>

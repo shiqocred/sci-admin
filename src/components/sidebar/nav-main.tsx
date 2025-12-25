@@ -19,7 +19,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
-import { useEffect, useState } from "react";
 
 export function NavMain({
   items,
@@ -35,13 +34,7 @@ export function NavMain({
   }[];
 }>) {
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return;
   return (
     <SidebarGroup>
       <SidebarMenu>
