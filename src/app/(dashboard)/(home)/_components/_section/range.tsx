@@ -125,8 +125,8 @@ export const DashboardRange = () => {
   /* ------------------------------ API Call -------------------------------- */
   const { data: dataRange, isPending } = useGetDashboardRange({
     mode: modeOrder,
-    from: fromDate ? startOfDay(fromDate).toISOString() : "",
-    to: toDate ? endOfDay(toDate).toISOString() : "",
+    from: fromDate ? startOfDay(fromDate)?.toISOString() : "",
+    to: toDate ? endOfDay(toDate)?.toISOString() : "",
   });
 
   /* ------------------------------ Helpers --------------------------------- */
