@@ -114,13 +114,13 @@ export const DashboardRange = () => {
   /* ------------------------------ Derived Date ----------------------------- */
   const fromDate =
     modeOrder === "year"
-      ? startOfYear(new Date(Number(from), 0, 1))
-      : parseISODate(from);
+      ? startOfYear(new Date(Number(from ?? CURRENT_YEAR), 0, 1))
+      : parseISODate(from ?? CURRENT_YEAR.toString());
 
   const toDate =
     modeOrder === "year"
-      ? endOfYear(new Date(Number(to), 0, 1))
-      : parseISODate(to);
+      ? endOfYear(new Date(Number(to ?? CURRENT_YEAR), 0, 1))
+      : parseISODate(to ?? CURRENT_YEAR.toString());
 
   /* ------------------------------ API Call -------------------------------- */
   const { data: dataRange, isPending } = useGetDashboardRange({
