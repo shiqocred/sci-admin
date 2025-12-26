@@ -1,21 +1,5 @@
 "use client";
 
-import React, { MouseEvent, useCallback, useMemo, useState } from "react";
-import Link from "next/link";
-import { parseAsString, useQueryStates } from "nuqs";
-import {
-  startOfDay,
-  endOfDay,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-  format,
-} from "date-fns";
-import { id } from "date-fns/locale";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { ArrowUpRight, ChevronDown, XCircle } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   ButtonGroup,
@@ -49,127 +33,114 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { TooltipText } from "@/providers/tooltip-provider";
-
+import {
+  endOfDay,
+  endOfMonth,
+  endOfYear,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfYear,
+} from "date-fns";
+import { ArrowUpRight, ChevronDown, XCircle } from "lucide-react";
+import Link from "next/link";
+import { parseAsString, useQueryStates } from "nuqs";
+import React, { MouseEvent, useCallback, useMemo, useState } from "react";
+import { DateRange } from "react-day-picker";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { CustomersRange, useGetDashboardRange } from "../../_api";
+import { id } from "date-fns/locale";
 import { MonthModeSection } from "./_mode/month";
 import { RangeLoading } from "../_loading/_partial/range";
-import { CustomersRange, useGetDashboardRange } from "../../_api";
-import { DateRange } from "react-day-picker";
 
+// 🧠 Constants
 const chartConfig = {
-  income: { label: "Revenue", color: "var(--color-green-300)" },
-  order: { label: "Order", color: "var(--color-green-500)" },
+  income: {
+    label: "Revenue",
+    color: "var(--color-green-300)",
+  },
+  order: {
+    label: "Order",
+    color: "var(--color-green-500)",
+  },
 } satisfies ChartConfig;
 
-/* -------------------------------------------------------------------------- */
-/* Utils                                                                      */
-/* -------------------------------------------------------------------------- */
-
-function parseISODate(value?: string) {
-  if (!value) return null;
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Constants                                                                  */
-/* -------------------------------------------------------------------------- */
-
-const CURRENT_YEAR = new Date().getFullYear();
 const START_YEAR = 2023;
-
+const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from(
   { length: CURRENT_YEAR - START_YEAR + 1 },
   (_, i) => CURRENT_YEAR - i,
 );
 
-const monthStart = startOfMonth(new Date());
-const monthEnd = endOfMonth(new Date());
-
-/* -------------------------------------------------------------------------- */
-/* Component                                                                  */
-/* -------------------------------------------------------------------------- */
+const dateStartMonth = startOfMonth(new Date());
+const dateEndMonth = endOfMonth(new Date());
 
 export const DashboardRange = () => {
-  /* ------------------------------ Query State ------------------------------ */
+  // 🔹 URL query state
   const [{ modeOrder, from, to }, setQuery] = useQueryStates({
     modeOrder: parseAsString.withDefault("year"),
     from: parseAsString.withDefault(CURRENT_YEAR.toString()),
     to: parseAsString.withDefault(CURRENT_YEAR.toString()),
   });
 
-  /* ------------------------------ Local State ------------------------------ */
+  // 🔹 Local UI state
   const [open, setOpen] = useState(false);
 
+  const [rangeMonth, setRangeMonth] = useState<DateRange>();
   const [rangeYear, setRangeYear] = useState({
     from: CURRENT_YEAR,
     to: CURRENT_YEAR,
   });
 
-  const [rangeMonth, setRangeMonth] = useState<DateRange | undefined>({
-    from: monthStart,
-    to: monthEnd,
-  });
+  const decodeFrom = decodeURIComponent(from);
+  const decodeTo = decodeURIComponent(to);
 
-  /* ------------------------------ Derived Date ----------------------------- */
-  const fromDate =
-    modeOrder === "year"
-      ? startOfYear(new Date(Number(from ?? CURRENT_YEAR), 0, 1))
-      : parseISODate(from ?? CURRENT_YEAR.toString());
-
-  const toDate =
-    modeOrder === "year"
-      ? endOfYear(new Date(Number(to ?? CURRENT_YEAR), 0, 1))
-      : parseISODate(to ?? CURRENT_YEAR.toString());
-
-  /* ------------------------------ API Call -------------------------------- */
-  const { data: dataRange, isPending } = useGetDashboardRange({
-    mode: modeOrder,
-    from: fromDate ? startOfDay(fromDate)?.toISOString() : "",
-    to: toDate ? endOfDay(toDate)?.toISOString() : "",
-  });
-
-  /* ------------------------------ Helpers --------------------------------- */
-  const labelPopover = useMemo(() => {
-    if (modeOrder === "year") return `${from} - ${to}`;
-    if (!fromDate || !toDate) return "-";
-    return `${format(fromDate, "PP", { locale: id })} - ${format(toDate, "PP", {
-      locale: id,
-    })}`;
-  }, [modeOrder, from, to, fromDate, toDate]);
-
+  // 🔹 Detect if current range is already at default
   const isDisabled = useMemo(() => {
-    if (modeOrder === "year") {
-      return Number(from) === CURRENT_YEAR && Number(to) === CURRENT_YEAR;
+    if (modeOrder === "month") {
+      return (
+        startOfMonth(new Date()).getTime() === new Date(decodeFrom).getTime() &&
+        startOfDay(endOfMonth(new Date())).getTime() ===
+          new Date(decodeTo).getTime()
+      );
     }
     return (
-      fromDate?.getTime() === monthStart.getTime() &&
-      toDate?.getTime() === monthEnd.getTime()
+      modeOrder === "year" &&
+      CURRENT_YEAR === Number(from) &&
+      CURRENT_YEAR === Number(to)
     );
-  }, [modeOrder, from, to, fromDate, toDate]);
+  }, [modeOrder, decodeFrom, decodeTo, from, to]);
 
-  /* ------------------------------ Handlers -------------------------------- */
-  const handleMode = useCallback(
-    (_: MouseEvent, mode: string) => {
-      if (mode === "year") {
-        setQuery({
-          modeOrder: "year",
-          from: CURRENT_YEAR.toString(),
-          to: CURRENT_YEAR.toString(),
-        });
-        setRangeYear({ from: CURRENT_YEAR, to: CURRENT_YEAR });
-      } else {
-        setQuery({
-          modeOrder: "month",
-          from: monthStart.toISOString(),
-          to: monthEnd.toISOString(),
-        });
-        setRangeMonth({ from: monthStart, to: monthEnd });
-      }
-    },
-    [setQuery],
-  );
+  // 🔹 Format range label helper
+  const formatRangeLabel = useCallback((from: Date, to: Date) => {
+    return `${format(from, "PP", { locale: id })} - ${format(to, "PP", {
+      locale: id,
+    })}`;
+  }, []);
 
+  // 🔹 Label for popover button
+  const labelPopover = useMemo(() => {
+    return modeOrder === "month"
+      ? formatRangeLabel(new Date(decodeFrom), new Date(decodeTo))
+      : `${from} - ${to}`;
+  }, [modeOrder, decodeFrom, decodeTo, from, to, formatRangeLabel]);
+
+  // 🔹 Fetch data
+  const { data: dataRange, isPending } = useGetDashboardRange({
+    mode: modeOrder,
+    from:
+      modeOrder === "year"
+        ? startOfYear(new Date(Number(from), 0, 1)).toISOString()
+        : startOfDay(new Date(decodeFrom)).toISOString(),
+    to:
+      modeOrder === "year"
+        ? endOfYear(new Date(Number(to), 0, 1)).toISOString()
+        : endOfDay(new Date(decodeTo)).toISOString(),
+  });
+
+  // 🔹 Handlers
   const handleConfirm = useCallback(
     (e: MouseEvent) => {
       e.preventDefault();
@@ -180,20 +151,55 @@ export const DashboardRange = () => {
         });
       } else if (rangeMonth?.from && rangeMonth?.to) {
         setQuery({
-          from: rangeMonth?.from.toISOString(),
-          to: rangeMonth?.to.toISOString(),
+          from: rangeMonth.from.toISOString(),
+          to: rangeMonth.to.toISOString(),
         });
       }
       setOpen(false);
     },
-    [modeOrder, rangeYear, rangeMonth, setQuery],
+    [modeOrder, rangeMonth, rangeYear, setQuery],
   );
 
-  const handleReset = useCallback(() => {
-    handleMode({} as MouseEvent, modeOrder);
-  }, [handleMode, modeOrder]);
+  const handleReset = useCallback(
+    (e: MouseEvent) => {
+      e.preventDefault();
+      if (modeOrder === "year") {
+        setQuery({
+          from: CURRENT_YEAR.toString(),
+          to: CURRENT_YEAR.toString(),
+        });
+      } else {
+        setQuery({
+          from: dateStartMonth.toISOString(),
+          to: dateEndMonth.toISOString(),
+        });
+      }
+    },
+    [modeOrder, setQuery],
+  );
 
-  /* ------------------------------ Render ---------------------------------- */
+  const handleMode = useCallback(
+    (e: MouseEvent, type: "year" | "month") => {
+      e.preventDefault();
+      if (type === "year") {
+        setQuery({
+          modeOrder: "year",
+          from: CURRENT_YEAR.toString(),
+          to: CURRENT_YEAR.toString(),
+        });
+        setRangeYear({ from: CURRENT_YEAR, to: CURRENT_YEAR });
+      } else {
+        setQuery({
+          modeOrder: "month",
+          from: dateStartMonth.toISOString(),
+          to: dateEndMonth.toISOString(),
+        });
+        setRangeMonth({ from: dateStartMonth, to: dateEndMonth });
+      }
+    },
+    [setQuery],
+  );
+
   if (isPending) return <RangeLoading />;
 
   return (
@@ -201,73 +207,119 @@ export const DashboardRange = () => {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Separator className="flex-auto" />
+        <div className="flex items-center gap-4 ml-auto">
+          <ButtonGroup className="border-gray-300">
+            {["year", "month"].map((type) => (
+              <React.Fragment key={type}>
+                {type === "month" && (
+                  <ButtonGroupSeparator className="bg-gray-300 !w-px" />
+                )}
+                <Button
+                  className={cn(
+                    "border-gray-300 shadow-none disabled:opacity-100 hover:bg-gray-100",
+                    modeOrder === type && "bg-gray-100",
+                  )}
+                  variant="outline"
+                  size="sm"
+                  disabled={modeOrder === type}
+                  onClick={(e) => handleMode(e, type as "year" | "month")}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Button>
+              </React.Fragment>
+            ))}
+          </ButtonGroup>
 
-        <ButtonGroup>
-          {(["year", "month"] as const).map((type) => (
-            <React.Fragment key={type}>
-              {type === "month" && <ButtonGroupSeparator />}
+          {/* Range Picker */}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
               <Button
                 size="sm"
                 variant="outline"
-                disabled={modeOrder === type}
-                onClick={(e) => handleMode(e, type)}
+                className="shadow-none border-gray-300 !p-0 gap-0 hover:bg-white group overflow-hidden"
               >
-                {type}
+                <p className="px-3">{labelPopover}</p>
+                <Separator orientation="vertical" />
+                <div className="h-full px-3 flex items-center group-hover:bg-gray-100">
+                  <ChevronDown className="group-data-[state=open]:rotate-180 transition-all" />
+                </div>
               </Button>
-            </React.Fragment>
-          ))}
-        </ButtonGroup>
+            </PopoverTrigger>
 
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button size="sm" variant="outline">
-              {labelPopover}
-              <ChevronDown className="ml-2 size-4" />
+            {/* Month Picker */}
+            {modeOrder === "month" ? (
+              <MonthModeSection
+                decodeFrom={decodeFrom}
+                decodeTo={decodeTo}
+                isDisabled={isDisabled}
+                rangeMonth={rangeMonth}
+                setRangeMonth={setRangeMonth}
+                setQuery={setQuery}
+                setOpen={setOpen}
+              />
+            ) : (
+              // Year Picker
+              <PopoverContent
+                className="p-3 flex flex-col gap-3 w-auto"
+                sideOffset={10}
+                align="end"
+                alignOffset={isDisabled ? -10 : -60}
+              >
+                <div className="grid grid-cols-3 px-3 py-1.5 gap-3">
+                  {(["from", "to"] as const).map((type) => (
+                    <div key={type} className="mx-auto flex flex-col gap-0.5">
+                      <p className="text-sm font-semibold capitalize">
+                        {type}:
+                      </p>
+                      <Select
+                        value={rangeYear[type].toString()}
+                        onValueChange={(e) =>
+                          setRangeYear((prev) => ({
+                            ...prev,
+                            [type]: Number(e),
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="border-gray-300 shadow-none focus-visible:ring-0 data-[state=open]:border-gray-500 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {YEARS.filter((y) =>
+                            type === "to" ? y >= rangeYear.from : true,
+                          ).map((y) => (
+                            <SelectItem key={y} value={y.toString()}>
+                              {y}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                  <Button
+                    className="border mt-auto text-xs"
+                    size="sm"
+                    onClick={handleConfirm}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </PopoverContent>
+            )}
+          </Popover>
+
+          {/* Reset Button */}
+          {!isDisabled && (
+            <Button
+              className="border-gray-300 shadow-none hover:bg-gray-100"
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+            >
+              <XCircle />
+              Reset
             </Button>
-          </PopoverTrigger>
-
-          {modeOrder === "month" ? (
-            <MonthModeSection
-              rangeMonth={rangeMonth}
-              setRangeMonth={setRangeMonth}
-              setQuery={setQuery}
-              setOpen={setOpen}
-              isDisabled={isDisabled}
-            />
-          ) : (
-            <PopoverContent className="flex gap-3">
-              {(["from", "to"] as const).map((t) => (
-                <Select
-                  key={t}
-                  value={rangeYear[t].toString()}
-                  onValueChange={(v) =>
-                    setRangeYear((p) => ({ ...p, [t]: Number(v) }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {YEARS.map((y) => (
-                      <SelectItem key={y} value={y.toString()}>
-                        {y}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ))}
-              <Button onClick={handleConfirm}>Confirm</Button>
-            </PopoverContent>
           )}
-        </Popover>
-
-        {!isDisabled && (
-          <Button size="sm" variant="outline" onClick={handleReset}>
-            <XCircle className="mr-1 size-4" />
-            Reset
-          </Button>
-        )}
-
+        </div>
         <Separator className="flex-auto" />
       </div>
 

@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Login" };
 const LoginPage = async () => {
   const session = await auth();
   if (session) {
-    redirect(`/?from=login`);
+    redirect(`/?fromUrl=login`);
   }
   return (
     <div className="bg-white w-full h-full">

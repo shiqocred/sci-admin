@@ -7,7 +7,7 @@ import { DashboardRange } from "./_section/range";
 import { DashboardSummary } from "./_section/summary";
 
 export const Client = () => {
-  const [fromURL, setFromURL] = useQueryState("from");
+  const [fromURL, setFromURL] = useQueryState("fromUrl");
 
   useEffect(() => {
     if (fromURL === "login") {
