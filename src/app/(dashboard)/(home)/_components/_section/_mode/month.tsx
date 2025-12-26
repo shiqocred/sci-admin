@@ -14,7 +14,7 @@ import {
 import { endOfMonth, format, subMonths, subWeeks } from "date-fns";
 import { id } from "date-fns/locale";
 import { CalendarIcon, ChevronDown } from "lucide-react";
-import { ParserBuilder, SetValues } from "nuqs";
+import { SetValues } from "nuqs";
 import React, {
   SetStateAction,
   Dispatch,
@@ -22,38 +22,22 @@ import React, {
   useMemo,
   useState,
   MouseEvent,
-  useEffect,
 } from "react";
 import { DateRange } from "react-day-picker";
 
-type NuqsValue = string | string[] | undefined;
-
 interface MonthModeSection {
-  decodeFrom: string;
-  decodeTo: string;
   isDisabled: boolean;
   rangeMonth: DateRange | undefined;
   setRangeMonth: Dispatch<SetStateAction<DateRange | undefined>>;
   setQuery: SetValues<{
-    modeOrder: Omit<ParserBuilder<string>, "parseServerSide"> & {
-      readonly defaultValue: string;
-      parseServerSide(value: NuqsValue): string;
-    };
-    from: Omit<ParserBuilder<string>, "parseServerSide"> & {
-      readonly defaultValue: string;
-      parseServerSide(value: NuqsValue): string;
-    };
-    to: Omit<ParserBuilder<string>, "parseServerSide"> & {
-      readonly defaultValue: string;
-      parseServerSide(value: NuqsValue): string;
-    };
+    modeOrder: any;
+    from: any;
+    to: any;
   }>;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export const MonthModeSection = ({
-  decodeFrom,
-  decodeTo,
   isDisabled,
   rangeMonth,
   setRangeMonth,
@@ -95,16 +79,16 @@ export const MonthModeSection = ({
   const handleConfirm = (e: MouseEvent) => {
     e.preventDefault();
 
+    if (!rangeMonth?.from || !rangeMonth?.to) return;
+
     setQuery({
-      from: rangeMonth?.from?.toISOString(),
-      to: rangeMonth?.to?.toISOString(),
+      from: rangeMonth.from.toISOString(),
+      to: rangeMonth.to.toISOString(),
     });
+
     setOpen(false);
   };
 
-  useEffect(() => {
-    setRangeMonth({ from: new Date(decodeFrom), to: new Date(decodeTo) });
-  }, [decodeFrom, decodeTo]);
   return (
     <PopoverContent
       className="p-3 flex flex-col gap-3 w-auto"
@@ -143,7 +127,7 @@ export const MonthModeSection = ({
                       key={key}
                       onSelect={() =>
                         handleQuick(
-                          key as "year" | "six" | "three" | "one" | "week"
+                          key as "year" | "six" | "three" | "one" | "week",
                         )
                       }
                     >
