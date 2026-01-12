@@ -47,39 +47,30 @@ export async function POST() {
     const isAuth = await auth();
     if (!isAuth) return errorRes("Unauthorized", 401);
 
-    const addressFirst = db
-      .select({
-        userId: addresses.userId,
-        address: addresses.address,
-      })
-      .from(addresses)
-      .where(isNull(addresses.deletedAt))
-      .orderBy(addresses.createdAt)
-      .limit(1)
-      .as("addressFirst");
-
-    const addressDefault = db
-      .select({
-        userId: addresses.userId,
-        address: addresses.address,
-      })
-      .from(addresses)
-      .where(and(isNull(addresses.deletedAt), eq(addresses.isDefault, true)))
-      .limit(1)
-      .as("addressDefault");
-
     const customersRaw = await db
       .select({
         id: users.id,
         name: users.name,
         phone: users.phoneNumber,
         role: users.role,
-        addressFirst: addressFirst.address,
-        addressDefault: addressDefault.address,
+        address: {
+          address: addresses.address,
+          detail: addresses.detail,
+          province: addresses.province,
+          city: addresses.city,
+          district: addresses.district,
+          postalCode: addresses.postalCode,
+        },
       })
       .from(users)
-      .leftJoin(addressDefault, eq(addressDefault.userId, users.id))
-      .leftJoin(addressFirst, eq(addressFirst.userId, users.id))
+      .leftJoin(
+        addresses,
+        and(
+          isNull(addresses.deletedAt),
+          eq(addresses.userId, users.id),
+          eq(addresses.isDefault, true),
+        ),
+      )
       .where(and(not(eq(users.role, "ADMIN")), isNull(users.deletedAt)));
 
     const customersFormatted = customersRaw.map((customer) => ({
@@ -87,7 +78,9 @@ export async function POST() {
       name: customer.name,
       phone: customer.phone,
       role: customer.role,
-      address: customer.addressDefault ?? customer.addressFirst,
+      address: customer.address?.address
+        ? `${customer.address?.address}, ${customer.address?.detail}, ${customer.address?.district}, ${customer.address?.city}, ${customer.address?.province} ${customer.address?.postalCode}, Indonesia`
+        : "-",
     }));
 
     const workbook = new ExcelJS.Workbook();

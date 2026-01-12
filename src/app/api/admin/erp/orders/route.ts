@@ -8,6 +8,8 @@ import {
   users,
 } from "@/lib/db";
 import { formatRole } from "@/lib/utils";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import { eq } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
@@ -64,6 +66,7 @@ export async function POST() {
         discount: orderItems.discountPrice,
         userId: users.id,
         role: users.role,
+        date: orders.paidAt,
       })
       .from(orders)
       .leftJoin(users, eq(users.id, orders.userId))
@@ -86,6 +89,7 @@ export async function POST() {
       { header: "Unit", key: "unit" },
       { header: "Price", key: "price" },
       { header: "Discount", key: "discount" },
+      { header: "Order Date", key: "date" },
     ];
 
     const headerRow = ws.getRow(1);
@@ -115,6 +119,7 @@ export async function POST() {
         unit: row.unit,
         price: row.price,
         discount: row.discount,
+        date: row.date ? format(row.date, "PPP HH:mm", { locale: id }) : "-",
       });
 
     autoFitColumns(ws, headerRow.number);
