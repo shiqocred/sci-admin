@@ -30,7 +30,7 @@ export const SheetRole = ({
 
   const [ApproveDialog, confirmApprove] = useConfirm(
     "Approve Document",
-    "This action cannot be undone"
+    "This action cannot be undone",
   );
 
   const { mutate: update, isPending: isUpdating } = useReviewCustomer();
@@ -59,7 +59,7 @@ export const SheetRole = ({
           setIsReject(false);
           setUrlReview("");
         },
-      }
+      },
     );
   };
 
@@ -74,7 +74,7 @@ export const SheetRole = ({
           setIsActive("");
           setUrlReview("");
         },
-      }
+      },
     );
   };
 
@@ -90,7 +90,7 @@ export const SheetRole = ({
       <SheetContent
         className={cn(
           "flex flex-row items-center gap-0",
-          urlReview ? "sm:min-w-7xl" : "sm:max-w-md"
+          urlReview ? "sm:min-w-7xl" : "sm:max-w-md",
         )}
       >
         {urlReview && (
@@ -131,7 +131,7 @@ export const SheetRole = ({
         <div
           className={cn(
             "flex flex-col gap-4 bg-gray-100 h-full sm:max-w-md w-full",
-            urlReview && "border-l border-gray-100"
+            urlReview && "border-l border-gray-100",
           )}
         >
           <SheetHeader>
@@ -160,7 +160,7 @@ export const SheetRole = ({
                       <Button
                         onClick={() => {
                           setUrlReview(
-                            reviewData.personalIdFile ?? "/images/logo-sci.png"
+                            reviewData.personalIdFile ?? "/images/logo-sci.png",
                           );
                           setIsActive("KTP");
                         }}
@@ -187,7 +187,7 @@ export const SheetRole = ({
                       <Button
                         onClick={() => {
                           setUrlReview(
-                            reviewData.storefrontFile ?? "/images/logo-sci.png"
+                            reviewData.storefrontFile ?? "/images/logo-sci.png",
                           );
                           setIsActive("Pet Shop Building");
                         }}
@@ -213,7 +213,7 @@ export const SheetRole = ({
                         onClick={() => {
                           setUrlReview(
                             reviewData.veterinarianIdFile ??
-                              "/images/logo-sci.png"
+                              "/images/logo-sci.png",
                           );
                           setIsActive("KTA");
                         }}

@@ -41,50 +41,6 @@ type RequestProps = {
   isAllProduct: boolean;
 };
 
-// === Utility: Grouping Orders ===
-function groupOrders(rows: any[]) {
-  const map: Record<string, any> = {};
-
-  for (const row of rows) {
-    if (!map[row.id]) {
-      map[row.id] = {
-        id: row.id,
-        orderAt: formattedDateServer(row.orderAt, "PPP 'at' HH:mm"),
-        paidAt: formattedDateServer(row.paidAt, "PPP 'at' HH:mm"),
-        shippingAt: formattedDateServer(row.shippingAt, "PPP 'at' HH:mm"),
-        status: formatOrderStatus(row.status),
-        couriers: row.couriers ?? "-",
-        waybill: row.waybill ?? "-",
-        customerId: row.customerId,
-        customerName: row.customerName,
-        customerRole: formatRole(row.customerRole ?? ""),
-        paymentMethod:
-          formatPayment(row.paymentMethod, row.paymentChannel) ?? "-",
-        productCategory: row.productCategory,
-        productSupplier: row.productSupplier,
-        shippingAddress:
-          `${row.shippingAddressNote ?? ""}, ${row.shippingAddress ?? ""}`.trim(),
-        orderDiscount: Number(row.orderDiscount ?? "0"),
-        productPrice: Number(row.productPrice ?? "0"),
-        shippingCost: Number(row.shippingCost ?? "0"),
-        totalPrice: Number(row.totalPrice ?? "0"),
-        products: [],
-      };
-    }
-
-    map[row.id].products.push({
-      sku: row.skuVariant,
-      name:
-        row.variantName === "default"
-          ? row.productName
-          : `${row.productName} - ${row.variantName}`,
-      qty: Number(row.productQty ?? 0),
-    });
-  }
-
-  return Object.values(map);
-}
-
 // === Utility: Auto-fit columns (skip header/info) ===
 function autoFitColumns(worksheet: ExcelJS.Worksheet, startRow: number) {
   worksheet.columns.forEach((col) => {
@@ -146,14 +102,14 @@ export async function POST(req: NextRequest) {
         inArray(
           orders.status,
           statuses.map((s) =>
-            s === "processed" ? "PACKING" : s.replace("-", "_").toUpperCase()
-          ) as OrderType
-        )
+            s === "processed" ? "PACKING" : s.replace("-", "_").toUpperCase(),
+          ) as OrderType,
+        ),
       );
 
     if (type === "role" && roles.length)
       filters.push(
-        inArray(users.role, roles.map((r) => r.toUpperCase()) as RoleType)
+        inArray(users.role, roles.map((r) => r.toUpperCase()) as RoleType),
       );
 
     if (type === "customer" && customers.length)
@@ -166,8 +122,8 @@ export async function POST(req: NextRequest) {
       filters.push(
         and(
           gte(orders.createdAt, new Date(periodStart)),
-          lte(orders.createdAt, new Date(periodEnd))
-        )
+          lte(orders.createdAt, new Date(periodEnd)),
+        ),
       );
 
     // === Query ===
@@ -210,8 +166,34 @@ export async function POST(req: NextRequest) {
       .where(and(...filters))
       .orderBy(desc(orders.createdAt));
 
-    // === Grouping ===
-    const grouped = groupOrders(rows);
+    const fmrt = rows.map((row) => ({
+      id: row.id,
+      orderAt: formattedDateServer(row.orderAt, "PPP 'at' HH:mm"),
+      paidAt: formattedDateServer(row.paidAt, "PPP 'at' HH:mm"),
+      shippingAt: formattedDateServer(row.shippingAt, "PPP 'at' HH:mm"),
+      status: formatOrderStatus(row.status),
+      couriers: row.couriers ?? "-",
+      waybill: row.waybill ?? "-",
+      customerId: row.customerId,
+      customerName: row.customerName,
+      customerRole: formatRole(row.customerRole ?? ""),
+      paymentMethod:
+        formatPayment(row.paymentMethod, row.paymentChannel) ?? "-",
+      productCategory: row.productCategory,
+      productSupplier: row.productSupplier,
+      shippingAddress:
+        `${row.shippingAddressNote ?? ""}, ${row.shippingAddress ?? ""}`.trim(),
+      orderDiscount: Number(row.orderDiscount ?? "0"),
+      productPrice: Number(row.productPrice ?? "0"),
+      shippingCost: Number(row.shippingCost ?? "0"),
+      totalPrice: Number(row.totalPrice ?? "0"),
+      productSku: row.skuVariant ?? "",
+      productQty: Number(row.productQty ?? 0),
+      productName:
+        row.variantName === "default"
+          ? row.productName
+          : `${row.productName} - ${row.variantName}`,
+    }));
 
     // === Distinct Info ===
     let distinctCustomers = [] as { name: string }[];
@@ -262,9 +244,9 @@ export async function POST(req: NextRequest) {
       { header: "Payment Method", key: "paymentMethod" },
       { header: "Product Category", key: "productCategory" },
       { header: "Product Supplier", key: "productSupplier" },
-      { header: "SKU", key: "sku" },
+      { header: "SKU", key: "productSku" },
       { header: "Product Name", key: "productName" },
-      { header: "Qty", key: "qty" },
+      { header: "Qty", key: "productQty" },
       { header: "Discount", key: "orderDiscount" },
       { header: "Product Price", key: "productPrice" },
       { header: "Shipping Cost", key: "shippingCost" },
@@ -319,7 +301,7 @@ export async function POST(req: NextRequest) {
                 (i) =>
                   `(${i.sku ?? "-"}) ${i.name}${
                     i.variantName === "default" ? "" : " - " + i.variantName
-                  }`
+                  }`,
               )
               .join(", "),
       ],
@@ -327,7 +309,7 @@ export async function POST(req: NextRequest) {
         "Exported Date:",
         formattedDateServer(new Date().toISOString(), "PPP 'at' HH:mm"),
       ],
-      ["Total Order:", grouped.length],
+      ["Total Order:", fmrt.length],
     ];
 
     infoData.forEach(([label, val], i) => {
@@ -386,53 +368,13 @@ export async function POST(req: NextRequest) {
     ws.getColumn("shippingCost").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
     ws.getColumn("totalPrice").numFmt = '"Rp" #,##0;[Red]"Rp" -#,##0';
 
-    // === Data Rows ===
-    let rowStart = headerRow.number + 1;
-    for (const order of grouped) {
-      const products = order.products ?? [];
-      for (const p of products) {
-        ws.addRow({
-          ...order,
-          sku: p.sku,
-          productName: p.name,
-          qty: p.qty,
-        });
-      }
-
-      if (products.length > 1) {
-        const endRow = rowStart + products.length - 1;
-        const mergeCols = [
-          "A",
-          "B",
-          "C",
-          "D",
-          "E",
-          "F",
-          "G",
-          "H",
-          "I",
-          "J",
-          "K",
-          "L",
-          "M",
-          "N",
-          "R",
-          "S",
-          "T",
-          "U",
-        ];
-        mergeCols.forEach((col) =>
-          ws.mergeCells(`${col}${rowStart}:${col}${endRow}`)
-        );
-      }
-
-      rowStart += products.length;
+    for (const order of fmrt) {
+      ws.addRow(order);
     }
 
     autoFitColumns(ws, headerRow.number);
     applyDataStyle(ws, headerRow.number);
 
-    // === Return Buffer ===
     const buffer = await workbook.xlsx.writeBuffer();
     return new NextResponse(buffer, {
       headers: {

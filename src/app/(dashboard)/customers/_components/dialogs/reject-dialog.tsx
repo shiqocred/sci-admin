@@ -38,9 +38,11 @@ export const RejectDialog = ({
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={() => {
-        if (isOpen) {
+      onOpenChange={(e) => {
+        if (!e) {
           handleClose();
+        } else {
+          setIsOpen(true);
         }
       }}
     >
@@ -49,7 +51,7 @@ export const RejectDialog = ({
           size={"sm"}
           className={cn(
             "text-xs bg-red-300 text-black hover:bg-red-400",
-            isPublic && "h-full rounded-none shadow-none"
+            isPublic && "h-full rounded-none shadow-none",
           )}
           disabled={loading}
         >

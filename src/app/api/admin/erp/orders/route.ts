@@ -119,7 +119,7 @@ export async function POST() {
         unit: row.unit,
         price: row.price,
         discount: row.discount,
-        date: row.date ? format(row.date, "PPP HH:mm", { locale: id }) : "-",
+        date: row.date ? format(row.date, "PPP", { locale: id }) : "-",
       });
 
     autoFitColumns(ws, headerRow.number);
