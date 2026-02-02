@@ -145,14 +145,14 @@ export async function POST(req: NextRequest) {
         productSupplier: suppliers.name,
         shippingAddress: shippings.address,
         shippingAddressNote: shippings.address_note,
-        orderDiscount: orders.totalDiscount,
-        productPrice: orders.productPrice,
         shippingCost: orders.shippingPrice,
         totalPrice: orders.totalPrice,
         skuVariant: productVariants.sku,
         productName: products.name,
         variantName: productVariants.name,
         productQty: orderItems.quantity,
+        orderDiscount: orders.totalDiscount,
+        productPrice: orderItems.price,
       })
       .from(orders)
       .leftJoin(orderItems, eq(orderItems.orderId, orders.id))
@@ -247,9 +247,9 @@ export async function POST(req: NextRequest) {
       { header: "SKU", key: "productSku" },
       { header: "Product Name", key: "productName" },
       { header: "Qty", key: "productQty" },
-      { header: "Discount", key: "orderDiscount" },
       { header: "Product Price", key: "productPrice" },
       { header: "Shipping Cost", key: "shippingCost" },
+      { header: "Discount", key: "orderDiscount" },
       { header: "Total Price", key: "totalPrice" },
     ];
 
